@@ -14,6 +14,7 @@ const PermissionButton: React.FC<PermissionButtonProps> = ({
   noPermissionTooltip = '您没有权限执行此操作',
   hideWhenNoPermission = false,
   customCheck,
+  onNoPermission,
   children,
   ...buttonProps
 }) => {
@@ -38,11 +39,18 @@ const PermissionButton: React.FC<PermissionButtonProps> = ({
 
   // 无权限时显示禁用按钮和提示
   if (!hasPermission) {
+    const handleClick = (e: React.MouseEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+      onNoPermission?.()
+    }
+
     return (
       <Tooltip title={noPermissionTooltip}>
         <Button
           {...buttonProps}
           disabled={true}
+          onClick={onNoPermission ? handleClick : undefined}
         >
           {children}
         </Button>

@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, MemoryRouter } from 'react-router-dom'
 import { ConfigProvider } from 'antd'
 import zhCN from 'antd/locale/zh_CN'
+import { vi } from 'vitest'
 import type { ReactElement } from 'react'
 
 // 扩展的渲染选项
@@ -117,7 +118,7 @@ const customRender = (
 
   const Wrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const WrappedChildren = wrapper ? (
-      React.createElement(wrapper, {}, children)
+      React.createElement(wrapper, { children }, children)
     ) : children
 
     return (
@@ -243,7 +244,6 @@ export const renderUnauthenticated = (
 // 导出所有渲染函数
 export {
   customRender as render,
-  createTestQueryClient,
 }
 
 // 重新导出 @testing-library/react 的所有内容（除了render）

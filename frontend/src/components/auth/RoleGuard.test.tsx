@@ -65,7 +65,7 @@ describe('RoleGuard', () => {
       })
 
       render(
-        <RoleGuard roles="ADMIN" as UserRoleCode>
+        <RoleGuard roles={UserRoleCode.ADMIN}>
           <TestChild />
         </RoleGuard>
       )
@@ -84,7 +84,7 @@ describe('RoleGuard', () => {
       })
 
       render(
-        <RoleGuard roles="ADMIN" as UserRoleCode>
+        <RoleGuard roles={UserRoleCode.ADMIN}>
           <TestChild />
         </RoleGuard>
       )
@@ -103,7 +103,7 @@ describe('RoleGuard', () => {
       })
 
       render(
-        <RoleGuard roles="ADMIN" as UserRoleCode>
+        <RoleGuard roles={UserRoleCode.ADMIN}>
           <TestChild />
         </RoleGuard>
       )
@@ -214,7 +214,7 @@ describe('RoleGuard', () => {
       })
 
       render(
-        <RoleGuard roles="ADMIN" as UserRoleCode fallback={<CustomFallback />}>
+        <RoleGuard roles={UserRoleCode.ADMIN} fallback={<CustomFallback />}>
           <TestChild />
         </RoleGuard>
       )
@@ -232,7 +232,7 @@ describe('RoleGuard', () => {
 
       render(
         <RoleGuard 
-          roles="ADMIN" as UserRoleCode
+          roles={UserRoleCode.ADMIN}
           noRoleTitle="自定义权限标题"
           noRoleSubtitle="自定义权限副标题"
         >
@@ -284,7 +284,7 @@ describe('RoleGuard', () => {
       })
 
       render(
-        <RoleGuard roles="ADMIN" as UserRoleCode>
+        <RoleGuard roles={UserRoleCode.ADMIN}>
           <TestChild onClick={mockOnClick} />
         </RoleGuard>
       )
@@ -311,7 +311,7 @@ describe('RoleGuard', () => {
       )
 
       render(
-        <RoleGuard roles="ADMIN" as UserRoleCode fallback={<InteractiveFallback />}>
+        <RoleGuard roles={UserRoleCode.ADMIN} fallback={<InteractiveFallback />}>
           <TestChild />
         </RoleGuard>
       )
@@ -329,7 +329,7 @@ describe('RoleGuard', () => {
       })
 
       render(
-        <RoleGuard roles="ADMIN" as UserRoleCode>
+        <RoleGuard roles={UserRoleCode.ADMIN}>
           <TestChild />
         </RoleGuard>
       )
@@ -344,7 +344,7 @@ describe('RoleGuard', () => {
       })
 
       render(
-        <RoleGuard roles="ADMIN" as UserRoleCode fallback={<CustomFallback />}>
+        <RoleGuard roles={UserRoleCode.ADMIN} fallback={<CustomFallback />}>
           <TestChild />
         </RoleGuard>
       )
@@ -362,7 +362,7 @@ describe('RoleGuard', () => {
       })
 
       const { rerender } = render(
-        <RoleGuard roles="ADMIN" as UserRoleCode>
+        <RoleGuard roles={UserRoleCode.ADMIN}>
           <TestChild />
         </RoleGuard>
       )
@@ -372,7 +372,7 @@ describe('RoleGuard', () => {
 
       // Rerender with same props - should use memoized result
       rerender(
-        <RoleGuard roles="ADMIN" as UserRoleCode>
+        <RoleGuard roles={UserRoleCode.ADMIN}>
           <TestChild />
         </RoleGuard>
       )
@@ -389,7 +389,7 @@ describe('RoleGuard', () => {
       })
 
       const { rerender } = render(
-        <RoleGuard roles="ADMIN" as UserRoleCode>
+        <RoleGuard roles={UserRoleCode.ADMIN}>
           <TestChild />
         </RoleGuard>
       )
@@ -399,7 +399,7 @@ describe('RoleGuard', () => {
 
       // Rerender with different roles
       rerender(
-        <RoleGuard roles="MANAGER" as UserRoleCode>
+        <RoleGuard roles={UserRoleCode.BUSINESS}>
           <TestChild />
         </RoleGuard>
       )
@@ -442,7 +442,7 @@ describe('RoleGuard', () => {
 
       expect(() => {
         render(
-          <RoleGuard roles="ADMIN" as UserRoleCode>
+          <RoleGuard roles={UserRoleCode.ADMIN}>
             <TestChild />
           </RoleGuard>
         )
@@ -474,7 +474,7 @@ describe('RoleGuard', () => {
 
       expect(() => {
         render(
-          <RoleGuard roles="ADMIN" as UserRoleCode>
+          <RoleGuard roles={UserRoleCode.ADMIN}>
             <TestChild />
           </RoleGuard>
         )
@@ -491,7 +491,7 @@ describe('RoleGuard', () => {
 
       expect(() => {
         render(
-          <RoleGuard roles="ADMIN" as UserRoleCode>
+          <RoleGuard roles={UserRoleCode.ADMIN}>
             {null}
           </RoleGuard>
         )
@@ -506,7 +506,7 @@ describe('RoleGuard', () => {
 
       expect(() => {
         render(
-          <RoleGuard roles="ADMIN" as UserRoleCode>
+          <RoleGuard roles={UserRoleCode.ADMIN}>
             {undefined}
           </RoleGuard>
         )
@@ -520,7 +520,7 @@ describe('RoleGuard', () => {
       })
 
       render(
-        <RoleGuard roles="ADMIN" as UserRoleCode>
+        <RoleGuard roles={UserRoleCode.ADMIN}>
           <div data-testid="child-1">Child 1</div>
           <div data-testid="child-2">Child 2</div>
           <div data-testid="child-3">Child 3</div>
@@ -541,7 +541,7 @@ describe('RoleGuard', () => {
       })
 
       render(
-        <RoleGuard roles="ADMIN" as UserRoleCode>
+        <RoleGuard roles={UserRoleCode.ADMIN}>
           <TestChild />
         </RoleGuard>
       )
@@ -559,7 +559,7 @@ describe('RoleGuard', () => {
 
       const renderStart = performance.now()
       render(
-        <RoleGuard roles="ADMIN" as UserRoleCode>
+        <RoleGuard roles={UserRoleCode.ADMIN}>
           <TestChild />
         </RoleGuard>
       )
@@ -578,13 +578,13 @@ describe('RoleGuard', () => {
       })
 
       const { rerender } = render(
-        <RoleGuard roles="ADMIN" as UserRoleCode>
+        <RoleGuard roles={UserRoleCode.ADMIN}>
           <TestChild />
         </RoleGuard>
       )
 
       // Simulate multiple role changes
-      const roles: UserRoleCode[] = ['ADMIN', 'MANAGER', 'USER', 'ADMIN']
+      const roles: UserRoleCode[] = [UserRoleCode.ADMIN, UserRoleCode.BUSINESS, UserRoleCode.OPERATION, UserRoleCode.ADMIN]
       roles.forEach(role => {
         rerender(
           <RoleGuard roles={role}>
@@ -608,7 +608,7 @@ describe('RoleGuard', () => {
       })
 
       const { container } = render(
-        <RoleGuard roles="ADMIN" as UserRoleCode>
+        <RoleGuard roles={UserRoleCode.ADMIN}>
           <TestChild />
         </RoleGuard>
       )
@@ -625,7 +625,7 @@ describe('RoleGuard', () => {
       })
 
       const { container } = render(
-        <RoleGuard roles="ADMIN" as UserRoleCode>
+        <RoleGuard roles={UserRoleCode.ADMIN}>
           <TestChild />
         </RoleGuard>
       )
@@ -642,7 +642,7 @@ describe('RoleGuard', () => {
       })
 
       render(
-        <RoleGuard roles="ADMIN" as UserRoleCode>
+        <RoleGuard roles={UserRoleCode.ADMIN}>
           <TestChild />
         </RoleGuard>
       )

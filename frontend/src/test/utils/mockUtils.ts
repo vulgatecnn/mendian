@@ -304,7 +304,7 @@ export class TimeMockUtils {
 
   static mockDayjs() {
     return vi.mock('dayjs', () => {
-      const mockDayjs = vi.fn((date?: any) => ({
+      const mockDayjs: any = vi.fn((date?: any) => ({
         format: vi.fn(() => '2024-01-01'),
         toDate: vi.fn(() => new Date('2024-01-01')),
         valueOf: vi.fn(() => new Date('2024-01-01').valueOf()),
@@ -368,16 +368,7 @@ export class HttpMockUtils {
   }
 }
 
-// 导出所有工具
-export {
-  MockFactory,
-  ApiMockUtils,
-  QueryMockUtils,
-  PropsMockUtils,
-  StorageMockUtils,
-  TimeMockUtils,
-  HttpMockUtils,
-}
+// 所有工具类已经通过 export class 单独导出
 
 // 便捷的组合Mock函数
 export const createCompleteMock = () => ({

@@ -1,0 +1,238 @@
+# Netlify 配置文件 - 好饭碗门店生命周期管理系统
+# 官方文档: https://docs.netlify.com/configure-builds/file-based-configuration/
+
+[build]
+  # 构建命令 (自动检测包管理器)
+  command = """
+    if [ -f "pnpm-lock.yaml" ]; then
+      echo "🔧 使用 pnpm 构建..."
+      npm install -g pnpm
+      pnpm install --frozen-lockfile
+      if [ -d "frontend" ]; then
+        pnpm --filter frontend build || pnpm --filter "*frontend*" build
+      else
+        pnpm build
+      fi
+    elif [ -f "yarn.lock" ]; then
+      echo "🔧 使用 yarn 构建..."
+      yarn install --frozen-lockfile
+      yarn build
+    else
+      echo "🔧 使用 npm 构建..."
+      npm ci
+      npm run build
+    fi
+  """
+  
+  # 发布目录 (自动检测)
+  publish = """
+    if [ -d "frontend/dist" ]; then
+      echo "frontend/dist"
+    elif [ -d "dist" ]; then
+      echo "dist"
+    elif [ -d "build" ]; then
+      echo "build"
+    else
+      echo "dist"
+    fi
+  """
+  
+  # 函数目录 (如果使用 Netlify Functions)
+  functions = "netlify/functions"
+
+# 环境变量 (生产环境)
+[build.environment]
+  NODE_VERSION = "18"
+  NODE_ENV = "production"
+  CI = "true"
+  NODE_OPTIONS = "--max-old-space-size=4096"
+  FORCE_COLOR = "1"
+  # 构建优化
+  GENERATE_SOURCEMAP = "false"
+  # 时区
+  TZ = "Asia/Shanghai"
+
+# ============================================================================
+# 重定向规则 - SPA 路由支持
+# ============================================================================
+
+# SPA 路由重定向 (React Router, Vue Router 等)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  conditions = {Role = ["admin"], Country = ["us"]}
+
+# API 代理 (如果有后端 API)
+[[redirects]]
+  from = "/api/*"
+  to = "https://your-backend-api.com/api/:splat"
+  status = 200
+  force = true
+  headers = {X-From = "Netlify"}
+  
+# 健康检查端点
+[[redirects]]
+  from = "/health"
+  to = "/.netlify/functions/health"
+  status = 200
+
+# 旧路径重定向
+[[redirects]]
+  from = "/old-path/*"
+  to = "/new-path/:splat"
+  status = 301
+
+# ============================================================================
+# HTTP 头配置 - 安全和性能
+# ============================================================================
+
+# 全局安全头
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # 安全头
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    
+    # CSP (根据需要调整)
+    Content-Security-Policy = """
+      default-src 'self';
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net;
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      img-src 'self' data: https: blob:;
+      font-src 'self' https://fonts.gstatic.com;
+      connect-src 'self' https://api.github.com wss:;
+      media-src 'self';
+      object-src 'none';
+      frame-ancestors 'none';
+      base-uri 'self';
+      form-action 'self';
+    """
+
+# 静态资源缓存
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "*.woff2"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# HTML 文件缓存策略
+[[headers]]
+  for = "*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# Service Worker 缓存策略
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# API 响应头
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "https://mendian-app.netlify.app"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
+    Access-Control-Allow-Headers = "Content-Type, Authorization"
+
+# ============================================================================
+# 构建插件配置
+# ============================================================================
+
+# 基础插件
+[[plugins]]
+  package = "netlify-plugin-submit-sitemap"
+  
+  [plugins.inputs]
+    baseUrl = "https://mendian-app.netlify.app"
+    sitemapPath = "/sitemap.xml"
+    providers = [
+      "google",
+      "bing"
+    ]
+
+# 图片优化
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# 表单处理
+[[plugins]]
+  package = "netlify-plugin-form-submissions"
+
+# PWA 支持 (如果使用 PWA)
+[[plugins]]
+  package = "netlify-plugin-pwa"
+
+# ============================================================================
+# 分支部署配置
+# ============================================================================
+
+# 生产环境 (main/master 分支)
+[context.production]
+  environment = { NODE_ENV = "production", VITE_APP_ENVIRONMENT = "production" }
+
+# 预览环境 (develop 分支)
+[context.branch-deploy]
+  environment = { NODE_ENV = "staging", VITE_APP_ENVIRONMENT = "staging" }
+
+# Pull Request 预览
+[context.deploy-preview]
+  environment = { NODE_ENV = "preview", VITE_APP_ENVIRONMENT = "preview" }
+
+# 特定分支配置
+[context."develop"]
+  environment = { NODE_ENV = "development", VITE_APP_ENVIRONMENT = "development" }
+
+# ============================================================================
+# 高级配置
+# ============================================================================
+
+# 边缘函数 (Netlify Edge Functions)
+# [[edge_functions]]
+#   function = "auth"
+#   path = "/admin/*"
+
+# A/B 测试
+# [[redirects]]
+#   from = "/"
+#   to = "/variant-a"
+#   status = 200
+#   conditions = {Role = ["admin"]}
+
+# Prerender (预渲染)
+# [build.processing]
+#   skip_processing = false
+# [build.processing.css]
+#   bundle = true
+#   minify = true
+# [build.processing.js]
+#   bundle = true
+#   minify = true
+# [build.processing.html]
+#   pretty_urls = true
+
+# ============================================================================
+# 错误页面配置
+# ============================================================================
+
+# 自定义 404 页面
+# 确保您的构建输出中包含 404.html 文件

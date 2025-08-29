@@ -29,7 +29,7 @@ export interface PermissionWrapperProps {
   customCheck?: () => boolean
 }
 
-export interface PermissionButtonProps extends Omit<ButtonProps, 'disabled'> {
+export interface PermissionButtonProps extends ButtonProps {
   /** 所需权限 */
   permissions?: string | string[]
   /** 权限检查模式 */
@@ -40,4 +40,6 @@ export interface PermissionButtonProps extends Omit<ButtonProps, 'disabled'> {
   hideWhenNoPermission?: boolean
   /** 自定义权限检查逻辑 */
   customCheck?: () => boolean
+  /** 无权限时的回调函数 */
+  onNoPermission?: () => void
 }

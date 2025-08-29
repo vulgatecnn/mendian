@@ -3,6 +3,8 @@
  * 提供安全的输入验证和清理功能
  */
 
+import { useState, useCallback } from 'react'
+
 export interface ValidationResult {
   isValid: boolean
   message?: string
@@ -39,7 +41,7 @@ export class Validator {
   /**
    * 验证长度范围
    */
-  static length(value: string, min?: number, max?: number): ValidationResult {
+  static validateLength(value: string, min?: number, max?: number): ValidationResult {
     const trimmed = value?.trim() || ''
     let isValid = true
     let message: string | undefined
@@ -381,6 +383,5 @@ export function useFormValidation<T extends Record<string, string>>(
   }
 }
 
-// 导出
-export { Validator, Sanitizer }
+// Validator 和 Sanitizer 已经通过 export class 单独导出
 export default Validator

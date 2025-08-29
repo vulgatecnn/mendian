@@ -432,6 +432,12 @@ export class TestHelpers {
     
     return issues
   }
+
+  // 获取内存使用情况
+  getMemoryUsage() {
+    const memory = (performance as any).memory
+    return memory?.usedJSHeapSize || 0
+  }
 }
 
 // 创建单例实例

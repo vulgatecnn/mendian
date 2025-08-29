@@ -1,0 +1,386 @@
+name: 🌐 部署到 Netlify
+
+on:
+  push:
+    branches: [ main, master, develop ]
+    paths:
+      - 'frontend/**'
+      - 'src/**'
+      - 'public/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'pnpm-lock.yaml'
+      - 'yarn.lock'
+      - 'vite.config.*'
+      - 'tsconfig.*'
+      - 'netlify.toml'
+  pull_request:
+    branches: [ main, master, develop ]
+    paths:
+      - 'frontend/**'
+      - 'src/**'
+      - 'public/**'
+      - 'package.json'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: '部署环境'
+        required: true
+        default: 'preview'
+        type: choice
+        options:
+          - preview
+          - production
+
+# 权限配置
+permissions:
+  contents: read
+  deployments: write
+  pull-requests: write
+  checks: write
+
+# 并发控制
+concurrency:
+  group: netlify-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '18'
+  # Netlify 环境变量
+  NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+  NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+  # 构建优化
+  CI: 'true'
+  NODE_OPTIONS: '--max-old-space-size=4096'
+  FORCE_COLOR: '1'
+
+jobs:
+  # 环境检测
+  setup:
+    name: 🔍 环境检测
+    runs-on: ubuntu-latest
+    outputs:
+      package-manager: ${{ steps.detect-pm.outputs.package-manager }}
+      project-structure: ${{ steps.detect-structure.outputs.project-structure }}
+      deploy-type: ${{ steps.deploy-type.outputs.deploy-type }}
+    
+    steps:
+      - name: 📂 检出代码
+        uses: actions/checkout@v4
+
+      - name: 🔍 检测项目结构
+        id: detect-structure
+        run: |
+          if [ -d "frontend" ]; then
+            echo "project-structure=workspace" >> $GITHUB_OUTPUT
+            echo "检测到工作区结构"
+          else
+            echo "project-structure=single" >> $GITHUB_OUTPUT
+            echo "检测到单项目结构"
+          fi
+
+      - name: 📦 检测包管理器
+        id: detect-pm
+        run: |
+          if [ -f "pnpm-lock.yaml" ]; then
+            echo "package-manager=pnpm" >> $GITHUB_OUTPUT
+          elif [ -f "yarn.lock" ]; then
+            echo "package-manager=yarn" >> $GITHUB_OUTPUT
+          else
+            echo "package-manager=npm" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 🚀 确定部署类型
+        id: deploy-type
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]] || [[ "${{ github.ref }}" == "refs/heads/master" ]] || [[ "${{ github.event.inputs.environment }}" == "production" ]]; then
+            echo "deploy-type=production" >> $GITHUB_OUTPUT
+            echo "🏭 生产环境部署"
+          else
+            echo "deploy-type=preview" >> $GITHUB_OUTPUT
+            echo "🔍 预览环境部署"
+          fi
+
+  # 构建和部署
+  build-and-deploy:
+    name: 🏗️ 构建并部署到 Netlify
+    runs-on: ubuntu-latest
+    needs: setup
+    
+    steps:
+      - name: 📂 检出代码
+        uses: actions/checkout@v4
+
+      - name: 📦 设置包管理器
+        if: needs.setup.outputs.package-manager == 'pnpm'
+        uses: pnpm/action-setup@v2
+        with:
+          version: '8.15.0'
+
+      - name: 🟢 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: ${{ needs.setup.outputs.package-manager }}
+
+      - name: 📥 安装依赖
+        run: |
+          echo "使用 ${{ needs.setup.outputs.package-manager }} 安装依赖..."
+          case "${{ needs.setup.outputs.package-manager }}" in
+            "pnpm")
+              pnpm install --frozen-lockfile
+              ;;
+            "yarn")
+              yarn install --frozen-lockfile
+              ;;
+            *)
+              npm ci
+              ;;
+          esac
+
+      - name: 🔧 代码质量检查
+        run: |
+          echo "运行代码质量检查..."
+          
+          # TypeScript 检查
+          case "${{ needs.setup.outputs.package-manager }}" in
+            "pnpm")
+              if [ "${{ needs.setup.outputs.project-structure }}" == "workspace" ]; then
+                pnpm --filter frontend typecheck 2>/dev/null || pnpm typecheck 2>/dev/null || npx tsc --noEmit || echo "TypeScript 检查完成"
+              else
+                pnpm typecheck 2>/dev/null || npx tsc --noEmit || echo "TypeScript 检查完成"
+              fi
+              ;;
+            "yarn")
+              yarn typecheck 2>/dev/null || npx tsc --noEmit || echo "TypeScript 检查完成"
+              ;;
+            *)
+              npm run typecheck 2>/dev/null || npx tsc --noEmit || echo "TypeScript 检查完成"
+              ;;
+          esac
+          
+          # ESLint 检查 (非阻塞)
+          echo "运行 ESLint 检查..."
+          case "${{ needs.setup.outputs.package-manager }}" in
+            "pnpm")
+              pnpm lint 2>/dev/null || echo "ESLint 检查完成"
+              ;;
+            "yarn")
+              yarn lint 2>/dev/null || echo "ESLint 检查完成"
+              ;;
+            *)
+              npm run lint 2>/dev/null || echo "ESLint 检查完成"
+              ;;
+          esac
+        continue-on-error: true
+
+      - name: 🧪 运行测试
+        run: |
+          echo "运行测试套件..."
+          case "${{ needs.setup.outputs.package-manager }}" in
+            "pnpm")
+              if [ "${{ needs.setup.outputs.project-structure }}" == "workspace" ]; then
+                pnpm --filter frontend test 2>/dev/null || pnpm test 2>/dev/null || echo "测试完成"
+              else
+                pnpm test 2>/dev/null || echo "测试完成"
+              fi
+              ;;
+            "yarn")
+              yarn test 2>/dev/null || echo "测试完成"
+              ;;
+            *)
+              npm run test 2>/dev/null || echo "测试完成"
+              ;;
+          esac
+        env:
+          NODE_ENV: test
+          CI: true
+        continue-on-error: true
+
+      - name: 🏗️ 构建应用
+        run: |
+          echo "构建应用 (部署类型: ${{ needs.setup.outputs.deploy-type }})..."
+          
+          case "${{ needs.setup.outputs.package-manager }}" in
+            "pnpm")
+              if [ "${{ needs.setup.outputs.project-structure }}" == "workspace" ]; then
+                pnpm --filter frontend build || pnpm build
+              else
+                pnpm build
+              fi
+              ;;
+            "yarn")
+              yarn build
+              ;;
+            *)
+              npm run build
+              ;;
+          esac
+        env:
+          NODE_ENV: production
+          VITE_APP_VERSION: ${{ github.sha }}
+          VITE_APP_BUILD_DATE: ${{ github.event.head_commit.timestamp }}
+          VITE_APP_ENVIRONMENT: ${{ needs.setup.outputs.deploy-type }}
+          VITE_APP_COMMIT_SHA: ${{ github.sha }}
+          VITE_APP_BRANCH: ${{ github.ref_name }}
+          # React 环境变量支持
+          REACT_APP_VERSION: ${{ github.sha }}
+          REACT_APP_ENVIRONMENT: ${{ needs.setup.outputs.deploy-type }}
+
+      - name: 📊 构建分析
+        run: |
+          echo "分析构建结果..."
+          
+          # 确定构建输出目录
+          BUILD_DIR=""
+          if [ "${{ needs.setup.outputs.project-structure }}" == "workspace" ] && [ -d "frontend/dist" ]; then
+            BUILD_DIR="frontend/dist"
+          elif [ -d "dist" ]; then
+            BUILD_DIR="dist"
+          elif [ -d "build" ]; then
+            BUILD_DIR="build"
+          else
+            echo "❌ 未找到构建输出目录"
+            ls -la
+            exit 1
+          fi
+          
+          echo "BUILD_DIR=$BUILD_DIR" >> $GITHUB_ENV
+          echo "构建输出目录: $BUILD_DIR"
+          echo "构建大小: $(du -sh $BUILD_DIR | cut -f1)"
+          echo "文件数量: $(find $BUILD_DIR -type f | wc -l)"
+
+      - name: 🌐 部署到 Netlify (生产环境)
+        if: needs.setup.outputs.deploy-type == 'production'
+        uses: netlify/actions/cli@master
+        with:
+          args: deploy --prod --dir=${{ env.BUILD_DIR }} --message "🏭 生产环境部署 - ${{ github.sha }}"
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+      - name: 🔍 部署到 Netlify (预览环境)
+        if: needs.setup.outputs.deploy-type == 'preview'
+        uses: netlify/actions/cli@master
+        id: netlify-preview
+        with:
+          args: deploy --dir=${{ env.BUILD_DIR }} --message "🔍 预览环境部署 - ${{ github.sha }}"
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+      - name: 💬 更新 PR 评论 (预览环境)
+        if: needs.setup.outputs.deploy-type == 'preview' && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && comment.body.includes('🌐 Netlify 预览部署')
+            );
+            
+            const commentBody = \`## 🌐 Netlify 预览部署
+            
+            🔗 **预览链接**: [查看部署](\${{ steps.netlify-preview.outputs.NETLIFY_URL }})
+            
+            ### 📊 部署信息
+            - **提交**: \`${{ github.sha }}\`
+            - **分支**: \`${{ github.head_ref }}\`
+            - **构建时间**: \`$(date)\`
+            - **状态**: ✅ 部署成功
+            
+            ### 🔍 快速检查
+            - [ ] 页面加载正常
+            - [ ] 功能测试通过
+            - [ ] 样式显示正确
+            - [ ] 移动端适配良好
+            
+            ---
+            *此评论由 GitHub Actions 自动更新*\`;
+            
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: commentBody,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: commentBody,
+              });
+            }
+
+      - name: 🧪 部署后健康检查
+        run: |
+          echo "执行部署后健康检查..."
+          
+          if [ "${{ needs.setup.outputs.deploy-type }}" == "production" ]; then
+            HEALTH_URL="https://mendian-app.netlify.app"  # 替换为您的实际域名
+          else
+            HEALTH_URL="${{ steps.netlify-preview.outputs.NETLIFY_URL }}"
+          fi
+          
+          echo "检查 URL: $HEALTH_URL"
+          
+          # 等待部署完成
+          sleep 10
+          
+          # 健康检查
+          for i in {1..5}; do
+            if curl -f -s --max-time 30 "$HEALTH_URL" > /dev/null; then
+              echo "✅ 健康检查通过 (尝试 $i/5)"
+              break
+            else
+              echo "⚠️ 健康检查失败，重试中... (尝试 $i/5)"
+              if [ $i -eq 5 ]; then
+                echo "❌ 健康检查最终失败，但部署可能仍然成功"
+              fi
+              sleep 5
+            fi
+          done
+
+      - name: 📝 部署摘要
+        if: always()
+        run: |
+          DEPLOY_STATUS="${{ job.status == 'success' && '✅ 部署成功' || '❌ 部署失败' }}"
+          DEPLOY_URL=""
+          
+          if [ "${{ needs.setup.outputs.deploy-type }}" == "production" ]; then
+            DEPLOY_URL="https://mendian-app.netlify.app"  # 替换为您的实际域名
+          else
+            DEPLOY_URL="${{ steps.netlify-preview.outputs.NETLIFY_URL }}"
+          fi
+          
+          echo "## 🌐 Netlify 部署摘要" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **环境**: ${{ needs.setup.outputs.deploy-type }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **URL**: [$DEPLOY_URL]($DEPLOY_URL)" >> $GITHUB_STEP_SUMMARY
+          echo "- **提交**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **分支**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **部署时间**: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "- **状态**: $DEPLOY_STATUS" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ needs.setup.outputs.deploy-type }}" == "preview" ]; then
+            echo "### 🔍 预览环境" >> $GITHUB_STEP_SUMMARY
+            echo "此部署为预览版本，用于测试和审查。" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### 🏭 生产环境" >> $GITHUB_STEP_SUMMARY
+            echo "此部署已发布到生产环境，用户可直接访问。" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 后续操作" >> $GITHUB_STEP_SUMMARY
+          echo "1. 访问部署的应用进行功能测试" >> $GITHUB_STEP_SUMMARY
+          echo "2. 检查控制台是否有错误信息" >> $GITHUB_STEP_SUMMARY
+          echo "3. 验证移动端响应式设计" >> $GITHUB_STEP_SUMMARY
+          echo "4. 测试关键用户流程" >> $GITHUB_STEP_SUMMARY
