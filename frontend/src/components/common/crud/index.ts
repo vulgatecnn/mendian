@@ -16,7 +16,7 @@ export { default as RegionCascader } from '../RegionCascader'
 export { REGION_LEVELS, REGION_LEVEL_NAMES } from '../RegionCascader'
 
 // 使用统一的权限组件
-export { PermissionWrapper, withPermission, usePermissionWrapper, BASIC_DATA_PERMISSIONS } from '../permission'
+export { PermissionWrapper, withPermission, usePermissionWrapper, BASIC_DATA_PERMISSIONS } from '../../permission'
 
 // 通用CRUD Hooks
 export * from './hooks'
