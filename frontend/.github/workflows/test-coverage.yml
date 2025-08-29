@@ -1,0 +1,441 @@
+name: 🧪 Test Coverage Analysis
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'frontend/src/**'
+      - 'frontend/test/**'
+      - 'frontend/package.json'
+      - 'frontend/vitest.config.ts'
+      - 'frontend/vitest.config.enhanced.ts'
+      - '.github/workflows/test-coverage.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'frontend/src/**'
+      - 'frontend/test/**'
+      - 'frontend/package.json'
+      - 'frontend/vitest.config.ts'
+      - 'frontend/vitest.config.enhanced.ts'
+
+# Permissions for GitHub token
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+  actions: write
+
+# Concurrency control
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '18'
+  PNPM_VERSION: '8.15.0'
+  # Coverage settings
+  FAIL_ON_COVERAGE_THRESHOLD: 'true'
+  UPLOAD_TO_CODECOV: 'true'
+  UPLOAD_TO_COVERALLS: 'true'
+  # Test environment
+  NODE_ENV: 'test'
+  TZ: 'Asia/Shanghai'
+  # Performance monitoring
+  CI: 'true'
+
+jobs:
+  # Pre-checks job
+  pre-checks:
+    name: 🔍 Pre-flight Checks
+    runs-on: ubuntu-latest
+    outputs:
+      should-run: ${{ steps.check-changes.outputs.should-run }}
+      test-files-changed: ${{ steps.check-changes.outputs.test-files-changed }}
+    
+    steps:
+      - name: 📂 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: 🔍 Check for relevant changes
+        id: check-changes
+        run: |
+          # Check if any relevant files changed
+          if git diff --name-only HEAD^ HEAD | grep -E '\.(ts|tsx|js|jsx)$|package\.json|vitest\.config\.' > /dev/null; then
+            echo "should-run=true" >> $GITHUB_OUTPUT
+            echo "✅ Relevant files changed - will run tests"
+          else
+            echo "should-run=false" >> $GITHUB_OUTPUT
+            echo "⏭️ No relevant files changed - skipping tests"
+          fi
+          
+          # Check if test files specifically changed
+          if git diff --name-only HEAD^ HEAD | grep -E '\.test\.|\.spec\.|/test/|/tests/' > /dev/null; then
+            echo "test-files-changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "test-files-changed=false" >> $GITHUB_OUTPUT
+          fi
+
+  # Main test coverage job
+  test-coverage:
+    name: 🧪 Test Coverage Analysis
+    runs-on: ubuntu-latest
+    needs: pre-checks
+    if: needs.pre-checks.outputs.should-run == 'true'
+    
+    strategy:
+      matrix:
+        test-type: ['unit', 'integration', 'e2e']
+        include:
+          - test-type: 'unit'
+            test-pattern: '**/*.{test,spec}.{ts,tsx}'
+            timeout: 600000  # 10 minutes
+            coverage-threshold: 95
+          - test-type: 'integration' 
+            test-pattern: '**/integration/**/*.{test,spec}.{ts,tsx}'
+            timeout: 900000  # 15 minutes
+            coverage-threshold: 85
+          - test-type: 'e2e'
+            test-pattern: '**/e2e/**/*.{test,spec}.{ts,tsx}'
+            timeout: 1800000 # 30 minutes
+            coverage-threshold: 75
+
+    steps:
+      - name: 📂 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for coverage comparison
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+          cache-dependency-path: 'frontend/pnpm-lock.yaml'
+
+      - name: 📥 Install dependencies
+        working-directory: ./frontend
+        run: |
+          echo "Installing frontend dependencies..."
+          pnpm install --frozen-lockfile
+          
+          # Install Playwright browsers for E2E tests
+          if [ "${{ matrix.test-type }}" == "e2e" ]; then
+            echo "Installing Playwright browsers..."
+            pnpm exec playwright install --with-deps chromium
+          fi
+
+      - name: 🏗️ Build project
+        working-directory: ./frontend
+        run: |
+          echo "Building project..."
+          pnpm run build
+        continue-on-error: true  # Don't fail if build has issues
+
+      - name: 🧪 Run ${{ matrix.test-type }} tests
+        working-directory: ./frontend
+        env:
+          TEST_TYPE: ${{ matrix.test-type }}
+          TEST_TIMEOUT: ${{ matrix.timeout }}
+          COVERAGE_THRESHOLD: ${{ matrix.coverage-threshold }}
+        run: |
+          echo "Running ${{ matrix.test-type }} tests with coverage..."
+          
+          # Set test configuration based on type
+          case "${{ matrix.test-type }}" in
+            "unit")
+              CONFIG_FILE="vitest.config.enhanced.ts"
+              TEST_ARGS="--run --coverage --include='${{ matrix.test-pattern }}'"
+              ;;
+            "integration")
+              CONFIG_FILE="vitest.config.enhanced.ts"
+              TEST_ARGS="--run --coverage --include='${{ matrix.test-pattern }}' --reporter=verbose"
+              ;;
+            "e2e")
+              CONFIG_FILE="test/e2e/playwright.config.ts"
+              # E2E tests run separately with Playwright
+              if [ -f "test/e2e/playwright.config.ts" ]; then
+                pnpm exec playwright test --config=test/e2e/playwright.config.ts
+              else
+                echo "No E2E tests configured"
+              fi
+              exit 0
+              ;;
+          esac
+          
+          # Run tests with coverage
+          node scripts/test-coverage.js --config=$CONFIG_FILE || {
+            echo "❌ Tests failed for ${{ matrix.test-type }}"
+            exit 1
+          }
+
+      - name: 📊 Generate coverage reports
+        working-directory: ./frontend
+        if: always()
+        run: |
+          echo "Generating additional coverage reports..."
+          
+          # Generate multiple report formats
+          if [ -f "coverage/coverage-final.json" ]; then
+            # Generate lcov format for external services
+            npx c8 report --reporter=lcov --reports-dir=coverage
+            
+            # Generate text summary for PR comments
+            npx c8 report --reporter=text-summary > coverage/summary.txt
+            
+            # Generate JSON summary for badges
+            npx c8 report --reporter=json-summary > coverage/coverage-summary.json
+            
+            echo "Coverage reports generated successfully"
+          else
+            echo "⚠️ No coverage data found"
+          fi
+
+      - name: 🏷️ Create coverage badges
+        working-directory: ./frontend
+        if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          if [ -f "coverage/coverage-summary.json" ]; then
+            # Extract coverage percentage for badge
+            COVERAGE=$(node -e "
+              const data = require('./coverage/coverage-summary.json');
+              const pct = data.total.statements.pct;
+              console.log(Math.round(pct));
+            ")
+            
+            # Determine badge color
+            if [ "$COVERAGE" -ge 95 ]; then
+              COLOR="brightgreen"
+            elif [ "$COVERAGE" -ge 90 ]; then
+              COLOR="green"
+            elif [ "$COVERAGE" -ge 80 ]; then
+              COLOR="yellow"
+            elif [ "$COVERAGE" -ge 70 ]; then
+              COLOR="orange"
+            else
+              COLOR="red"
+            fi
+            
+            echo "Coverage: $COVERAGE% (Color: $COLOR)"
+            echo "COVERAGE_PERCENT=$COVERAGE" >> $GITHUB_ENV
+            echo "BADGE_COLOR=$COLOR" >> $GITHUB_ENV
+          fi
+
+      - name: 📤 Upload coverage to Codecov
+        if: env.UPLOAD_TO_CODECOV == 'true'
+        uses: codecov/codecov-action@v4
+        with:
+          directory: ./frontend/coverage/
+          files: ./frontend/coverage/lcov.info
+          flags: ${{ matrix.test-type }}
+          name: ${{ matrix.test-type }}-coverage
+          fail_ci_if_error: false
+          verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: 📤 Upload coverage to Coveralls
+        if: env.UPLOAD_TO_COVERALLS == 'true'
+        uses: coverallsapp/github-action@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: ./frontend/coverage/lcov.info
+          flag-name: ${{ matrix.test-type }}
+          parallel: true
+
+      - name: 🗂️ Upload coverage artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.test-type }}-${{ github.run_number }}
+          path: |
+            frontend/coverage/
+            !frontend/coverage/tmp/
+          retention-days: 30
+          compression-level: 6
+
+      - name: 📊 Upload test results
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: '${{ matrix.test-type }} Test Results'
+          path: 'frontend/coverage/test-results.xml'
+          reporter: 'java-junit'
+          fail-on-error: false
+
+      - name: 💬 Coverage PR Comment
+        if: github.event_name == 'pull_request' && matrix.test-type == 'unit'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          header: coverage
+          path: frontend/coverage/summary.txt
+
+  # Finish parallel Coveralls uploads
+  finish-coveralls:
+    name: 🏁 Finish Coveralls Upload
+    needs: test-coverage
+    runs-on: ubuntu-latest
+    if: needs.pre-checks.outputs.should-run == 'true' && env.UPLOAD_TO_COVERALLS == 'true'
+    
+    steps:
+      - name: 🏁 Finish parallel Coveralls upload
+        uses: coverallsapp/github-action@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          parallel-finished: true
+
+  # Comprehensive coverage analysis
+  coverage-analysis:
+    name: 📈 Coverage Analysis & Quality Gates
+    runs-on: ubuntu-latest
+    needs: [pre-checks, test-coverage]
+    if: always() && needs.pre-checks.outputs.should-run == 'true'
+    
+    steps:
+      - name: 📂 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+          cache-dependency-path: 'frontend/pnpm-lock.yaml'
+
+      - name: 📥 Download all coverage artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./frontend/coverage/artifacts/
+
+      - name: 🔄 Merge coverage reports
+        working-directory: ./frontend
+        run: |
+          echo "Merging coverage reports from all test types..."
+          
+          # Install dependencies for merging
+          pnpm install --frozen-lockfile
+          
+          # Create merged coverage directory
+          mkdir -p coverage/merged
+          
+          # Find and merge coverage files
+          find coverage/artifacts -name "coverage-final.json" -exec echo "Found: {}" \;
+          
+          # Merge coverage using c8 or custom script
+          if command -v npx c8 &> /dev/null; then
+            # Merge all coverage files
+            npx c8 merge coverage/artifacts/*/coverage-final.json coverage/merged/coverage-merged.json
+            
+            # Generate final reports
+            npx c8 report --reporter=html --reporter=lcov --reporter=json-summary \
+              --src-dir=src --reports-dir=coverage/merged \
+              coverage/merged/coverage-merged.json
+          else
+            echo "⚠️ c8 not available, using individual reports"
+          fi
+
+      - name: 🎯 Quality Gate Analysis
+        working-directory: ./frontend
+        run: |
+          echo "Running comprehensive quality gate analysis..."
+          
+          # Run custom coverage analysis script
+          if [ -f "scripts/test-coverage.js" ]; then
+            node scripts/test-coverage.js --analysis-only
+          fi
+          
+          # Check for critical issues
+          CRITICAL_ISSUES=0
+          
+          # Check if any source files have 0% coverage
+          if [ -f "coverage/merged/coverage-summary.json" ]; then
+            UNCOVERED_FILES=$(node -e "
+              const data = require('./coverage/merged/coverage-summary.json');
+              let count = 0;
+              Object.keys(data).forEach(file => {
+                if (file.startsWith('src/') && data[file].statements.pct === 0) {
+                  count++;
+                  console.log('Uncovered file:', file);
+                }
+              });
+              console.log('Total uncovered files:', count);
+              process.exit(count);
+            " || echo $?)
+            
+            if [ "$UNCOVERED_FILES" -gt 10 ]; then
+              echo "❌ Too many uncovered files: $UNCOVERED_FILES"
+              CRITICAL_ISSUES=$((CRITICAL_ISSUES + 1))
+            fi
+          fi
+          
+          # Set output for next steps
+          echo "CRITICAL_ISSUES=$CRITICAL_ISSUES" >> $GITHUB_ENV
+
+      - name: 🚨 Quality Gate Check
+        if: env.CRITICAL_ISSUES > 0 && env.FAIL_ON_COVERAGE_THRESHOLD == 'true'
+        run: |
+          echo "❌ Quality gate failed with $CRITICAL_ISSUES critical issues"
+          exit 1
+
+      - name: 📊 Generate final coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-coverage-report-${{ github.run_number }}
+          path: frontend/coverage/merged/
+          retention-days: 90
+
+      - name: ✅ Quality Gate Passed
+        if: env.CRITICAL_ISSUES == 0 || env.CRITICAL_ISSUES == ''
+        run: |
+          echo "✅ All quality gates passed!"
+          echo "📊 Coverage analysis completed successfully"
+
+  # Cleanup job
+  cleanup:
+    name: 🧹 Cleanup
+    runs-on: ubuntu-latest
+    needs: [coverage-analysis]
+    if: always()
+    
+    steps:
+      - name: 🧹 Clean up temporary artifacts
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: |
+            coverage-unit-*
+            coverage-integration-*
+            coverage-e2e-*
+          failOnError: false
+
+      - name: 📝 Workflow Summary
+        run: |
+          echo "## 🧪 Test Coverage Workflow Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Workflow Run**: ${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Trigger**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ needs.coverage-analysis.result }}" == "success" ]; then
+            echo "✅ **Coverage Analysis**: Passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Coverage Analysis**: Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📊 **Final Coverage Report**: Available in artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "🔍 **Detailed Results**: Check individual job logs" >> $GITHUB_STEP_SUMMARY

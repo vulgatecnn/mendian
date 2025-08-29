@@ -1,0 +1,16 @@
+{
+  "name": "好饭碗门店生命周期管理系统",
+  "short_name": "好饭碗门店管理",
+  "description": "企业级门店管理平台",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1890ff",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ]
+}

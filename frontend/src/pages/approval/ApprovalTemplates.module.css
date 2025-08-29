@@ -1,0 +1,284 @@
+/* ApprovalTemplates 组件样式 */
+
+.templateCard {
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.templateCard:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.templateCardMeta {
+  padding: 16px;
+}
+
+.templateCardActions {
+  border-top: 1px solid #f0f0f0;
+  background: #fafafa;
+}
+
+.templateCardActions .anticon {
+  color: #666;
+  transition: color 0.3s ease;
+}
+
+.templateCardActions .anticon:hover {
+  color: #1890ff;
+}
+
+.templateStats {
+  border-top: 1px solid #f0f0f0;
+  padding-top: 12px;
+  margin-top: 16px;
+}
+
+.businessTypeTag {
+  font-weight: 500;
+  border: none;
+  border-radius: 4px;
+}
+
+.statusBadge {
+  font-weight: 500;
+}
+
+.filterCard {
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+}
+
+.viewModeButton {
+  border-color: #d9d9d9;
+}
+
+.viewModeButton:hover {
+  border-color: #1890ff;
+  color: #1890ff;
+}
+
+.templateListItem {
+  padding: 16px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.templateListItem:last-child {
+  border-bottom: none;
+}
+
+.templateListMeta {
+  margin-bottom: 8px;
+}
+
+.templateActions {
+  display: flex;
+  gap: 8px;
+}
+
+.previewModal .ant-modal-body {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.statisticsCard {
+  text-align: center;
+}
+
+.statisticsCard .ant-statistic-content {
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.emptyState {
+  padding: 60px 0;
+  text-align: center;
+}
+
+.emptyState .ant-empty-image {
+  height: 120px;
+  margin-bottom: 24px;
+}
+
+.templateGrid {
+  margin: -8px;
+}
+
+.templateGrid > div {
+  padding: 8px;
+}
+
+.responsiveCol {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .templateCard {
+    margin-bottom: 16px;
+  }
+
+  .filterCard .ant-form-item {
+    margin-bottom: 16px;
+  }
+
+  .templateActions {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .statisticsCard .ant-statistic-content {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 576px) {
+  .templateGrid {
+    margin: 0;
+  }
+
+  .templateGrid > div {
+    padding: 0;
+  }
+
+  .filterCard .ant-row {
+    flex-direction: column;
+  }
+
+  .viewModeButton {
+    width: 100%;
+    margin-top: 8px;
+  }
+}
+
+/* 深色主题适配 */
+[data-theme='dark'] .templateCard {
+  background: #141414;
+  border-color: #303030;
+}
+
+[data-theme='dark'] .templateCardActions {
+  background: #1f1f1f;
+  border-color: #303030;
+}
+
+[data-theme='dark'] .filterCard {
+  background: #1f1f1f;
+  border-color: #303030;
+}
+
+[data-theme='dark'] .templateStats {
+  border-color: #303030;
+}
+
+/* 打印样式 */
+@media print {
+  .templateCard {
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
+    break-inside: avoid;
+    margin-bottom: 16px;
+  }
+
+  .templateCardActions,
+  .filterCard,
+  .ant-pagination {
+    display: none !important;
+  }
+
+  .templateGrid {
+    display: block;
+  }
+
+  .templateGrid > div {
+    display: inline-block;
+    width: 50%;
+    vertical-align: top;
+  }
+}
+
+/* 无障碍支持 */
+.templateCard:focus-within {
+  outline: 2px solid #1890ff;
+  outline-offset: 2px;
+}
+
+.templateActions button:focus {
+  z-index: 1;
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.templateCard,
+.templateListItem {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.templateCard:nth-child(even) {
+  animation-delay: 0.1s;
+}
+
+.templateCard:nth-child(odd) {
+  animation-delay: 0.05s;
+}
+
+/* 加载状态 */
+.loading-overlay {
+  position: relative;
+}
+
+.loading-overlay::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+/* 高对比度支持 */
+@media (prefers-contrast: high) {
+  .templateCard {
+    border: 2px solid #000;
+  }
+
+  .businessTypeTag {
+    border: 1px solid currentColor !important;
+  }
+
+  .statusBadge {
+    border: 1px solid currentColor;
+  }
+}
+
+/* 减少动画的用户偏好支持 */
+@media (prefers-reduced-motion: reduce) {
+  .templateCard,
+  .templateListItem {
+    animation: none;
+  }
+
+  .templateCard {
+    transition: none;
+  }
+
+  .templateCardActions .anticon {
+    transition: none;
+  }
+}

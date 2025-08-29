@@ -1,0 +1,127 @@
+{
+  "name": "@mendian/frontend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "好饭碗门店管理系统前端应用",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest run --coverage",
+    "test:coverage:enhanced": "vitest run --config vitest.config.enhanced.ts --coverage",
+    "test:coverage:advanced": "node scripts/test-coverage.js",
+    "test:coverage:watch": "vitest --coverage --watch",
+    "test:coverage:ui": "vitest --coverage --ui",
+    
+    "test:unit": "vitest run --include='**/*.{test,spec}.{ts,tsx}' --exclude='**/e2e/**' --exclude='**/integration/**'",
+    "test:integration": "vitest run --include='**/integration/**/*.{test,spec}.{ts,tsx}'",
+    "test:e2e": "playwright test",
+    
+    "test:components": "vitest run --include='src/components/**/*.{test,spec}.{ts,tsx}'",
+    "test:pages": "vitest run --include='src/pages/**/*.{test,spec}.{ts,tsx}'",
+    "test:hooks": "vitest run --include='src/hooks/**/*.{test,spec}.{ts,tsx}'",
+    "test:services": "vitest run --include='src/services/**/*.{test,spec}.{ts,tsx}'",
+    "test:utils": "vitest run --include='src/utils/**/*.{test,spec}.{ts,tsx}'",
+    
+    "test:clicks": "vitest run --include='**/*.clicks.{test,spec}.{ts,tsx}'",
+    "test:a11y": "vitest run --include='**/*.a11y.{test,spec}.{ts,tsx}'",
+    "test:performance": "vitest run --include='**/*.perf.{test,spec}.{ts,tsx}'",
+    
+    "test:clean": "rm -rf coverage node_modules/.vitest",
+    "test:debug": "vitest --inspect-brk --no-coverage",
+    
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint . --ext ts,tsx --fix",
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
+    "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist node_modules coverage",
+    
+    "analyze": "npm run build && npx vite-bundle-analyzer dist",
+    "analyze:dev": "vite build --mode development && npx vite-bundle-analyzer dist",
+    "size": "npm run build && bundlesize",
+    "stats": "vite build --mode production --sourcemap && node scripts/analyze-bundle.js"
+  },
+  "dependencies": {
+    "@ant-design/icons": "^5.2.5",
+    "@ant-design/plots": "^2.6.3",
+    "@tanstack/react-query": "^4.32.6",
+    "ahooks": "^3.7.8",
+    "antd": "^5.8.4",
+    "axios": "^1.4.0",
+    "classnames": "^2.3.2",
+    "dayjs": "^1.11.9",
+    "js-md5": "^0.8.3",
+    "js-sha1": "^0.7.0",
+    "jwt-decode": "^4.0.0",
+    "lodash-es": "^4.17.21",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.14.2",
+    "ua-parser-js": "^2.0.0",
+    "xlsx": "^0.18.5",
+    "zustand": "^4.4.1"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^10.0.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.0.1",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/js-md5": "^0.7.2",
+    "@types/js-sha1": "^0.6.3",
+    "@types/lodash-es": "^4.17.8",
+    "@types/node": "^24.3.0",
+    "@types/react": "^18.2.15",
+    "@types/react-dom": "^18.2.7",
+    "@types/ua-parser-js": "^0.7.39",
+    "@typescript-eslint/eslint-plugin": "^8.41.0",
+    "@typescript-eslint/parser": "^8.41.0",
+    "@vitejs/plugin-react": "^4.3.3",
+    "@vitest/coverage-v8": "^2.1.6",
+    "@vitest/ui": "^2.1.6",
+    "eslint": "^8.45.0",
+    "eslint-plugin-react": "^7.32.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.3",
+    "jsdom": "^22.1.0",
+    "msw": "^2.10.5",
+    "prettier": "^3.0.0",
+    "sass": "^1.64.1",
+    "terser": "^5.43.1",
+    "typescript": "^5.0.2",
+    "vite": "^5.4.8",
+    "vitest": "^2.1.6",
+    "rollup-plugin-visualizer": "^5.9.2",
+    "bundlesize": "^0.18.1"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "bundlesize": [
+    {
+      "path": "dist/assets/js/*.js",
+      "maxSize": "500kb",
+      "compression": "gzip"
+    },
+    {
+      "path": "dist/assets/css/*.css", 
+      "maxSize": "100kb",
+      "compression": "gzip"
+    }
+  ]
+}

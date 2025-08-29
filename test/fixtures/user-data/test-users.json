@@ -1,0 +1,105 @@
+{
+  "testUsers": [
+    {
+      "id": "test-user-001",
+      "name": "张三",
+      "email": "zhangsan@haofanwan.com",
+      "phone": "13800138001",
+      "department": "商务部",
+      "role": "BUSINESS_USER",
+      "permissions": [
+        "EXPANSION_VIEW",
+        "EXPANSION_CREATE",
+        "EXPANSION_EDIT",
+        "STORE_PLAN_VIEW"
+      ],
+      "wechatUserId": "zhangsan001",
+      "status": "ACTIVE",
+      "createdAt": "2024-08-01T10:00:00Z",
+      "updatedAt": "2024-08-01T10:00:00Z"
+    },
+    {
+      "id": "test-user-002",
+      "name": "李四",
+      "email": "lisi@haofanwan.com",
+      "phone": "13800138002",
+      "department": "运营部",
+      "role": "OPERATION_USER",
+      "permissions": [
+        "STORE_PLAN_VIEW",
+        "STORE_PLAN_CREATE",
+        "STORE_PLAN_EDIT",
+        "EXPANSION_VIEW",
+        "STORE_FILES_VIEW"
+      ],
+      "wechatUserId": "lisi002",
+      "status": "ACTIVE",
+      "createdAt": "2024-08-02T10:00:00Z",
+      "updatedAt": "2024-08-02T10:00:00Z"
+    },
+    {
+      "id": "test-user-003",
+      "name": "王五",
+      "email": "wangwu@haofanwan.com",
+      "phone": "13800138003",
+      "department": "总裁办",
+      "role": "ADMIN",
+      "permissions": [
+        "*"
+      ],
+      "wechatUserId": "wangwu003",
+      "status": "ACTIVE",
+      "createdAt": "2024-08-03T10:00:00Z",
+      "updatedAt": "2024-08-03T10:00:00Z"
+    },
+    {
+      "id": "test-user-004",
+      "name": "赵六",
+      "email": "zhaoliu@haofanwan.com",
+      "phone": "13800138004",
+      "department": "财务部",
+      "role": "FINANCE_USER",
+      "permissions": [
+        "APPROVAL_VIEW",
+        "APPROVAL_PROCESS",
+        "STORE_PLAN_VIEW",
+        "EXPANSION_VIEW",
+        "OPERATION_VIEW"
+      ],
+      "wechatUserId": "zhaoliu004",
+      "status": "ACTIVE",
+      "createdAt": "2024-08-04T10:00:00Z",
+      "updatedAt": "2024-08-04T10:00:00Z"
+    },
+    {
+      "id": "test-user-005",
+      "name": "孙七",
+      "email": "sunqi@partner.com",
+      "phone": "13800138005",
+      "department": "加盟商",
+      "role": "FRANCHISEE",
+      "permissions": [
+        "STORE_FILES_VIEW",
+        "PREPARATION_VIEW",
+        "OPERATION_VIEW"
+      ],
+      "wechatUserId": "sunqi005",
+      "status": "ACTIVE",
+      "createdAt": "2024-08-05T10:00:00Z",
+      "updatedAt": "2024-08-05T10:00:00Z"
+    }
+  ],
+  "adminUser": {
+    "id": "admin-001",
+    "name": "系统管理员",
+    "email": "admin@haofanwan.com",
+    "phone": "13800000000",
+    "department": "IT部",
+    "role": "SUPER_ADMIN",
+    "permissions": ["*"],
+    "wechatUserId": "admin001",
+    "status": "ACTIVE",
+    "createdAt": "2024-01-01T00:00:00Z",
+    "updatedAt": "2024-01-01T00:00:00Z"
+  }
+}

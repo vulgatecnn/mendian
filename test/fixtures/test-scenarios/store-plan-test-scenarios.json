@@ -1,0 +1,374 @@
+{
+  "name": "开店计划测试场景数据",
+  "version": "1.0.0",
+  "description": "为开店计划管理系统提供完整的测试场景数据",
+  "scenarios": {
+    "complete_workflow": {
+      "name": "完整业务流程测试场景",
+      "description": "从计划创建到完成的完整生命周期",
+      "users": [
+        {
+          "id": "test-planner-001",
+          "username": "test.planner",
+          "name": "测试计划员",
+          "email": "planner@test.com",
+          "roles": ["planner"],
+          "permissions": [
+            "store-plan:create",
+            "store-plan:update",
+            "store-plan:view",
+            "store-plan:submit"
+          ]
+        },
+        {
+          "id": "test-approver-001",
+          "username": "test.approver",
+          "name": "测试审批员",
+          "email": "approver@test.com",
+          "roles": ["approver"],
+          "permissions": [
+            "store-plan:view",
+            "store-plan:approve",
+            "store-plan:reject"
+          ]
+        },
+        {
+          "id": "test-admin-001",
+          "username": "test.admin",
+          "name": "测试管理员",
+          "email": "admin@test.com",
+          "roles": ["admin"],
+          "permissions": ["*"]
+        }
+      ],
+      "regions": [
+        {
+          "id": "region-east",
+          "name": "华东区域",
+          "code": "EAST",
+          "cities": ["上海市", "杭州市", "苏州市", "南京市"]
+        },
+        {
+          "id": "region-south",
+          "name": "华南区域", 
+          "code": "SOUTH",
+          "cities": ["深圳市", "广州市", "东莞市", "珠海市"]
+        },
+        {
+          "id": "region-north",
+          "name": "华北区域",
+          "code": "NORTH", 
+          "cities": ["北京市", "天津市", "石家庄市", "济南市"]
+        }
+      ],
+      "plans": [
+        {
+          "id": "plan-workflow-001",
+          "name": "完整流程测试计划",
+          "type": "DIRECT",
+          "status": "DRAFT",
+          "priority": "medium",
+          "targetRegion": "华东区域",
+          "plannedStoreCount": 3,
+          "plannedInvestment": 500000,
+          "startDate": "2024-01-01T00:00:00.000Z",
+          "endDate": "2024-03-31T23:59:59.999Z",
+          "targetOpenDate": "2024-02-15T00:00:00.000Z",
+          "budget": 500000,
+          "description": "用于测试完整业务流程的开店计划",
+          "targetMarkets": ["上海市", "杭州市", "苏州市"],
+          "budgetBreakdown": {
+            "rent": 200000,
+            "decoration": 150000,
+            "equipment": 100000,
+            "marketing": 50000
+          },
+          "milestones": [
+            {
+              "name": "选址完成",
+              "targetDate": "2024-01-15T00:00:00.000Z",
+              "responsible": "拓店团队",
+              "status": "pending"
+            },
+            {
+              "name": "装修完成", 
+              "targetDate": "2024-02-10T00:00:00.000Z",
+              "responsible": "工程团队",
+              "status": "pending"
+            },
+            {
+              "name": "开业准备",
+              "targetDate": "2024-02-14T00:00:00.000Z", 
+              "responsible": "运营团队",
+              "status": "pending"
+            }
+          ],
+          "createdBy": "test-planner-001",
+          "createdAt": "2024-01-01T09:00:00.000Z",
+          "updatedAt": "2024-01-01T09:00:00.000Z"
+        }
+      ]
+    },
+    "approval_rejection": {
+      "name": "审批拒绝测试场景",
+      "description": "测试计划审批被拒绝后的处理流程",
+      "plans": [
+        {
+          "id": "plan-reject-001",
+          "name": "待拒绝测试计划",
+          "type": "FRANCHISE",
+          "status": "SUBMITTED",
+          "priority": "high",
+          "targetRegion": "华南区域",
+          "plannedStoreCount": 2,
+          "plannedInvestment": 800000,
+          "startDate": "2024-04-01T00:00:00.000Z",
+          "endDate": "2024-06-30T23:59:59.999Z",
+          "budget": 800000,
+          "description": "预算过高，将被拒绝的测试计划",
+          "targetMarkets": ["深圳市", "广州市"],
+          "budgetBreakdown": {
+            "rent": 400000,
+            "decoration": 250000,
+            "equipment": 100000,
+            "marketing": 50000
+          },
+          "submittedAt": "2024-01-10T14:30:00.000Z",
+          "submittedBy": "test-planner-001",
+          "createdBy": "test-planner-001",
+          "createdAt": "2024-01-09T10:00:00.000Z",
+          "updatedAt": "2024-01-10T14:30:00.000Z"
+        }
+      ],
+      "rejection_scenarios": [
+        {
+          "plan_id": "plan-reject-001",
+          "reason": "budget_exceeded",
+          "message": "预算超出年度限制，建议调整预算后重新提交",
+          "suggestions": [
+            "降低装修预算至20万以内",
+            "减少营销预算",
+            "考虑选择租金较低的地段"
+          ]
+        }
+      ]
+    },
+    "batch_operations": {
+      "name": "批量操作测试场景",
+      "description": "测试批量选择、删除等操作",
+      "plans": [
+        {
+          "id": "plan-batch-001",
+          "name": "批量测试计划A",
+          "type": "DIRECT",
+          "status": "DRAFT",
+          "priority": "low",
+          "targetRegion": "华北区域",
+          "plannedStoreCount": 1,
+          "plannedInvestment": 200000,
+          "budget": 200000,
+          "description": "用于批量操作测试的计划A",
+          "createdBy": "test-planner-001"
+        },
+        {
+          "id": "plan-batch-002", 
+          "name": "批量测试计划B",
+          "type": "DIRECT",
+          "status": "DRAFT",
+          "priority": "low",
+          "targetRegion": "华北区域",
+          "plannedStoreCount": 1,
+          "plannedInvestment": 250000,
+          "budget": 250000,
+          "description": "用于批量操作测试的计划B",
+          "createdBy": "test-planner-001"
+        },
+        {
+          "id": "plan-batch-003",
+          "name": "批量测试计划C",
+          "type": "FRANCHISE",
+          "status": "DRAFT",
+          "priority": "low", 
+          "targetRegion": "华东区域",
+          "plannedStoreCount": 1,
+          "plannedInvestment": 180000,
+          "budget": 180000,
+          "description": "用于批量操作测试的计划C",
+          "createdBy": "test-planner-001"
+        }
+      ]
+    },
+    "performance_test": {
+      "name": "性能测试场景",
+      "description": "大数据量和性能测试数据",
+      "large_dataset": {
+        "plan_count": 100,
+        "plan_template": {
+          "type": "DIRECT",
+          "status": "APPROVED",
+          "priority": "medium",
+          "targetRegion": "华东区域", 
+          "plannedStoreCount": 2,
+          "plannedInvestment": 400000,
+          "budget": 400000,
+          "createdBy": "test-planner-001"
+        }
+      },
+      "concurrent_operations": [
+        "create_plan",
+        "update_plan", 
+        "search_plans",
+        "filter_plans",
+        "export_plans"
+      ]
+    },
+    "edge_cases": {
+      "name": "边界条件测试场景",
+      "description": "测试各种边界条件和异常情况",
+      "invalid_data": [
+        {
+          "scenario": "empty_name",
+          "data": {
+            "name": "",
+            "type": "DIRECT",
+            "budget": 300000
+          },
+          "expected_error": "计划名称不能为空"
+        },
+        {
+          "scenario": "negative_budget",
+          "data": {
+            "name": "负预算测试",
+            "type": "DIRECT",
+            "budget": -100000
+          },
+          "expected_error": "预算金额必须大于0"
+        },
+        {
+          "scenario": "invalid_date_range",
+          "data": {
+            "name": "日期错误测试",
+            "type": "DIRECT", 
+            "budget": 300000,
+            "startDate": "2024-12-31T00:00:00.000Z",
+            "endDate": "2024-01-01T00:00:00.000Z"
+          },
+          "expected_error": "结束日期不能早于开始日期"
+        }
+      ],
+      "boundary_values": [
+        {
+          "field": "budget",
+          "min": 1,
+          "max": 10000000,
+          "test_values": [0, 1, 9999999, 10000000, 10000001]
+        },
+        {
+          "field": "plannedStoreCount",
+          "min": 1,
+          "max": 100,
+          "test_values": [0, 1, 50, 99, 100, 101]
+        },
+        {
+          "field": "name_length",
+          "min": 1,
+          "max": 100,
+          "test_values": ["", "A", "A".repeat(50), "A".repeat(100), "A".repeat(101)]
+        }
+      ]
+    },
+    "status_transitions": {
+      "name": "状态流转测试场景",
+      "description": "测试计划状态的各种流转路径",
+      "valid_transitions": [
+        {
+          "from": "DRAFT",
+          "to": "SUBMITTED",
+          "action": "submit",
+          "required_conditions": ["plan_complete", "user_has_submit_permission"]
+        },
+        {
+          "from": "SUBMITTED",
+          "to": "APPROVED", 
+          "action": "approve",
+          "required_conditions": ["user_has_approve_permission"]
+        },
+        {
+          "from": "SUBMITTED",
+          "to": "REJECTED",
+          "action": "reject",
+          "required_conditions": ["user_has_approve_permission", "rejection_reason_provided"]
+        },
+        {
+          "from": "APPROVED",
+          "to": "IN_PROGRESS",
+          "action": "start_execution",
+          "required_conditions": ["user_has_execute_permission"]
+        },
+        {
+          "from": "IN_PROGRESS", 
+          "to": "COMPLETED",
+          "action": "complete",
+          "required_conditions": ["progress_is_100_percent"]
+        },
+        {
+          "from": "REJECTED",
+          "to": "DRAFT",
+          "action": "revise",
+          "required_conditions": ["user_is_creator_or_editor"]
+        }
+      ],
+      "invalid_transitions": [
+        {
+          "from": "DRAFT",
+          "to": "APPROVED",
+          "reason": "must_submit_first"
+        },
+        {
+          "from": "COMPLETED",
+          "to": "DRAFT",
+          "reason": "cannot_modify_completed_plan"
+        },
+        {
+          "from": "IN_PROGRESS",
+          "to": "DRAFT", 
+          "reason": "cannot_revert_active_plan"
+        }
+      ]
+    }
+  },
+  "test_configurations": {
+    "database_seeding": {
+      "clear_before_test": true,
+      "preserve_user_data": false,
+      "seed_order": ["users", "regions", "plans", "approvals", "progress_records"]
+    },
+    "api_mocking": {
+      "external_services": {
+        "wechat_work": {
+          "mock_user_sync": true,
+          "mock_department_sync": true,
+          "mock_notifications": true
+        },
+        "payment_service": {
+          "mock_budget_validation": true
+        }
+      }
+    },
+    "performance_thresholds": {
+      "api_response_time": 2000,
+      "page_load_time": 3000,
+      "search_response_time": 1000,
+      "export_time": 5000
+    },
+    "browser_coverage": {
+      "desktop": ["chrome", "firefox", "safari", "edge"],
+      "mobile": ["chrome-mobile", "safari-mobile"],
+      "viewports": {
+        "desktop": {"width": 1280, "height": 720},
+        "tablet": {"width": 768, "height": 1024},
+        "mobile": {"width": 375, "height": 667}
+      }
+    }
+  }
+}

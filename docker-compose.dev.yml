@@ -1,0 +1,164 @@
+# Docker Compose 开发环境覆盖配置
+# 使用方法: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+version: '3.8'
+
+services:
+  # 数据库 - 开发配置
+  database:
+    environment:
+      POSTGRES_DB: mendian_dev
+      POSTGRES_USER: dev_user
+      POSTGRES_PASSWORD: dev_password
+    ports:
+      - "5433:5432"
+    command: |
+      postgres
+        -c log_statement=all
+        -c log_min_duration_statement=0
+        -c shared_preload_libraries=pg_stat_statements
+
+  # Redis - 开发配置
+  redis:
+    ports:
+      - "6380:6379"
+    command: redis-server --loglevel verbose
+
+  # 后端 - 开发模式
+  backend:
+    build:
+      target: development
+      args:
+        NODE_ENV: development
+    environment:
+      NODE_ENV: development
+      LOG_LEVEL: debug
+      HOT_RELOAD: true
+      
+      # 开发数据库
+      DATABASE_URL: postgresql://dev_user:dev_password@database:5432/mendian_dev
+      
+      # 调试配置
+      DEBUG: mendian:*
+      NODE_OPTIONS: "--inspect=0.0.0.0:9229"
+    volumes:
+      - ./backend/src:/app/src:ro
+      - ./backend/prisma:/app/prisma:ro
+      - ./shared:/app/shared:ro
+      - ./backend/package.json:/app/package.json:ro
+      - ./backend/tsconfig.json:/app/tsconfig.json:ro
+    ports:
+      - "7901:7900"  # HTTP
+      - "9229:9229"  # Debug port
+    command: npm run dev
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7900/health"]
+      interval: 60s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # 前端 - 开发模式
+  frontend:
+    build:
+      target: development
+      args:
+        NODE_ENV: development
+    environment:
+      NODE_ENV: development
+      VITE_API_BASE_URL: http://localhost:7901
+      VITE_DEV_MODE: true
+    volumes:
+      - ./frontend/src:/app/frontend/src:ro
+      - ./frontend/public:/app/frontend/public:ro
+      - ./frontend/package.json:/app/frontend/package.json:ro
+      - ./frontend/vite.config.ts:/app/frontend/vite.config.ts:ro
+      - ./frontend/tsconfig.json:/app/frontend/tsconfig.json:ro
+      - ./shared:/app/shared:ro
+    ports:
+      - "7801:7800"  # 开发端口
+    command: npm run dev -- --host 0.0.0.0 --port 7800
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7800"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  # 开发工具默认启用
+  adminer:
+    profiles: []  # 移除 profile，默认启用
+
+  redis-commander:
+    profiles: []  # 移除 profile，默认启用
+
+  # 测试数据库 (用于集成测试)
+  test-database:
+    image: postgres:15-alpine
+    container_name: mendian-test-database
+    restart: "no"
+    environment:
+      POSTGRES_DB: mendian_test
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+    volumes:
+      - ./backend/database/init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "5434:5432"
+    networks:
+      mendian-network:
+        ipv4_address: 172.20.0.100
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test_user -d mendian_test"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    profiles:
+      - testing
+
+  # MailHog (邮件测试)
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: mendian-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
+    networks:
+      mendian-network:
+        ipv4_address: 172.20.0.110
+    profiles:
+      - testing
+
+  # 文件服务器 (开发用)
+  file-server:
+    image: httpd:2.4-alpine
+    container_name: mendian-file-server
+    restart: unless-stopped
+    volumes:
+      - ./backend/uploads:/usr/local/apache2/htdocs:ro
+    ports:
+      - "8083:80"
+    networks:
+      mendian-network:
+        ipv4_address: 172.20.0.120
+    profiles:
+      - development
+
+# 开发网络配置
+networks:
+  mendian-network:
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+          gateway: 172.20.0.1
+
+# 开发卷配置
+volumes:
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local
+  logs-data:
+    driver: local

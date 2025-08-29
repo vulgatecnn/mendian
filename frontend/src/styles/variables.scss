@@ -1,0 +1,146 @@
+// CSS变量定义 - 基于设计系统令牌
+
+:root {
+  // 主色调
+  --color-primary-50: #e6f7ff;
+  --color-primary-100: #bae7ff;
+  --color-primary-200: #91d5ff;
+  --color-primary-300: #69c0ff;
+  --color-primary-400: #40a9ff;
+  --color-primary-500: #1890ff;
+  --color-primary-600: #096dd9;
+  --color-primary-700: #0050b3;
+  --color-primary-800: #003a8c;
+  --color-primary-900: #002766;
+
+  // 成功色
+  --color-success-50: #f6ffed;
+  --color-success-100: #d9f7be;
+  --color-success-500: #52c41a;
+  --color-success-600: #389e0d;
+  --color-success-700: #237804;
+
+  // 警告色
+  --color-warning-50: #fffbe6;
+  --color-warning-100: #fff1b8;
+  --color-warning-500: #faad14;
+  --color-warning-600: #d48806;
+  --color-warning-700: #ad6800;
+
+  // 错误色
+  --color-error-50: #fff2f0;
+  --color-error-100: #ffccc7;
+  --color-error-500: #ff4d4f;
+  --color-error-600: #cf1322;
+  --color-error-700: #a8071a;
+
+  // 中性色
+  --color-neutral-0: #ffffff;
+  --color-neutral-50: #fafafa;
+  --color-neutral-100: #f5f5f5;
+  --color-neutral-200: #f0f0f0;
+  --color-neutral-300: #d9d9d9;
+  --color-neutral-400: #bfbfbf;
+  --color-neutral-500: #8c8c8c;
+  --color-neutral-600: #595959;
+  --color-neutral-700: #434343;
+  --color-neutral-800: #262626;
+  --color-neutral-900: #1f1f1f;
+
+  // 间距
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-xxl: 48px;
+
+  // 字体
+  --font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-family-code: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-base: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 20px;
+  --font-size-2xl: 24px;
+  --font-size-3xl: 30px;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.67;
+
+  // 圆角
+  --border-radius-sm: 4px;
+  --border-radius-base: 6px;
+  --border-radius-lg: 8px;
+  --border-radius-xl: 12px;
+  --border-radius-full: 50%;
+
+  // 阴影
+  --box-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  --box-shadow-base:
+    0 1px 2px 0 rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02),
+    0 2px 4px 0 rgba(0, 0, 0, 0.02);
+  --box-shadow-lg: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --box-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  // 过渡动画
+  --transition-base: all 0.3s ease;
+  --transition-fast: all 0.2s ease;
+  --transition-slow: all 0.5s ease;
+
+  // z-index
+  --z-dropdown: 1000;
+  --z-modal: 1100;
+  --z-popover: 1200;
+  --z-tooltip: 1300;
+}
+
+// 暗色主题
+[data-theme='dark'] {
+  --color-neutral-0: #141414;
+  --color-neutral-50: #1f1f1f;
+  --color-neutral-100: #262626;
+  --color-neutral-200: #303030;
+  --color-neutral-300: #434343;
+  --color-neutral-400: #595959;
+  --color-neutral-500: #8c8c8c;
+  --color-neutral-600: #bfbfbf;
+  --color-neutral-700: #d9d9d9;
+  --color-neutral-800: #f0f0f0;
+  --color-neutral-900: #ffffff;
+
+  // 调整其他颜色的背景色
+  --color-primary-50: #111a2c;
+  --color-success-50: #162312;
+  --color-warning-50: #2b1d11;
+  --color-error-50: #2a1215;
+}
+
+// 语义化变量
+:root {
+  // 文字颜色
+  --text-primary: var(--color-neutral-800);
+  --text-secondary: var(--color-neutral-600);
+  --text-tertiary: var(--color-neutral-500);
+  --text-inverse: var(--color-neutral-0);
+
+  // 背景颜色
+  --bg-primary: var(--color-neutral-0);
+  --bg-secondary: var(--color-neutral-50);
+  --bg-tertiary: var(--color-neutral-100);
+
+  // 边框颜色
+  --border-primary: var(--color-neutral-300);
+  --border-secondary: var(--color-neutral-200);
+  --border-tertiary: var(--color-neutral-100);
+
+  // 分割线
+  --divider: var(--color-neutral-200);
+}

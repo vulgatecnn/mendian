@@ -1,0 +1,341 @@
+# Docker Compose for 好饭碗门店生命周期管理系统
+# 支持本地开发、测试和生产部署
+
+version: '3.8'
+
+# 网络定义
+networks:
+  mendian-network:
+    name: mendian-network
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16
+
+# 数据卷定义
+volumes:
+  postgres-data:
+    name: mendian-postgres-data
+    driver: local
+  redis-data:
+    name: mendian-redis-data
+    driver: local
+  logs-data:
+    name: mendian-logs
+    driver: local
+  nginx-cache:
+    name: mendian-nginx-cache
+    driver: local
+
+# 服务定义
+services:
+  # PostgreSQL 数据库
+  database:
+    image: postgres:15-alpine
+    container_name: mendian-database
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-mendian}
+      POSTGRES_USER: ${POSTGRES_USER:-mendian_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mendian_password}
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+      TZ: Asia/Shanghai
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./backend/database/init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    networks:
+      mendian-network:
+        ipv4_address: 172.20.0.10
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-mendian_user} -d ${POSTGRES_DB:-mendian}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    command: |
+      postgres
+        -c max_connections=100
+        -c shared_buffers=256MB
+        -c effective_cache_size=1GB
+        -c maintenance_work_mem=64MB
+        -c checkpoint_completion_target=0.9
+        -c wal_buffers=16MB
+        -c default_statistics_target=100
+        -c random_page_cost=1.1
+        -c effective_io_concurrency=200
+        -c work_mem=4MB
+        -c min_wal_size=1GB
+        -c max_wal_size=4GB
+
+  # Redis 缓存
+  redis:
+    image: redis:7-alpine
+    container_name: mendian-redis
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      - redis-data:/data
+      - ./backend/config/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    networks:
+      mendian-network:
+        ipv4_address: 172.20.0.20
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    command: redis-server /usr/local/etc/redis/redis.conf
+
+  # 后端服务
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      target: ${BUILD_TARGET:-production}
+      args:
+        NODE_ENV: ${NODE_ENV:-production}
+        BUILD_DATE: ${BUILD_DATE}
+        VCS_REF: ${VCS_REF}
+    container_name: mendian-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 7900
+      HOST: 0.0.0.0
+      
+      # 数据库配置
+      DATABASE_URL: postgresql://${POSTGRES_USER:-mendian_user}:${POSTGRES_PASSWORD:-mendian_password}@database:5432/${POSTGRES_DB:-mendian}
+      
+      # Redis 配置
+      REDIS_URL: redis://redis:6379
+      REDIS_PREFIX: mendian:
+      
+      # JWT 配置
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      
+      # 企业微信配置
+      WECHAT_WORK_CORP_ID: ${WECHAT_WORK_CORP_ID:-}
+      WECHAT_WORK_AGENT_ID: ${WECHAT_WORK_AGENT_ID:-}
+      WECHAT_WORK_SECRET: ${WECHAT_WORK_SECRET:-}
+      
+      # 文件上传配置
+      UPLOAD_DIR: /app/uploads
+      MAX_FILE_SIZE: 50MB
+      
+      # 日志配置
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      LOG_FORMAT: ${LOG_FORMAT:-combined}
+      
+      # 安全配置
+      BCRYPT_ROUNDS: 12
+      RATE_LIMIT_WINDOW: 900000
+      RATE_LIMIT_MAX: 100
+      
+      # 时区
+      TZ: Asia/Shanghai
+    volumes:
+      - logs-data:/app/logs
+      - ./backend/uploads:/app/uploads
+    ports:
+      - "${BACKEND_PORT:-7900}:7900"
+    networks:
+      mendian-network:
+        ipv4_address: 172.20.0.30
+    depends_on:
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7900/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+
+  # 前端服务
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      target: ${BUILD_TARGET:-production}
+      args:
+        NODE_ENV: ${NODE_ENV:-production}
+        BUILD_DATE: ${BUILD_DATE}
+        VCS_REF: ${VCS_REF}
+        VITE_APP_VERSION: ${VCS_REF:-latest}
+        VITE_APP_ENVIRONMENT: ${NODE_ENV:-production}
+    container_name: mendian-frontend
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+      BACKEND_URL: backend:7900
+      API_PREFIX: /api
+    volumes:
+      - nginx-cache:/var/cache/nginx
+      - logs-data:/var/log/nginx
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+    networks:
+      mendian-network:
+        ipv4_address: 172.20.0.40
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/healthcheck.sh"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+          cpus: '0.25'
+
+  # Nginx 负载均衡器 (可选，用于多实例部署)
+  nginx-lb:
+    image: nginx:1.25-alpine
+    container_name: mendian-nginx-lb
+    restart: unless-stopped
+    volumes:
+      - ./docker/nginx-lb.conf:/etc/nginx/nginx.conf:ro
+      - logs-data:/var/log/nginx
+    ports:
+      - "${LB_PORT:-8080}:80"
+    networks:
+      mendian-network:
+        ipv4_address: 172.20.0.50
+    depends_on:
+      - frontend
+    profiles:
+      - load-balancer
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # 监控服务 - Prometheus (可选)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: mendian-prometheus
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus-data:/prometheus
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    networks:
+      mendian-network:
+        ipv4_address: 172.20.0.60
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    profiles:
+      - monitoring
+    
+  # 监控服务 - Grafana (可选)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: mendian-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin123}
+      GF_INSTALL_PLUGINS: grafana-piechart-panel
+    volumes:
+      - ./monitoring/grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    networks:
+      mendian-network:
+        ipv4_address: 172.20.0.70
+    depends_on:
+      - prometheus
+    profiles:
+      - monitoring
+
+  # 日志收集 - Loki (可选)
+  loki:
+    image: grafana/loki:latest
+    container_name: mendian-loki
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/loki.yml:/etc/loki/local-config.yaml:ro
+      - ./monitoring/loki-data:/loki
+    ports:
+      - "${LOKI_PORT:-3100}:3100"
+    networks:
+      mendian-network:
+        ipv4_address: 172.20.0.80
+    command: -config.file=/etc/loki/local-config.yaml
+    profiles:
+      - monitoring
+
+  # 开发工具 - Adminer (数据库管理)
+  adminer:
+    image: adminer:4.8.1
+    container_name: mendian-adminer
+    restart: unless-stopped
+    environment:
+      ADMINER_DEFAULT_SERVER: database
+      ADMINER_DESIGN: nette
+    ports:
+      - "${ADMINER_PORT:-8081}:8080"
+    networks:
+      mendian-network:
+        ipv4_address: 172.20.0.90
+    depends_on:
+      - database
+    profiles:
+      - development
+      - tools
+
+  # 开发工具 - Redis Commander (Redis 管理)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: mendian-redis-commander
+    restart: unless-stopped
+    environment:
+      REDIS_HOSTS: local:redis:6379
+      HTTP_USER: ${REDIS_WEB_USER:-admin}
+      HTTP_PASSWORD: ${REDIS_WEB_PASSWORD:-admin123}
+    ports:
+      - "${REDIS_WEB_PORT:-8082}:8081"
+    networks:
+      mendian-network:
+        ipv4_address: 172.20.0.95
+    depends_on:
+      - redis
+    profiles:
+      - development
+      - tools
+
+# 开发环境配置覆盖
+# 使用: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+---
+# docker-compose.dev.yml 内容会在单独文件中定义

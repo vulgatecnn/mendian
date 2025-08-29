@@ -1,0 +1,52 @@
+{
+  "name": "@mendian/root",
+  "version": "1.0.0",
+  "private": true,
+  "description": "好饭碗门店生命周期管理系统",
+  "scripts": {
+    "dev": "pnpm run -r --parallel dev",
+    "build": "pnpm run -r build",
+    "test": "pnpm run -r test",
+    "test:coverage": "pnpm run -r test:coverage",
+    "test:unit": "node test/unit/api/expansion-api.unit.test.js",
+    "test:integration": "node test/integration/api/expansion-api.integration.test.js",
+    "test:encoding": "node test/unit/encoding/chinese-encoding.unit.test.js",
+    "test:e2e": "pnpm --filter @mendian/frontend test:e2e",
+    "test:mock-server": "node test/mocks/servers/express-test-server.mock.js",
+    "test:simple-server": "node test/mocks/servers/http-test-server.mock.js",
+    "test:all-legacy": "npm run test:unit && npm run test:integration && npm run test:encoding",
+    "lint": "pnpm run -r lint",
+    "lint:fix": "pnpm run -r lint:fix",
+    "format": "pnpm run -r format",
+    "format:check": "pnpm run -r format:check",
+    "typecheck": "pnpm run -r typecheck",
+    "clean": "pnpm run -r clean && rm -rf node_modules",
+    "setup": "node scripts/dev-setup.js",
+    "prepare": "husky install",
+    "db:generate": "pnpm --filter @mendian/backend db:generate",
+    "db:migrate": "pnpm --filter @mendian/backend db:migrate",
+    "db:studio": "pnpm --filter @mendian/backend db:studio",
+    "db:seed": "pnpm --filter @mendian/backend db:seed",
+    "db:reset": "pnpm --filter @mendian/backend db:reset"
+  },
+  "keywords": [
+    "restaurant",
+    "store-management",
+    "lifecycle",
+    "react",
+    "typescript"
+  ],
+  "author": "好饭碗开发团队",
+  "license": "MIT",
+  "devDependencies": {
+    "@commitlint/cli": "^17.6.7",
+    "@commitlint/config-conventional": "^17.6.7",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.10"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@9.0.0"
+}

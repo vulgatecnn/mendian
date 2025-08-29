@@ -1,0 +1,8 @@
+dist
+build
+node_modules
+*.md
+*.yml
+*.yaml
+.gitignore
+.eslintrc.cjs

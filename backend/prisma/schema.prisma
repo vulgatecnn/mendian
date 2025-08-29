@@ -1,0 +1,1068 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ================================
+// 枚举类型定义 (Enums)
+// ================================
+
+// 通用状态枚举
+enum Status {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  DELETED
+}
+
+// 审批状态枚举
+enum ApprovalStatus {
+  DRAFT      // 草稿
+  SUBMITTED  // 已提交
+  PENDING    // 待审批
+  APPROVED   // 已批准
+  REJECTED   // 已拒绝
+  CANCELLED  // 已取消
+  RETURNED   // 已退回
+}
+
+// 优先级枚举
+enum Priority {
+  URGENT   // 紧急
+  HIGH     // 高
+  MEDIUM   // 中
+  LOW      // 低
+}
+
+// 门店类型枚举
+enum StoreType {
+  DIRECT     // 直营店
+  FRANCHISE  // 加盟店
+  FLAGSHIP   // 旗舰店
+  POPUP      // 快闪店
+}
+
+// 候选点位状态枚举
+enum CandidateStatus {
+  PENDING      // 待评估
+  EVALUATING   // 评估中
+  FOLLOWING    // 跟进中
+  NEGOTIATING  // 商务谈判
+  CONTRACTED   // 已签约
+  REJECTED     // 已拒绝
+  SUSPENDED    // 暂停
+}
+
+// 工程项目状态枚举
+enum ProjectStatus {
+  PLANNED      // 已计划
+  APPROVED     // 已批准
+  IN_PROGRESS  // 施工中
+  SUSPENDED    // 已暂停
+  COMPLETED    // 已完成
+  CANCELLED    // 已取消
+}
+
+// 付款状态枚举
+enum PaymentStatus {
+  PENDING   // 待付款
+  PAID      // 已付款
+  OVERDUE   // 已逾期
+  CANCELLED // 已取消
+  REFUNDED  // 已退款
+}
+
+// 跟进类型枚举
+enum FollowUpType {
+  PHONE_CALL     // 电话跟进
+  SITE_VISIT     // 实地考察
+  NEGOTIATION    // 商务谈判
+  EMAIL          // 邮件沟通
+  MEETING        // 会议讨论
+  DOCUMENTATION  // 资料收集
+  OTHER          // 其他
+}
+
+// 跟进状态枚举
+enum FollowUpStatus {
+  PENDING      // 待跟进
+  IN_PROGRESS  // 跟进中
+  COMPLETED    // 已完成
+  CANCELLED    // 已取消
+  OVERDUE      // 已逾期
+}
+
+// 审批操作枚举
+enum ApprovalAction {
+  SUBMIT   // 提交
+  APPROVE  // 批准
+  REJECT   // 拒绝
+  RETURN   // 退回
+  FORWARD  // 转交
+  COMMENT  // 评论
+}
+
+// 供应商类别枚举
+enum SupplierCategory {
+  CONSTRUCTION   // 工程施工
+  EQUIPMENT      // 设备供应
+  DECORATION     // 装修装饰
+  MAINTENANCE    // 维修保养
+  CONSULTING     // 咨询服务
+  OTHER          // 其他
+}
+
+// 用户角色枚举
+enum UserRoleType {
+  ADMIN              // 系统管理员
+  PRESIDENT_OFFICE   // 总裁办人员
+  BUSINESS_STAFF     // 商务人员
+  OPERATIONS_STAFF   // 运营人员
+  SALES_STAFF        // 销售人员
+  FINANCE_STAFF      // 财务人员
+  FRANCHISEE         // 加盟商
+  STORE_MANAGER      // 店长
+}
+
+// 门店状态枚举
+enum StoreFileStatus {
+  PREPARING  // 筹备中
+  OPEN       // 营业中
+  RENOVATING // 装修中
+  SUSPENDED  // 暂停营业
+  CLOSED     // 已关闭
+}
+
+// ================================
+// 基础数据模型 (Basic Data Models)
+// ================================
+
+model Region {
+  id          String   @id @default(cuid())
+  name        String   @db.VarChar(100)
+  code        String   @unique @db.VarChar(20)
+  parentId    String?
+  parent      Region?  @relation("RegionHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children    Region[] @relation("RegionHierarchy")
+  level       Int      @default(1) @db.SmallInt // 1=省份, 2=城市, 3=区县
+  fullPath    String?  @db.VarChar(500) // 完整路径，如："北京市/海淀区"
+  isActive    Boolean  @default(true)
+  sortOrder   Int?     @db.SmallInt // 排序字段
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  storePlans         StorePlan[]
+  candidateLocations CandidateLocation[]
+
+  @@index([parentId])
+  @@index([level, isActive])
+  @@index([code])
+  @@unique([name, level]) // 同级别地区名称唯一
+  @@map("regions")
+}
+
+model CompanyEntity {
+  id           String   @id @default(cuid())
+  name         String   @db.VarChar(200)
+  code         String   @unique @db.VarChar(50)
+  legalName    String   @db.VarChar(200)
+  taxId        String   @unique @db.VarChar(50) // 统一社会信用代码
+  address      String?  @db.VarChar(500)
+  contactName  String?  @db.VarChar(50)
+  contactPhone String?  @db.VarChar(20)
+  contactEmail String?  @db.VarChar(100)
+  registeredCapital Decimal? @db.Decimal(15, 2) // 注册资本
+  businessScope String? @db.Text // 经营范围
+  establishedDate DateTime? // 成立日期
+  legalPerson  String?  @db.VarChar(50) // 法定代表人
+  isActive     Boolean  @default(true)
+  notes        String?  @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  storePlans StorePlan[]
+  storeFiles StoreFile[]
+
+  @@index([code])
+  @@index([taxId])
+  @@index([isActive])
+  // @@fulltext([name, legalName]) - PostgreSQL doesn't support @@fulltext
+  @@map("company_entities")
+}
+
+model Supplier {
+  id           String           @id @default(cuid())
+  name         String           @db.VarChar(200)
+  code         String           @unique @db.VarChar(50)
+  category     SupplierCategory // 供应商类别
+  contactName  String?          @db.VarChar(50)
+  contactPhone String?          @db.VarChar(20)
+  contactEmail String?          @db.VarChar(100)
+  address      String?          @db.VarChar(500)
+  taxId        String?          @unique @db.VarChar(50) // 税号
+  bankAccount  String?          @db.VarChar(50)  // 银行账号
+  bankName     String?          @db.VarChar(200) // 开户行
+  creditRating String?          @db.VarChar(10)  // 信用等级
+  qualifications Json?         // 资质证书JSON
+  contractTemplate String?     @db.Text // 合同模板
+  isActive     Boolean          @default(true)
+  notes        String?          @db.Text
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  // Relations
+  constructionProjects ConstructionProject[]
+  quotations          Quotation[] // 报价记录
+
+  @@index([category, isActive])
+  @@index([code])
+  // @@fulltext([name]) - PostgreSQL doesn't support @@fulltext
+  @@map("suppliers")
+}
+
+// ================================
+// 用户权限模型 (User & RBAC Models)
+// ================================
+
+model User {
+  id            String      @id @default(cuid())
+  wechatId      String      @unique @db.VarChar(100) // 企业微信用户ID
+  wechatUnionId String?     @unique @db.VarChar(100) // 微信UnionID
+  username      String      @unique @db.VarChar(50)
+  email         String?     @unique @db.VarChar(100)
+  phone         String?     @db.VarChar(20)
+  name          String      @db.VarChar(50)
+  nickname      String?     @db.VarChar(50) // 昵称
+  avatar        String?     @db.VarChar(500)
+  gender        String?     @db.VarChar(10) // 性别
+  jobTitle      String?     @db.VarChar(100) // 职位
+  employeeId    String?     @unique @db.VarChar(50) // 工号
+  departmentId  String?
+  department    Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  directManager String?     @db.VarChar(50) // 直属上级ID
+  hireDate      DateTime?   // 入职日期
+  status        Status      @default(ACTIVE)
+  lastLoginAt   DateTime?
+  loginCount    Int         @default(0) // 登录次数
+  preferences   Json?       // 用户偏好设置JSON
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  // Relations
+  userRoles                   UserRole[]
+  createdStorePlans           StorePlan[]            @relation("StorePlanCreator")
+  assignedFollowUps           FollowUpRecord[]       @relation("FollowUpAssignee")
+  createdFollowUps            FollowUpRecord[]       @relation("FollowUpCreator")
+  approvalRecords             ApprovalRecord[]
+  createdApprovals            ApprovalFlow[]         @relation("ApprovalCreator")
+  auditLogs                   AuditLog[]
+  managedPreparationProjects  PreparationProject[]   @relation("PreparationProjectManager")
+  ownedMilestones             MilestoneTracking[]    @relation("MilestoneOwner")
+
+  @@index([wechatId])
+  @@index([departmentId, status])
+  @@index([status, lastLoginAt])
+  @@index([employeeId])
+  // @@fulltext([name, nickname, username]) - PostgreSQL doesn't support @@fulltext
+  @@map("users")
+}
+
+model Department {
+  id          String       @id @default(cuid())
+  wechatId    String       @unique @db.VarChar(100) // 企业微信部门ID
+  name        String       @db.VarChar(100)
+  parentId    String?
+  parent      Department?  @relation("DepartmentHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children    Department[] @relation("DepartmentHierarchy")
+  level       Int          @default(1) @db.SmallInt
+  fullPath    String?      @db.VarChar(500) // 完整路径
+  description String?      @db.Text
+  managerIds  String[]     @default([]) // 部门负责人ID数组
+  sortOrder   Int?         @db.SmallInt // 排序字段
+  status      Status       @default(ACTIVE)
+  syncedAt    DateTime?    // 最后同步时间
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  // Relations
+  users User[]
+
+  @@index([parentId])
+  @@index([level, status])
+  @@index([wechatId])
+  // @@fulltext([name]) - PostgreSQL doesn't support @@fulltext
+  @@map("departments")
+}
+
+model Role {
+  id          String       @id @default(cuid())
+  name        String       @unique @db.VarChar(100)
+  code        String       @unique @db.VarChar(50)
+  type        UserRoleType // 角色类型枚举
+  description String?      @db.Text
+  isSystem    Boolean      @default(false)
+  status      Status       @default(ACTIVE)
+  sortOrder   Int?         @db.SmallInt
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  // Relations
+  userRoles       UserRole[]
+  rolePermissions RolePermission[]
+
+  @@index([type, status])
+  @@index([code])
+  @@map("roles")
+}
+
+model Permission {
+  id          String   @id @default(cuid())
+  name        String   @unique @db.VarChar(100)
+  code        String   @unique @db.VarChar(100) // 如: store-plan:create, expansion:read
+  module      String   @db.VarChar(50) // store-plan, expansion, preparation, etc.
+  action      String   @db.VarChar(20) // create, read, update, delete, approve, etc.
+  resource    String?  @db.VarChar(50) // specific resource if needed
+  description String?  @db.Text
+  status      Status   @default(ACTIVE)
+  isSystem    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  rolePermissions RolePermission[]
+
+  @@index([module, action])
+  @@index([code])
+  @@unique([module, action, resource]) // 确保权限组合唯一
+  @@map("permissions")
+}
+
+model UserRole {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roleId    String
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, roleId])
+  @@map("user_roles")
+}
+
+model RolePermission {
+  id           String     @id @default(cuid())
+  roleId       String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+
+  @@unique([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+// ================================
+// 业务模型 (Business Models)
+// ================================
+
+// 开店计划管理
+model StorePlan {
+  id             String          @id @default(cuid())
+  planCode       String          @unique @db.VarChar(50) // 计划编号
+  title          String          @db.VarChar(200) // 计划标题
+  year           Int             @db.SmallInt
+  quarter        Int?            @db.SmallInt // 1, 2, 3, 4 或 null 表示全年计划
+  regionId       String
+  region         Region          @relation(fields: [regionId], references: [id], onDelete: Restrict)
+  entityId       String
+  entity         CompanyEntity   @relation(fields: [entityId], references: [id], onDelete: Restrict)
+  storeType      StoreType       // 门店类型枚举
+  plannedCount   Int             @db.SmallInt
+  completedCount Int             @default(0) @db.SmallInt
+  budget         Decimal?        @db.Decimal(15, 2)
+  actualBudget   Decimal?        @db.Decimal(15, 2) // 实际预算
+  priority       Priority        @default(MEDIUM)
+  status         ApprovalStatus  @default(DRAFT)
+  startDate      DateTime? // 计划开始日期
+  endDate        DateTime? // 计划结束日期
+  description    String?         @db.Text
+  remark         String?         @db.Text
+  approvalFlowId String?         // 审批流ID
+  createdById    String
+  createdBy      User            @relation("StorePlanCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  // Relations
+  candidateLocations CandidateLocation[]
+  approvalFlow       ApprovalFlow?       @relation(fields: [approvalFlowId], references: [id])
+
+  @@index([year, quarter])
+  @@index([regionId, status])
+  @@index([storeType, status])
+  @@index([createdById])
+  @@index([approvalFlowId])
+  @@unique([year, quarter, regionId, entityId, storeType])
+  @@map("store_plans")
+}
+
+// 拓店管理 - 候选点位
+model CandidateLocation {
+  id                String              @id @default(cuid())
+  locationCode      String              @unique @db.VarChar(50) // 点位编号
+  storePlanId       String?
+  storePlan         StorePlan?          @relation(fields: [storePlanId], references: [id], onDelete: SetNull)
+  regionId          String
+  region            Region              @relation(fields: [regionId], references: [id], onDelete: Restrict)
+  name              String              @db.VarChar(200)
+  address           String              @db.VarChar(500)
+  detailedAddress   String?             @db.VarChar(500) // 详细地址
+  area              Decimal?            @db.Decimal(10, 2) // 面积(平方米)
+  usableArea        Decimal?            @db.Decimal(10, 2) // 可用面积
+  rentPrice         Decimal?            @db.Decimal(12, 2) // 租金
+  rentUnit          String?             @db.VarChar(50) // 租金单位
+  depositAmount     Decimal?            @db.Decimal(12, 2) // 押金金额
+  transferFee       Decimal?            @db.Decimal(12, 2) // 转让费
+  propertyFee       Decimal?            @db.Decimal(12, 2) // 物业费
+  landlordName      String?             @db.VarChar(50)
+  landlordPhone     String?             @db.VarChar(20)
+  landlordEmail     String?             @db.VarChar(100)
+  intermediaryInfo  Json? // 中介信息
+  coordinates       String?             @db.VarChar(50) // 经纬度
+  photos            Json? // 照片URL数组
+  floorPlan         Json? // 户型图文件
+  trafficInfo       Json? // 交通信息
+  competitorInfo    Json? // 竞争对手信息
+  evaluationScore   Decimal?            @db.Decimal(3, 1) // 综合评分 0-10
+  status            CandidateStatus     @default(PENDING)
+  priority          Priority            @default(MEDIUM)
+  discoveryDate     DateTime            @default(now())
+  expectedSignDate  DateTime? // 预计签约日期
+  notes             String?             @db.Text
+  tags              String[]            @default([]) // 标签数组
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  // Relations
+  followUpRecords       FollowUpRecord[]
+  storeFiles            StoreFile[]
+  constructionProjects  ConstructionProject[]
+  quotations            Quotation[] // 报价记录
+  preparationProjects   PreparationProject[] // 筹备项目关联
+
+  @@index([storePlanId, status])
+  @@index([regionId, status])
+  @@index([status, priority])
+  @@index([discoveryDate])
+  @@index([locationCode])
+  // @@fulltext([name, address]) - PostgreSQL doesn't support @@fulltext
+  @@map("candidate_locations")
+}
+
+// 跟进记录
+model FollowUpRecord {
+  id                  String            @id @default(cuid())
+  candidateLocationId String
+  candidateLocation   CandidateLocation @relation(fields: [candidateLocationId], references: [id], onDelete: Cascade)
+  assigneeId          String
+  assignee            User              @relation("FollowUpAssignee", fields: [assigneeId], references: [id], onDelete: Restrict)
+  createdById         String
+  createdBy           User              @relation("FollowUpCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  type                FollowUpType // 跟进类型枚举
+  title               String            @db.VarChar(200) // 跟进主题
+  content             String            @db.Text
+  result              String?           @db.Text // 跟进结果
+  nextFollowUpDate    DateTime?
+  actualFollowUpDate  DateTime? // 实际跟进日期
+  duration            Int? // 跟进时长(分钟)
+  cost                Decimal?          @db.Decimal(10, 2) // 跟进成本
+  status              String            @default("PENDING") @db.VarChar(20) // PENDING, COMPLETED, CANCELLED
+  importance          Priority          @default(MEDIUM)
+  attachments         Json? // 附件URL数组
+  location            String?           @db.VarChar(200) // 跟进地点
+  participants        String[]          @default([]) // 参与人员ID
+  tags                String[]          @default([]) // 标签
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  @@index([candidateLocationId, status])
+  @@index([assigneeId, status])
+  @@index([nextFollowUpDate])
+  @@index([type, status])
+  @@index([createdAt])
+  @@map("follow_up_records")
+}
+
+// 开店筹备管理 - 工程项目
+model ConstructionProject {
+  id                  String            @id @default(cuid())
+  projectCode         String            @unique @db.VarChar(50) // 项目编号
+  projectName         String            @db.VarChar(200) // 项目名称
+  candidateLocationId String
+  candidateLocation   CandidateLocation @relation(fields: [candidateLocationId], references: [id], onDelete: Restrict)
+  preparationProjectId String?          // 筹备项目ID
+  preparationProject  PreparationProject? @relation("PreparationEngineering", fields: [preparationProjectId], references: [id], onDelete: SetNull)
+  supplierId          String
+  supplier            Supplier          @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  projectType         String            @db.VarChar(50) // 项目类型:装修,设备安装,等
+  contractNumber      String?           @db.VarChar(100) // 合同编号
+  contractAmount      Decimal           @db.Decimal(15, 2)
+  actualAmount        Decimal?          @db.Decimal(15, 2) // 实际金额
+  plannedStartDate    DateTime
+  plannedEndDate      DateTime
+  actualStartDate     DateTime?
+  actualEndDate       DateTime?
+  status              ProjectStatus     @default(PLANNED)
+  progressPercentage  Int               @default(0) @db.SmallInt // 0-100
+  qualityScore        Decimal?          @db.Decimal(3, 1) // 质量评分
+  description         String?           @db.Text
+  notes               String?           @db.Text
+  riskLevel           Priority          @default(MEDIUM) // 风险等级
+  milestones          Json? // 里程碑数据JSON
+  documents           Json? // 相关文档
+  photos              Json? // 施工照片
+  approvalFlowId      String? // 审批流ID
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  // Relations
+  quotations     Quotation[]
+  approvalFlow   ApprovalFlow? @relation(fields: [approvalFlowId], references: [id])
+  progressLogs   ProjectProgressLog[] // 进度记录
+
+  @@index([candidateLocationId])
+  @@index([preparationProjectId])
+  @@index([supplierId, status])
+  @@index([status, plannedStartDate])
+  @@index([projectCode])
+  @@index([approvalFlowId])
+  @@map("construction_projects")
+}
+
+// 门店档案
+model StoreFile {
+  id                  String             @id @default(cuid())
+  candidateLocationId String?
+  candidateLocation   CandidateLocation? @relation(fields: [candidateLocationId], references: [id], onDelete: SetNull)
+  entityId            String
+  entity              CompanyEntity      @relation(fields: [entityId], references: [id], onDelete: Restrict)
+  storeCode           String             @unique @db.VarChar(50)
+  storeName           String             @db.VarChar(200)
+  storeType           StoreType // 门店类型枚举
+  brandName           String?            @db.VarChar(100) // 品牌名称
+  address             String             @db.VarChar(500)
+  detailedAddress     String?            @db.VarChar(500)
+  area                Decimal?           @db.Decimal(10, 2)
+  usableArea          Decimal?           @db.Decimal(10, 2)
+  floors              Int?               @db.SmallInt // 楼层数
+  seatCount           Int?               @db.SmallInt // 座位数
+  openDate            DateTime?
+  status              StoreFileStatus    @default(PREPARING)
+  businessLicense     String?            @db.VarChar(100) // 营业执照号
+  licenseExpiry       DateTime?
+  taxId               String?            @db.VarChar(50) // 税号
+  bankAccount         String?            @db.VarChar(50) // 银行账号
+  bankName            String?            @db.VarChar(200) // 开户行
+  franchiseeInfo      Json? // 加盟商信息
+  managementTeam      Json? // 管理团队信息
+  operatingHours      Json? // 营业时间
+  contactPhone        String?            @db.VarChar(20)
+  contactEmail        String?            @db.VarChar(100)
+  coordinates         String?            @db.VarChar(50)
+  photos              Json? // 门店照片
+  floorPlan           Json? // 平面图
+  documents           Json? // 证照文档
+  equipment           Json? // 设备清单
+  monthlyRevenue      Decimal?           @db.Decimal(12, 2) // 月均收入
+  monthlyRent         Decimal?           @db.Decimal(12, 2) // 月租金
+  employeeCount       Int?               @db.SmallInt // 员工数
+  notes               String?            @db.Text
+  tags                String[]           @default([]) // 标签
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  // Relations
+  paymentItems PaymentItem[]
+  assets       Asset[] // 资产管理(二期)
+
+  @@index([candidateLocationId])
+  @@index([entityId, status])
+  @@index([storeType, status])
+  @@index([openDate])
+  @@index([storeCode])
+  // @@fulltext([storeName, brandName]) - PostgreSQL doesn't support @@fulltext
+  @@map("store_files")
+}
+
+// 门店运营 - 付款项管理
+model PaymentItem {
+  id            String        @id @default(cuid())
+  itemCode      String        @unique @db.VarChar(50) // 付款项编号
+  storeFileId   String
+  storeFile     StoreFile     @relation(fields: [storeFileId], references: [id], onDelete: Cascade)
+  category      String        @db.VarChar(50) // 租金,水电费,装修费,设备费
+  name          String        @db.VarChar(200)
+  description   String?       @db.Text
+  amount        Decimal       @db.Decimal(12, 2)
+  actualAmount  Decimal?      @db.Decimal(12, 2) // 实际付款金额
+  currency      String        @default("CNY") @db.VarChar(10)
+  dueDate       DateTime
+  paymentDate   DateTime?
+  reminderDate  DateTime? // 提醒日期
+  status        PaymentStatus @default(PENDING)
+  paymentMethod String?       @db.VarChar(50)
+  paymentAccount String?      @db.VarChar(100) // 付款账号
+  receiptNumber String?       @db.VarChar(100) // 收据编号
+  approvalFlowId String? // 审批流ID
+  priority      Priority      @default(MEDIUM)
+  attachments   Json? // 相关附件
+  tags          String[]      @default([]) // 标签
+  notes         String?       @db.Text
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relations
+  approvalFlow ApprovalFlow? @relation(fields: [approvalFlowId], references: [id])
+
+  @@index([storeFileId, status])
+  @@index([category, status])
+  @@index([dueDate])
+  @@index([status, dueDate])
+  @@index([itemCode])
+  @@index([approvalFlowId])
+  @@map("payment_items")
+}
+
+// ================================
+// 审批中心模型 (Approval System Models)
+// ================================
+
+model ApprovalTemplate {
+  id          String   @id @default(cuid())
+  name        String   @db.VarChar(100)
+  code        String   @unique @db.VarChar(50)
+  category    String   @db.VarChar(50) // 报店审批,执照审批,比价审批
+  description String?  @db.Text
+  steps       Json // 审批步骤配置 JSON
+  conditions  Json? // 触发条件 JSON
+  settings    Json? // 其他设置 JSON
+  status      Status   @default(ACTIVE)
+  isSystem    Boolean  @default(false) // 系统预置模板
+  version     Int      @default(1) @db.SmallInt
+  sortOrder   Int?     @db.SmallInt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  approvalFlows ApprovalFlow[]
+
+  @@index([category, status])
+  @@index([code])
+  @@index([version])
+  @@map("approval_templates")
+}
+
+model ApprovalFlow {
+  id                String           @id @default(cuid())
+  flowNumber        String           @unique @db.VarChar(50) // 审批流水号
+  templateId        String
+  template          ApprovalTemplate @relation(fields: [templateId], references: [id], onDelete: Restrict)
+  title             String           @db.VarChar(200)
+  businessType      String           @db.VarChar(50) // store_plan, candidate_location, etc.
+  businessId        String           @db.VarChar(50) // 业务对象ID
+  currentStep       Int              @default(1) @db.SmallInt
+  totalSteps        Int              @db.SmallInt
+  status            ApprovalStatus   @default(PENDING)
+  priority          Priority         @default(MEDIUM)
+  urgency           Boolean          @default(false) // 加急标识
+  expectedDays      Int?             @db.SmallInt // 预期审批天数
+  actualDays        Int?             @db.SmallInt // 实际审批天数
+  createdById       String
+  createdBy         User             @relation("ApprovalCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  submittedAt       DateTime         @default(now())
+  completedAt       DateTime?
+  cancelledAt       DateTime?
+  cancelReason      String?          @db.Text
+  data              Json? // 业务数据快照
+  attachments       Json? // 附件
+  comments          String?          @db.Text // 备注
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  // Relations
+  approvalRecords         ApprovalRecord[]
+  storePlans              StorePlan[]
+  constructionProjects    ConstructionProject[]
+  paymentItems            PaymentItem[]
+  preparationProjects     PreparationProject[]   @relation("PreparationProjectApproval")
+
+  @@index([businessType, businessId])
+  @@index([status, createdAt])
+  @@index([createdById, status])
+  @@index([templateId])
+  @@index([flowNumber])
+  // @@fulltext([title]) - PostgreSQL doesn't support @@fulltext
+  @@map("approval_flows")
+}
+
+model ApprovalRecord {
+  id              String         @id @default(cuid())
+  flowId          String
+  flow            ApprovalFlow   @relation(fields: [flowId], references: [id], onDelete: Cascade)
+  approverId      String
+  approver        User           @relation(fields: [approverId], references: [id], onDelete: Restrict)
+  step            Int            @db.SmallInt
+  stepName        String?        @db.VarChar(100) // 步骤名称
+  action          ApprovalAction // 审批操作枚举
+  decision        String?        @db.VarChar(50) // 具体决策结果
+  comments        String?        @db.Text
+  privateComments String?        @db.Text // 内部备注
+  attachments     Json? // 附件URL数组
+  processingTime  Int?           @db.SmallInt // 处理时长(分钟)
+  delegatedFrom   String?        @db.VarChar(50) // 委托人 ID
+  delegatedTo     String?        @db.VarChar(50) // 被委托人ID
+  isRead          Boolean        @default(false) // 是否已读
+  remindedAt      DateTime? // 最后提醒时间
+  processedAt     DateTime       @default(now())
+  createdAt       DateTime       @default(now())
+
+  @@index([flowId, step])
+  @@index([approverId, isRead])
+  @@index([action, processedAt])
+  @@map("approval_records")
+}
+
+// ================================
+// 系统日志模型 (System Log Models)
+// ================================
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action      String   @db.VarChar(50) // CREATE, UPDATE, DELETE, LOGIN, LOGOUT
+  resource    String   @db.VarChar(50) // 资源类型
+  resourceId  String?  @db.VarChar(50) // 资源ID
+  description String?  @db.VarChar(500) // 操作描述
+  oldData     Json?    // 变更前数据
+  newData     Json?    // 变更后数据
+  changes     Json?    // 具体变更字段
+  ipAddress   String?  @db.VarChar(50)
+  userAgent   String?  @db.VarChar(500)
+  requestId   String?  @db.VarChar(100) // 请求ID
+  sessionId   String?  @db.VarChar(100) // 会话ID
+  level       String   @default("INFO") @db.VarChar(10) // DEBUG,INFO,WARN,ERROR
+  createdAt   DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([resource, resourceId])
+  @@index([action, createdAt])
+  @@index([level, createdAt])
+  @@map("audit_logs")
+}
+
+// ================================
+// 扩展业务模型 (Extended Business Models)
+// ================================
+
+// 报价管理
+model Quotation {
+  id                  String            @id @default(cuid())
+  quotationNumber     String            @unique @db.VarChar(50)
+  candidateLocationId String?
+  candidateLocation   CandidateLocation? @relation(fields: [candidateLocationId], references: [id], onDelete: SetNull)
+  constructionProjectId String?
+  constructionProject ConstructionProject? @relation(fields: [constructionProjectId], references: [id], onDelete: SetNull)
+  supplierId          String
+  supplier            Supplier          @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  projectType         String            @db.VarChar(50) // 报价项目类型
+  title               String            @db.VarChar(200)
+  description         String?           @db.Text
+  totalAmount         Decimal           @db.Decimal(15, 2)
+  validUntil          DateTime // 报价有效期
+  items               Json // 报价明细项目 JSON
+  terms               Json? // 商务条款 JSON
+  attachments         Json? // 附件
+  status              String            @default("DRAFT") @db.VarChar(20)
+  isSelected          Boolean           @default(false) // 是否中标
+  selectionReason     String?           @db.Text // 中标原因
+  notes               String?           @db.Text
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  @@index([candidateLocationId, status])
+  @@index([supplierId, status])
+  @@index([validUntil])
+  @@index([quotationNumber])
+  @@map("quotations")
+}
+
+// 项目进度记录
+model ProjectProgressLog {
+  id                     String              @id @default(cuid())
+  constructionProjectId  String
+  constructionProject    ConstructionProject @relation(fields: [constructionProjectId], references: [id], onDelete: Cascade)
+  logDate                DateTime            @default(now())
+  progressPercentage     Int                 @db.SmallInt // 当日进度
+  workDescription        String              @db.Text // 工作内容
+  issues                 String?             @db.Text // 存在问题
+  nextPlan               String?             @db.Text // 下一步计划
+  weatherCondition       String?             @db.VarChar(50) // 天气情况
+  materialUsage          Json? // 材料使用情况
+  personnelCount         Int?                @db.SmallInt // 人员数量
+  qualityScore           Decimal?            @db.Decimal(3, 1) // 质量评分
+  safetyIssues           String?             @db.Text // 安全问题
+  photos                 Json? // 现场照片
+  reporterId             String // 汇报人ID
+  createdAt              DateTime            @default(now())
+
+  @@index([constructionProjectId, logDate])
+  @@index([progressPercentage])
+  @@map("project_progress_logs")
+}
+
+// 资产管理(二期功能)
+model Asset {
+  id                  String        @id @default(cuid())
+  assetCode           String        @unique @db.VarChar(50)
+  storeFileId         String
+  storeFile           StoreFile     @relation(fields: [storeFileId], references: [id], onDelete: Cascade)
+  name                String        @db.VarChar(200)
+  category            String        @db.VarChar(50) // 设备,家具,装修,等
+  brand               String?       @db.VarChar(100)
+  model               String?       @db.VarChar(100)
+  specifications      Json? // 规格参数
+  purchaseDate        DateTime?
+  purchasePrice       Decimal?      @db.Decimal(12, 2)
+  currentValue        Decimal?      @db.Decimal(12, 2)
+  depreciation        Decimal?      @db.Decimal(12, 2) // 折旧
+  warrantyPeriod      Int?          @db.SmallInt // 保修期(月)
+  status              Status        @default(ACTIVE)
+  location            String?       @db.VarChar(200) // 放置位置
+  responsiblePerson   String?       @db.VarChar(50) // 负责人
+  maintenanceSchedule Json? // 维护计划
+  documents           Json? // 相关文档
+  photos              Json? // 资产照片
+  notes               String?       @db.Text
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  @@index([storeFileId, category])
+  @@index([status, purchaseDate])
+  @@index([assetCode])
+  // @@fulltext([name, brand, model]) - PostgreSQL doesn't support @@fulltext
+  @@map("assets")
+}
+
+// ================================
+// 开店筹备管理模型 (Preparation Management Models)
+// ================================
+
+// 筹备项目主表
+model PreparationProject {
+  id                  String              @id @default(cuid())
+  projectCode         String              @unique @db.VarChar(50) // 筹备项目编号
+  projectName         String              @db.VarChar(200) // 筹备项目名称
+  candidateLocationId String
+  candidateLocation   CandidateLocation   @relation(fields: [candidateLocationId], references: [id], onDelete: Restrict)
+  storeCode           String?             @db.VarChar(50) // 门店编码
+  storeName           String?             @db.VarChar(200) // 门店名称
+  status              String              @default("PLANNING") @db.VarChar(20) // PLANNING, APPROVED, IN_PROGRESS, SUSPENDED, COMPLETED, CANCELLED, OVERDUE
+  priority            Priority            @default(MEDIUM) // 优先级
+  plannedStartDate    DateTime            // 计划开始日期
+  plannedEndDate      DateTime            // 计划结束日期
+  actualStartDate     DateTime?           // 实际开始日期
+  actualEndDate       DateTime?           // 实际结束日期
+  budget              Decimal             @db.Decimal(15, 2) // 预算金额
+  actualBudget        Decimal?            @db.Decimal(15, 2) // 实际预算
+  progressPercentage  Int                 @default(0) @db.SmallInt // 总体进度百分比(0-100)
+  description         String?             @db.Text // 项目描述
+  notes               String?             @db.Text // 备注
+  managerId           String?             // 项目经理ID
+  manager             User?               @relation("PreparationProjectManager", fields: [managerId], references: [id], onDelete: SetNull)
+  approvalFlowId      String?             // 审批流ID
+  approvalFlow        ApprovalFlow?       @relation("PreparationProjectApproval", fields: [approvalFlowId], references: [id])
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  // Relations
+  engineeringTasks     ConstructionProject[]  @relation("PreparationEngineering") // 复用工程项目表
+  equipmentProcurements EquipmentProcurement[]
+  licenseApplications  LicenseApplication[]
+  staffRecruitments    StaffRecruitment[]
+  milestones          MilestoneTracking[]
+
+  @@index([candidateLocationId, status])
+  @@index([status, priority])
+  @@index([managerId])
+  @@index([plannedStartDate, plannedEndDate])
+  @@index([projectCode])
+  @@map("preparation_projects")
+}
+
+// 设备采购管理
+model EquipmentProcurement {
+  id                      String              @id @default(cuid())
+  procurementCode         String              @unique @db.VarChar(50) // 采购编号
+  preparationProjectId    String
+  preparationProject      PreparationProject  @relation(fields: [preparationProjectId], references: [id], onDelete: Cascade)
+  category                String              @db.VarChar(50) // KITCHEN, DINING, COOLING, CLEANING, SAFETY, FURNITURE, TECHNOLOGY, DECORATION, OTHER
+  equipmentName           String              @db.VarChar(200) // 设备名称
+  brand                   String?             @db.VarChar(100) // 品牌
+  model                   String?             @db.VarChar(100) // 型号
+  specifications          Json?               // 规格参数JSON
+  quantity                Int                 @db.SmallInt // 采购数量
+  unitPrice               Decimal?            @db.Decimal(12, 2) // 单价
+  totalPrice              Decimal?            @db.Decimal(15, 2) // 总价
+  currency                String              @default("CNY") @db.VarChar(10) // 币种
+  status                  String              @default("PENDING") @db.VarChar(20) // PENDING, QUOTED, APPROVED, ORDERED, DELIVERED, INSTALLED, ACCEPTED, WARRANTY, MAINTENANCE
+  priority                Priority            @default(MEDIUM) // 优先级
+  plannedDeliveryDate     DateTime?           // 计划交付日期
+  actualDeliveryDate      DateTime?           // 实际交付日期
+  installationDate        DateTime?           // 安装日期
+  acceptanceDate          DateTime?           // 验收日期
+  warrantyPeriod          Int?                @db.SmallInt // 保修期(月)
+  warrantyExpiry          DateTime?           // 保修到期日期
+  supplier                String?             @db.VarChar(200) // 供应商
+  supplierContact         String?             @db.VarChar(200) // 供应商联系方式
+  purchaseOrder           String?             @db.VarChar(100) // 采购订单号
+  deliveryAddress         String?             @db.VarChar(500) // 交付地址
+  installationRequirements String?           @db.Text // 安装要求
+  operationManual         Json?               // 操作手册URL数组
+  maintenanceSchedule     Json?               // 维护计划JSON
+  photos                  Json?               // 设备照片URL数组
+  documents               Json?               // 相关文档URL数组
+  notes                   String?             @db.Text // 备注
+  createdAt               DateTime            @default(now())
+  updatedAt               DateTime            @updatedAt
+
+  @@index([preparationProjectId, category])
+  @@index([status, priority])
+  @@index([plannedDeliveryDate])
+  @@index([procurementCode])
+  @@map("equipment_procurements")
+}
+
+// 证照办理管理
+model LicenseApplication {
+  id                    String              @id @default(cuid())
+  applicationCode       String              @unique @db.VarChar(50) // 申请编号
+  preparationProjectId  String
+  preparationProject    PreparationProject  @relation(fields: [preparationProjectId], references: [id], onDelete: Cascade)
+  licenseType           String              @db.VarChar(50) // BUSINESS, FOOD_SERVICE, FIRE_SAFETY, HEALTH, TAX, SIGNBOARD, ENVIRONMENTAL, SPECIAL, OTHER
+  licenseName           String              @db.VarChar(200) // 证照名称
+  issuingAuthority      String              @db.VarChar(200) // 发证机关
+  status                String              @default("PENDING") @db.VarChar(20) // PENDING, SUBMITTED, UNDER_REVIEW, APPROVED, ISSUED, REJECTED, EXPIRED, RENEWED
+  priority              Priority            @default(MEDIUM) // 优先级
+  applicationDate       DateTime?           // 申请日期
+  submissionDate        DateTime?           // 提交日期
+  reviewStartDate       DateTime?           // 审核开始日期
+  approvalDate          DateTime?           // 批准日期
+  issuanceDate          DateTime?           // 发证日期
+  expiryDate            DateTime?           // 有效期截止日期
+  renewalDate           DateTime?           // 续期日期
+  licenseNumber         String?             @db.VarChar(100) // 证照编号
+  applicationFee        Decimal?            @db.Decimal(10, 2) // 申请费用
+  actualFee             Decimal?            @db.Decimal(10, 2) // 实际费用
+  currency              String              @default("CNY") @db.VarChar(10) // 币种
+  applicant             String?             @db.VarChar(100) // 申请人
+  contactPerson         String?             @db.VarChar(50) // 联系人
+  contactPhone          String?             @db.VarChar(20) // 联系电话
+  applicationAddress    String?             @db.VarChar(500) // 申请地址
+  requiredDocuments     String[]            @default([]) // 所需材料清单
+  submittedDocuments    String[]            @default([]) // 已提交材料
+  missingDocuments      String[]            @default([]) // 缺失材料
+  rejectionReason       String?             @db.Text // 拒绝原因
+  conditions            String?             @db.Text // 批准条件
+  renewalReminder       DateTime?           // 续期提醒日期
+  attachments           Json?               // 附件URL数组
+  notes                 String?             @db.Text // 备注
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  @@index([preparationProjectId, licenseType])
+  @@index([status, priority])
+  @@index([issuingAuthority])
+  @@index([expiryDate])
+  @@index([renewalReminder])
+  @@index([applicationCode])
+  @@map("license_applications")
+}
+
+// 人员招聘管理
+model StaffRecruitment {
+  id                      String              @id @default(cuid())
+  recruitmentCode         String              @unique @db.VarChar(50) // 招聘编号
+  preparationProjectId    String
+  preparationProject      PreparationProject  @relation(fields: [preparationProjectId], references: [id], onDelete: Cascade)
+  positionType            String              @db.VarChar(50) // MANAGER, CHEF, SERVER, CASHIER, CLEANER, SECURITY, MAINTENANCE, SALES, OTHER
+  positionTitle           String              @db.VarChar(200) // 职位标题
+  department              String?             @db.VarChar(100) // 所属部门
+  plannedCount            Int                 @db.SmallInt // 计划招聘人数
+  recruitedCount          Int                 @default(0) @db.SmallInt // 已招聘人数
+  onboardedCount          Int                 @default(0) @db.SmallInt // 已入职人数
+  status                  String              @default("PLANNING") @db.VarChar(20) // PLANNING, PUBLISHED, INTERVIEWING, OFFERED, ONBOARDED, CANCELLED, COMPLETED
+  priority                Priority            @default(MEDIUM) // 优先级
+  startDate               DateTime?           // 招聘开始日期
+  endDate                 DateTime?           // 招聘结束日期
+  salaryRange             Json?               // 薪资范围JSON {min, max, currency}
+  workLocation            String?             @db.VarChar(200) // 工作地点
+  workSchedule            String?             @db.VarChar(500) // 工作安排
+  qualificationRequirements String           @db.Text // 资格要求
+  jobDescription          String              @db.Text // 职位描述
+  benefits                String?             @db.Text // 福利待遇
+  recruitmentChannels     String[]            @default([]) // 招聘渠道
+  recruiters              String[]            @default([]) // 招聘负责人ID数组
+  interviewers            String[]            @default([]) // 面试官ID数组
+  candidates              Json?               // 候选人信息JSON数组
+  notes                   String?             @db.Text // 备注
+  createdAt               DateTime            @default(now())
+  updatedAt               DateTime            @updatedAt
+
+  @@index([preparationProjectId, positionType])
+  @@index([status, priority])
+  @@index([startDate, endDate])
+  @@index([recruitmentCode])
+  @@map("staff_recruitments")
+}
+
+// 里程碑跟踪
+model MilestoneTracking {
+  id                   String              @id @default(cuid())
+  preparationProjectId String
+  preparationProject   PreparationProject  @relation(fields: [preparationProjectId], references: [id], onDelete: Cascade)
+  name                 String              @db.VarChar(200) // 里程碑名称
+  description          String?             @db.Text // 描述
+  category             String              @db.VarChar(50) // 类别
+  status               String              @default("PENDING") @db.VarChar(20) // PENDING, IN_PROGRESS, COMPLETED, OVERDUE, CANCELLED, BLOCKED
+  priority             Priority            @default(MEDIUM) // 优先级
+  plannedDate          DateTime            // 计划日期
+  actualDate           DateTime?           // 实际日期
+  dependencies         String[]            @default([]) // 依赖的里程碑ID
+  relatedTasks         String[]            @default([]) // 相关任务ID
+  deliverables         String[]            @default([]) // 交付物
+  criteria             String?             @db.Text // 完成标准
+  ownerId              String?             // 负责人ID
+  owner                User?               @relation("MilestoneOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  stakeholders         String[]            @default([]) // 利益相关者ID数组
+  riskLevel            String              @default("MEDIUM") @db.VarChar(20) // LOW, MEDIUM, HIGH
+  notes                String?             @db.Text // 备注
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+
+  @@index([preparationProjectId, status])
+  @@index([plannedDate])
+  @@index([ownerId])
+  @@index([category, status])
+  @@map("milestone_tracking")
+}
