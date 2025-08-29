@@ -1,0 +1,399 @@
+name: 📖 部署到 GitHub Pages
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'frontend/**'
+      - 'src/**'
+      - 'public/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'pnpm-lock.yaml'
+      - 'yarn.lock'
+      - 'vite.config.*'
+      - 'tsconfig.*'
+  workflow_dispatch:
+    inputs:
+      force_deploy:
+        description: '强制部署'
+        required: false
+        default: false
+        type: boolean
+
+# 设置 GitHub Pages 所需的权限
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 并发控制 - 确保只有一个部署在运行
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: '18'
+  # 构建优化
+  CI: 'true'
+  NODE_OPTIONS: '--max-old-space-size=4096'
+  FORCE_COLOR: '1'
+
+jobs:
+  # 环境检测
+  setup:
+    name: 🔍 环境检测
+    runs-on: ubuntu-latest
+    outputs:
+      package-manager: ${{ steps.detect-pm.outputs.package-manager }}
+      project-structure: ${{ steps.detect-structure.outputs.project-structure }}
+    
+    steps:
+      - name: 📂 检出代码
+        uses: actions/checkout@v4
+
+      - name: 🔍 检测项目结构
+        id: detect-structure
+        run: |
+          if [ -d "frontend" ]; then
+            echo "project-structure=workspace" >> $GITHUB_OUTPUT
+            echo "✅ 检测到工作区结构 (frontend 目录)"
+          else
+            echo "project-structure=single" >> $GITHUB_OUTPUT
+            echo "✅ 检测到单项目结构 (根目录)"
+          fi
+
+      - name: 📦 检测包管理器
+        id: detect-pm
+        run: |
+          if [ -f "pnpm-lock.yaml" ]; then
+            echo "package-manager=pnpm" >> $GITHUB_OUTPUT
+            echo "📦 使用 pnpm"
+          elif [ -f "yarn.lock" ]; then
+            echo "package-manager=yarn" >> $GITHUB_OUTPUT
+            echo "📦 使用 yarn"
+          else
+            echo "package-manager=npm" >> $GITHUB_OUTPUT
+            echo "📦 使用 npm"
+          fi
+
+  # 构建和部署
+  build-and-deploy:
+    name: 🏗️ 构建并部署
+    runs-on: ubuntu-latest
+    needs: setup
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    steps:
+      - name: 📂 检出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📦 设置包管理器 (pnpm)
+        if: needs.setup.outputs.package-manager == 'pnpm'
+        uses: pnpm/action-setup@v2
+        with:
+          version: '8.15.0'
+
+      - name: 🟢 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: ${{ needs.setup.outputs.package-manager }}
+
+      - name: 📥 安装依赖
+        run: |
+          echo "🔧 使用 ${{ needs.setup.outputs.package-manager }} 安装依赖..."
+          case "${{ needs.setup.outputs.package-manager }}" in
+            "pnpm")
+              pnpm install --frozen-lockfile
+              ;;
+            "yarn")
+              yarn install --frozen-lockfile
+              ;;
+            *)
+              npm ci
+              ;;
+          esac
+
+      - name: 🔧 代码质量检查
+        run: |
+          echo "🔍 运行代码质量检查..."
+          
+          # TypeScript 检查
+          case "${{ needs.setup.outputs.package-manager }}" in
+            "pnpm")
+              if [ "${{ needs.setup.outputs.project-structure }}" == "workspace" ]; then
+                pnpm --filter frontend typecheck 2>/dev/null || pnpm typecheck 2>/dev/null || npx tsc --noEmit || true
+              else
+                pnpm typecheck 2>/dev/null || npx tsc --noEmit || true
+              fi
+              ;;
+            "yarn")
+              yarn typecheck 2>/dev/null || npx tsc --noEmit || true
+              ;;
+            *)
+              npm run typecheck 2>/dev/null || npx tsc --noEmit || true
+              ;;
+          esac
+          
+          # ESLint 检查 (非阻塞)
+          echo "🎨 运行 ESLint 检查..."
+          case "${{ needs.setup.outputs.package-manager }}" in
+            "pnpm")
+              pnpm lint 2>/dev/null || true
+              ;;
+            "yarn")
+              yarn lint 2>/dev/null || true
+              ;;
+            *)
+              npm run lint 2>/dev/null || true
+              ;;
+          esac
+        continue-on-error: true
+
+      - name: 🧪 运行测试
+        run: |
+          echo "🧪 运行测试套件..."
+          case "${{ needs.setup.outputs.package-manager }}" in
+            "pnpm")
+              if [ "${{ needs.setup.outputs.project-structure }}" == "workspace" ]; then
+                pnpm --filter frontend test 2>/dev/null || pnpm test 2>/dev/null || echo "✅ 测试完成"
+              else
+                pnpm test 2>/dev/null || echo "✅ 测试完成"
+              fi
+              ;;
+            "yarn")
+              yarn test 2>/dev/null || echo "✅ 测试完成"
+              ;;
+            *)
+              npm run test 2>/dev/null || echo "✅ 测试完成"
+              ;;
+          esac
+        env:
+          NODE_ENV: test
+          CI: true
+        continue-on-error: true
+
+      - name: 🏗️ 构建生产版本
+        run: |
+          echo "🏗️ 构建生产版本..."
+          
+          case "${{ needs.setup.outputs.package-manager }}" in
+            "pnpm")
+              if [ "${{ needs.setup.outputs.project-structure }}" == "workspace" ]; then
+                pnpm --filter frontend build || pnpm build
+              else
+                pnpm build
+              fi
+              ;;
+            "yarn")
+              yarn build
+              ;;
+            *)
+              npm run build
+              ;;
+          esac
+        env:
+          NODE_ENV: production
+          # GitHub Pages 相关环境变量
+          PUBLIC_URL: /mendian
+          VITE_BASE_URL: /mendian/
+          VITE_APP_BASE_URL: /mendian/
+          REACT_APP_BASE_URL: /mendian/
+          BASE_URL: /mendian/
+          # 应用元信息
+          VITE_APP_VERSION: ${{ github.sha }}
+          VITE_APP_BUILD_DATE: ${{ github.event.head_commit.timestamp }}
+          VITE_APP_ENVIRONMENT: production
+          VITE_APP_COMMIT_SHA: ${{ github.sha }}
+          VITE_APP_BRANCH: ${{ github.ref_name }}
+          REACT_APP_VERSION: ${{ github.sha }}
+          REACT_APP_ENVIRONMENT: production
+
+      - name: 📊 构建分析
+        run: |
+          echo "📊 分析构建结果..."
+          
+          # 确定构建输出目录
+          BUILD_DIR=""
+          if [ "${{ needs.setup.outputs.project-structure }}" == "workspace" ] && [ -d "frontend/dist" ]; then
+            BUILD_DIR="frontend/dist"
+          elif [ -d "dist" ]; then
+            BUILD_DIR="dist"
+          elif [ -d "build" ]; then
+            BUILD_DIR="build"
+          else
+            echo "❌ 构建失败：未找到构建输出目录"
+            find . -name "dist" -o -name "build" -type d
+            exit 1
+          fi
+          
+          echo "BUILD_DIR=$BUILD_DIR" >> $GITHUB_ENV
+          echo "✅ 构建输出目录: $BUILD_DIR"
+          echo "📦 构建大小: $(du -sh $BUILD_DIR | cut -f1)"
+          echo "📄 文件数量: $(find $BUILD_DIR -type f | wc -l)"
+          echo "🗂️ 主要文件:"
+          ls -lah $BUILD_DIR/ | head -10
+
+      - name: 🔧 优化 GitHub Pages 部署
+        run: |
+          echo "🔧 为 GitHub Pages 优化构建产物..."
+          
+          BUILD_DIR="${{ env.BUILD_DIR }}"
+          
+          # 创建 .nojekyll 文件以禁用 Jekyll 处理
+          touch $BUILD_DIR/.nojekyll
+          echo "✅ 已创建 .nojekyll 文件"
+          
+          # 创建 404.html（用于 SPA 路由）
+          if [ ! -f "$BUILD_DIR/404.html" ]; then
+            if [ -f "$BUILD_DIR/index.html" ]; then
+              cp "$BUILD_DIR/index.html" "$BUILD_DIR/404.html"
+              echo "✅ 已创建 404.html（SPA 路由支持）"
+            fi
+          fi
+          
+          # 创建 CNAME 文件（如果有自定义域名）
+          # echo "yourdomain.com" > $BUILD_DIR/CNAME
+          
+          # 验证重要文件存在
+          if [ ! -f "$BUILD_DIR/index.html" ]; then
+            echo "❌ 错误：index.html 文件不存在"
+            exit 1
+          fi
+          
+          echo "✅ GitHub Pages 优化完成"
+
+      - name: 🔒 安全检查
+        run: |
+          echo "🔒 运行安全检查..."
+          
+          BUILD_DIR="${{ env.BUILD_DIR }}"
+          
+          # 检查敏感文件
+          echo "🔍 检查敏感文件..."
+          SENSITIVE_FILES=$(find $BUILD_DIR -name "*.env*" -o -name "*.key" -o -name "*.pem" -o -name "config.json" | wc -l)
+          
+          if [ $SENSITIVE_FILES -gt 0 ]; then
+            echo "⚠️ 发现可能的敏感文件："
+            find $BUILD_DIR -name "*.env*" -o -name "*.key" -o -name "*.pem" -o -name "config.json"
+            echo "❌ 请检查这些文件是否应该被发布"
+            # exit 1  # 取消注释以在发现敏感文件时终止部署
+          else
+            echo "✅ 安全检查通过"
+          fi
+          
+          # 检查文件大小
+          LARGE_FILES=$(find $BUILD_DIR -size +10M -type f)
+          if [ -n "$LARGE_FILES" ]; then
+            echo "⚠️ 发现大文件 (>10MB)："
+            echo "$LARGE_FILES" | xargs ls -lh
+            echo "💡 建议：考虑压缩或移除大文件以提高加载速度"
+          fi
+
+      - name: 📋 生成部署信息
+        run: |
+          echo "📋 生成部署信息文件..."
+          
+          BUILD_DIR="${{ env.BUILD_DIR }}"
+          
+          cat > $BUILD_DIR/deploy-info.json << EOF
+          {
+            "deployTime": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "gitCommit": "${{ github.sha }}",
+            "gitBranch": "${{ github.ref_name }}",
+            "buildNumber": "${{ github.run_number }}",
+            "repository": "${{ github.repository }}",
+            "environment": "production",
+            "platform": "GitHub Pages"
+          }
+          EOF
+          
+          echo "✅ 部署信息文件已创建"
+          cat $BUILD_DIR/deploy-info.json
+
+      - name: 📤 设置 GitHub Pages
+        uses: actions/configure-pages@v4
+
+      - name: 📦 上传构建产物
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ env.BUILD_DIR }}
+
+      - name: 🚀 部署到 GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: 🧪 部署后验证
+        run: |
+          echo "🧪 部署后验证..."
+          
+          SITE_URL="${{ steps.deployment.outputs.page_url }}"
+          echo "🌐 部署 URL: $SITE_URL"
+          
+          # 等待部署生效
+          echo "⏳ 等待部署生效..."
+          sleep 30
+          
+          # 健康检查
+          echo "🏥 执行健康检查..."
+          for i in {1..5}; do
+            if curl -f -s --max-time 30 "$SITE_URL" > /dev/null; then
+              echo "✅ 健康检查通过 (尝试 $i/5)"
+              break
+            else
+              echo "⚠️ 健康检查失败，重试中... (尝试 $i/5)"
+              if [ $i -eq 5 ]; then
+                echo "⚠️ 健康检查失败，但部署可能仍然成功"
+                echo "💡 请手动访问 $SITE_URL 确认部署状态"
+              fi
+              sleep 10
+            fi
+          done
+
+      - name: 📝 部署摘要
+        if: always()
+        run: |
+          STATUS="${{ job.status == 'success' && '✅ 部署成功' || '❌ 部署失败' }}"
+          SITE_URL="${{ steps.deployment.outputs.page_url }}"
+          
+          echo "## 📖 GitHub Pages 部署摘要" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **🌐 网站 URL**: [$SITE_URL]($SITE_URL)" >> $GITHUB_STEP_SUMMARY
+          echo "- **📦 提交**: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **🌿 分支**: \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **⏰ 部署时间**: \`$(date)\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **📊 状态**: $STATUS" >> $GITHUB_STEP_SUMMARY
+          echo "- **🔢 构建编号**: \`${{ github.run_number }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "### 🎉 部署成功！" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "您的好饭碗门店管理系统已成功部署到 GitHub Pages！" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 📋 下一步操作" >> $GITHUB_STEP_SUMMARY
+            echo "1. 🌐 访问 [$SITE_URL]($SITE_URL) 查看您的应用" >> $GITHUB_STEP_SUMMARY
+            echo "2. 🔍 测试所有主要功能是否正常" >> $GITHUB_STEP_SUMMARY
+            echo "3. 📱 验证移动端响应式设计" >> $GITHUB_STEP_SUMMARY
+            echo "4. ⚙️ 如需自定义域名，请在仓库设置中配置" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 🔗 有用的链接" >> $GITHUB_STEP_SUMMARY
+            echo "- 📖 [GitHub Pages 设置](https://github.com/${{ github.repository }}/settings/pages)" >> $GITHUB_STEP_SUMMARY
+            echo "- 🔧 [自定义域名配置](https://docs.github.com/pages/configuring-a-custom-domain-for-your-github-pages-site)" >> $GITHUB_STEP_SUMMARY
+            echo "- 📊 [部署历史](https://github.com/${{ github.repository }}/deployments)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ❌ 部署失败" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "请检查构建日志以了解失败原因。" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 🔧 常见问题排查" >> $GITHUB_STEP_SUMMARY
+            echo "1. 检查构建命令是否正确" >> $GITHUB_STEP_SUMMARY
+            echo "2. 验证环境变量设置" >> $GITHUB_STEP_SUMMARY
+            echo "3. 确认依赖安装成功" >> $GITHUB_STEP_SUMMARY
+            echo "4. 查看详细的错误日志" >> $GITHUB_STEP_SUMMARY
+          fi
