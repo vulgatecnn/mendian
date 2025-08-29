@@ -70,7 +70,14 @@ export interface BatchAction {
   onClick: (selectedKeys: React.Key[], selectedRows: any[]) => void | Promise<void>
 }
 
-export interface ColumnConfig extends Omit<ColumnsType<any>[0], 'render'> {
+export interface ColumnConfig {
+  key?: React.Key
+  title?: React.ReactNode
+  dataIndex?: string | string[]
+  width?: string | number
+  fixed?: 'left' | 'right' | boolean
+  align?: 'left' | 'center' | 'right'
+  className?: string
   render?: (value: any, record: any, index: number) => React.ReactNode
   searchable?: boolean
   sortable?: boolean

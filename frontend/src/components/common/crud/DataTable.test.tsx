@@ -29,11 +29,11 @@ vi.mock('@/hooks/useDevice', () => ({
 
 // Mock Antd theme hook
 vi.mock('antd', async () => {
-  const actual = await vi.importActual('antd')
+  const actual = await vi.importActual('antd') as any
   return {
     ...actual,
     theme: {
-      ...actual.theme,
+      ...(actual.theme || {}),
       useToken: () => ({
         token: {
           colorBgContainer: '#ffffff',

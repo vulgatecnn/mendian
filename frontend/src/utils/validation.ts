@@ -168,6 +168,30 @@ export class Validator {
   }
 
   /**
+   * 验证字符串长度
+   */
+  static validateLength(value: string, min?: number, max?: number): ValidationResult {
+    const trimmed = value?.trim() || ''
+    const length = trimmed.length
+    let isValid = true
+    let message: string | undefined
+
+    if (min !== undefined && length < min) {
+      isValid = false
+      message = `长度不能少于${min}个字符`
+    } else if (max !== undefined && length > max) {
+      isValid = false
+      message = `长度不能超过${max}个字符`
+    }
+
+    return {
+      isValid,
+      message,
+      sanitized: trimmed
+    }
+  }
+
+  /**
    * 验证数字格式
    */
   static number(value: string, options?: { min?: number; max?: number; integer?: boolean }): ValidationResult {
@@ -213,7 +237,7 @@ export class Validator {
 
     // 长度验证
     if (rules.minLength !== undefined || rules.maxLength !== undefined) {
-      result = this.length(value, rules.minLength, rules.maxLength)
+      result = this.validateLength(value, rules.minLength, rules.maxLength)
       if (!result.isValid) return result
     }
 

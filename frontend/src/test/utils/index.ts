@@ -1,5 +1,7 @@
 // 测试工具统一导出
 
+import { expect } from 'vitest'
+
 // 核心渲染工具
 export {
   render,

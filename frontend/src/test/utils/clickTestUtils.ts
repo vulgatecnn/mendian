@@ -4,7 +4,7 @@ import { expect } from 'vitest'
 
 // 点击测试工具集合
 export class ClickTestUtils {
-  private user = userEvent.setup()
+  protected user = userEvent.setup()
 
   // 测试所有按钮点击
   async testAllButtons(container: HTMLElement = document.body) {
@@ -406,7 +406,7 @@ export class AntdClickTestUtils extends ClickTestUtils {
         await this.user.click(trigger)
         // 检查是否有notification出现
         await waitFor(() => {
-          const notification = document.querySelector('.ant-notification')
+          const _notification = document.querySelector('.ant-notification')
           // notification可能不会立即出现，这是正常的
         }, { timeout: 1000 })
         results.push({ action: `Notification trigger: ${trigger.textContent}`, success: true })

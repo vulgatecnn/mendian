@@ -15,7 +15,6 @@ import {
   Row,
   Col,
   Button,
-  message,
   Spin
 } from 'antd'
 import {
@@ -23,7 +22,7 @@ import {
   InboxOutlined
 } from '@ant-design/icons'
 import type { FormInstance } from 'antd/es/form'
-import type { UploadFile, UploadProps } from 'antd/es/upload'
+import type { UploadProps } from 'antd/es/upload'
 import { useDevice } from '@/hooks/useDevice'
 
 const { TextArea } = Input
@@ -170,7 +169,7 @@ const FormModal = forwardRef<FormModalRef, FormModalProps>(({
   wrapperCol,
   readOnly = false,
   footer,
-  extra,
+  extra: _extra,
   onValuesChange,
   onFieldsChange
 }, ref) => {
