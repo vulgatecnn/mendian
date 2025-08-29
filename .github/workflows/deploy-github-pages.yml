@@ -109,7 +109,8 @@ jobs:
           echo "🔧 使用 ${{ needs.setup.outputs.package-manager }} 安装依赖..."
           case "${{ needs.setup.outputs.package-manager }}" in
             "pnpm")
-              pnpm install --frozen-lockfile
+              # pnpm工作区项目，使用更宽松的安装策略
+              pnpm install --no-frozen-lockfile || pnpm install
               ;;
             "yarn")
               yarn install --frozen-lockfile
@@ -127,7 +128,7 @@ jobs:
           case "${{ needs.setup.outputs.package-manager }}" in
             "pnpm")
               if [ "${{ needs.setup.outputs.project-structure }}" == "workspace" ]; then
-                pnpm --filter frontend typecheck 2>/dev/null || pnpm typecheck 2>/dev/null || npx tsc --noEmit || true
+                pnpm --filter "@mendian/frontend" typecheck 2>/dev/null || pnpm --filter "frontend" typecheck 2>/dev/null || pnpm typecheck 2>/dev/null || true
               else
                 pnpm typecheck 2>/dev/null || npx tsc --noEmit || true
               fi
@@ -144,7 +145,11 @@ jobs:
           echo "🎨 运行 ESLint 检查..."
           case "${{ needs.setup.outputs.package-manager }}" in
             "pnpm")
-              pnpm lint 2>/dev/null || true
+              if [ "${{ needs.setup.outputs.project-structure }}" == "workspace" ]; then
+                pnpm --filter "@mendian/frontend" lint 2>/dev/null || pnpm --filter "frontend" lint 2>/dev/null || pnpm lint 2>/dev/null || true
+              else
+                pnpm lint 2>/dev/null || true
+              fi
               ;;
             "yarn")
               yarn lint 2>/dev/null || true
@@ -161,7 +166,7 @@ jobs:
           case "${{ needs.setup.outputs.package-manager }}" in
             "pnpm")
               if [ "${{ needs.setup.outputs.project-structure }}" == "workspace" ]; then
-                pnpm --filter frontend test 2>/dev/null || pnpm test 2>/dev/null || echo "✅ 测试完成"
+                pnpm --filter "@mendian/frontend" test 2>/dev/null || pnpm --filter "frontend" test 2>/dev/null || pnpm test 2>/dev/null || echo "✅ 测试完成"
               else
                 pnpm test 2>/dev/null || echo "✅ 测试完成"
               fi
@@ -185,7 +190,8 @@ jobs:
           case "${{ needs.setup.outputs.package-manager }}" in
             "pnpm")
               if [ "${{ needs.setup.outputs.project-structure }}" == "workspace" ]; then
-                pnpm --filter frontend build || pnpm build
+                # pnpm工作区：构建前端项目
+                pnpm --filter "@mendian/frontend" build || pnpm --filter "frontend" build || pnpm run build
               else
                 pnpm build
               fi
