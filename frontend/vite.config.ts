@@ -5,6 +5,7 @@ import { resolve } from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: process.env.NODE_ENV === 'production' ? '/mendian/' : '/',
   plugins: [
     react(),
     // Bundle 分析器（仅在分析模式下启用）

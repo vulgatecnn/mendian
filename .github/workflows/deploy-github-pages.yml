@@ -1,25 +1,10 @@
-name: 📖 部署到 GitHub Pages
+name: 📖 部署到 GitHub Pages (复杂版-已禁用)
 
+# 此工作流已被禁用，使用 deploy-github-pages-simple.yml 替代
 on:
-  push:
-    branches: [ main, master ]
-    paths:
-      - 'frontend/**'
-      - 'src/**'
-      - 'public/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'pnpm-lock.yaml'
-      - 'yarn.lock'
-      - 'vite.config.*'
-      - 'tsconfig.*'
-  workflow_dispatch:
-    inputs:
-      force_deploy:
-        description: '强制部署'
-        required: false
-        default: false
-        type: boolean
+  # push:
+  #   branches: [ main, master ]
+  # workflow_dispatch:
 
 # 设置 GitHub Pages 所需的权限
 permissions:
