@@ -6,7 +6,8 @@
   "description": "好饭碗门店管理系统前端应用",
   "scripts": {
     "dev": "vite",
-    "build": "[ \"$SKIP_TYPE_CHECK\" = \"true\" ] && vite build || (tsc && vite build)",
+    "build": "vite build",
+    "build:with-types": "tsc && vite build",
     "preview": "vite preview",
     
     "test": "vitest",

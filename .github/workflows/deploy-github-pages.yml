@@ -157,10 +157,12 @@ jobs:
           case "${{ needs.setup.outputs.package-manager }}" in
             "pnpm")
               if [ "${{ needs.setup.outputs.project-structure }}" == "workspace" ]; then
-                # pnpm工作区：仅构建前端项目（不构建后端）
-                echo "📦 构建前端项目..."
+                # pnpm工作区：仅构建前端项目（跳过TypeScript检查）
+                echo "📦 构建前端项目（跳过TypeScript检查）..."
                 pnpm --filter "@mendian/frontend" build || pnpm --filter "frontend" build
               else
+                # 单项目构建（跳过TypeScript检查）
+                echo "📦 直接使用vite build..."
                 pnpm build
               fi
               ;;
@@ -173,8 +175,6 @@ jobs:
           esac
         env:
           NODE_ENV: production
-          # 跳过TypeScript检查以加速构建
-          SKIP_TYPE_CHECK: true
           # GitHub Pages 相关环境变量
           PUBLIC_URL: /mendian
           VITE_BASE_URL: /mendian/
