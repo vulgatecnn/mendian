@@ -56,10 +56,12 @@ jobs:
         run: pnpm build
         env:
           NODE_ENV: production
-          # 测试服务器环境变量 - 请根据实际情况修改
+          # 测试服务器环境变量 - 设置正确的base路径
           VITE_BASE_URL: /
-          VITE_API_URL: ${{ vars.API_URL || 'http://your-test-server.com/api' }}
+          VITE_API_URL: ${{ vars.API_URL || 'http://192.3.11.106:9000/api' }}
           VITE_APP_ENV: test
+          # 关键：为测试服务器设置正确的base路径
+          VITE_BASE: /
 
       - name: 📦 准备部署文件
         run: |
