@@ -48,6 +48,14 @@ jobs:
           NODE_ENV: production
           VITE_BASE_URL: /mendian/
 
+      - name: 🔧 Setup SPA routing
+        run: |
+          # Create 404.html for SPA routing
+          cp frontend/dist/index.html frontend/dist/404.html
+          # Create .nojekyll to prevent Jekyll processing
+          touch frontend/dist/.nojekyll
+          echo "✅ SPA routing configured"
+
       - name: 📋 Setup Pages
         uses: actions/configure-pages@v4
 
