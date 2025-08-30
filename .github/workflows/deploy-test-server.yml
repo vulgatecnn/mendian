@@ -1,0 +1,241 @@
+name: 🚀 部署到测试服务器
+
+on:
+  push:
+    branches: [ main, master, develop ]
+    paths:
+      - 'frontend/**'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: '选择部署环境'
+        required: true
+        default: 'test'
+        type: choice
+        options:
+          - test
+          - staging
+
+permissions:
+  contents: read
+
+concurrency:
+  group: test-server-deploy
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '18'
+  PNPM_VERSION: '8.15.0'
+
+jobs:
+  deploy:
+    name: 🏗️ 构建并部署到测试服务器
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'test' }}
+    
+    steps:
+      - name: 📂 检出代码
+        uses: actions/checkout@v4
+
+      - name: 📦 设置 pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: 🟢 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: 📥 安装依赖
+        run: pnpm install --no-frozen-lockfile
+
+      - name: 🏗️ 构建前端项目
+        working-directory: frontend
+        run: pnpm build
+        env:
+          NODE_ENV: production
+          # 测试服务器环境变量 - 请根据实际情况修改
+          VITE_BASE_URL: /
+          VITE_API_URL: ${{ vars.API_URL || 'http://your-test-server.com/api' }}
+          VITE_APP_ENV: test
+
+      - name: 📦 准备部署文件
+        run: |
+          echo "📦 准备部署文件..."
+          # 创建部署包
+          cd frontend/dist
+          tar -czf ../../deploy-package.tar.gz .
+          cd ../..
+          echo "✅ 部署包已创建: deploy-package.tar.gz"
+          ls -lah deploy-package.tar.gz
+
+      - name: 🚀 部署到测试服务器 (SSH)
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.TEST_SERVER_HOST }}
+          username: ${{ secrets.TEST_SERVER_USER }}
+          password: ${{ secrets.TEST_SERVER_PASSWORD }}
+          port: ${{ secrets.TEST_SERVER_PORT || 22 }}
+          script: |
+            echo "🚀 开始部署到测试服务器..."
+            
+            # 设置变量
+            DEPLOY_PATH="${{ vars.DEPLOY_PATH || '/var/www/mendian-test' }}"
+            BACKUP_PATH="${{ vars.BACKUP_PATH || '/var/backups/mendian' }}"
+            
+            # 创建必要目录
+            mkdir -p $DEPLOY_PATH
+            mkdir -p $BACKUP_PATH
+            
+            # 备份现有部署（如果存在）
+            if [ -d "$DEPLOY_PATH" ] && [ "$(ls -A $DEPLOY_PATH)" ]; then
+              echo "📦 备份现有部署..."
+              tar -czf $BACKUP_PATH/backup-$(date +%Y%m%d-%H%M%S).tar.gz -C $DEPLOY_PATH .
+              echo "✅ 备份完成"
+            fi
+            
+            # 清理部署目录
+            rm -rf $DEPLOY_PATH/*
+            echo "🧹 清理完成"
+
+      - name: 📤 上传构建文件
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.TEST_SERVER_HOST }}
+          username: ${{ secrets.TEST_SERVER_USER }}
+          password: ${{ secrets.TEST_SERVER_PASSWORD }}
+          port: ${{ secrets.TEST_SERVER_PORT || 22 }}
+          source: "deploy-package.tar.gz"
+          target: "/tmp/"
+
+      - name: 🔧 解压并配置
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.TEST_SERVER_HOST }}
+          username: ${{ secrets.TEST_SERVER_USER }}
+          password: ${{ secrets.TEST_SERVER_PASSWORD }}
+          port: ${{ secrets.TEST_SERVER_PORT || 22 }}
+          script: |
+            echo "🔧 解压和配置..."
+            
+            DEPLOY_PATH="${{ vars.DEPLOY_PATH || '/var/www/mendian-test' }}"
+            
+            # 解压部署文件
+            cd /tmp
+            tar -xzf deploy-package.tar.gz -C $DEPLOY_PATH
+            
+            # 设置正确的权限
+            chmod -R 755 $DEPLOY_PATH
+            
+            # 创建 nginx 配置（如果需要）
+            if [ ! -f "/etc/nginx/sites-available/mendian-test" ]; then
+              echo "🔧 创建 nginx 配置..."
+              tee /etc/nginx/sites-available/mendian-test > /dev/null <<EOF
+            server {
+                listen 9000;
+                server_name 192.3.11.106;
+                root $DEPLOY_PATH;
+                index index.html;
+                
+                # SPA 路由支持
+                location / {
+                    try_files \$uri \$uri/ /index.html;
+                }
+                
+                # 静态资源缓存
+                location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+                    expires 1y;
+                    add_header Cache-Control "public, immutable";
+                }
+                
+                # 安全配置
+                add_header X-Frame-Options "SAMEORIGIN" always;
+                add_header X-Content-Type-Options "nosniff" always;
+                add_header X-XSS-Protection "1; mode=block" always;
+            }
+            EOF
+              
+              # 启用站点
+              ln -sf /etc/nginx/sites-available/mendian-test /etc/nginx/sites-enabled/
+            fi
+            
+            # 测试 nginx 配置
+            nginx -t && systemctl reload nginx || service nginx reload
+            
+            # 清理临时文件
+            rm -f /tmp/deploy-package.tar.gz
+            
+            echo "✅ 部署完成！"
+            echo "🌐 网站地址: http://192.3.11.106:9000"
+
+      - name: 🧪 部署后健康检查
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.TEST_SERVER_HOST }}
+          username: ${{ secrets.TEST_SERVER_USER }}
+          password: ${{ secrets.TEST_SERVER_PASSWORD }}
+          port: ${{ secrets.TEST_SERVER_PORT || 22 }}
+          script: |
+            echo "🧪 执行健康检查..."
+            
+            SITE_URL="http://192.3.11.106:9000"
+            
+            # 等待服务启动
+            sleep 10
+            
+            # 健康检查
+            for i in {1..5}; do
+              if curl -f -s --max-time 30 "$SITE_URL" > /dev/null; then
+                echo "✅ 健康检查通过 (尝试 $i/5)"
+                echo "🎉 部署成功！网站正常运行"
+                break
+              else
+                echo "⚠️ 健康检查失败，重试中... (尝试 $i/5)"
+                if [ $i -eq 5 ]; then
+                  echo "⚠️ 健康检查最终失败，但可能仍需要手动检查"
+                  echo "💡 请手动访问 $SITE_URL 确认部署状态"
+                fi
+                sleep 10
+              fi
+            done
+
+      - name: 📱 发送通知 (可选)
+        if: always()
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.TEST_SERVER_HOST }}
+          username: ${{ secrets.TEST_SERVER_USER }}
+          password: ${{ secrets.TEST_SERVER_PASSWORD }}
+          port: ${{ secrets.TEST_SERVER_PORT || 22 }}
+          script: |
+            STATUS="${{ job.status == 'success' && '✅ 成功' || '❌ 失败' }}"
+            echo "📱 部署状态: $STATUS"
+            echo "🕐 部署时间: $(date)"
+            echo "📝 提交: ${{ github.sha }}"
+            echo "🌿 分支: ${{ github.ref_name }}"
+            echo "🌐 网站: http://192.3.11.106:9000"
+
+      - name: 📋 部署摘要
+        if: always()
+        run: |
+          STATUS="${{ job.status == 'success' && '✅ 部署成功' || '❌ 部署失败' }}"
+          
+          echo "## 🚀 测试服务器部署摘要" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **📊 状态**: $STATUS" >> $GITHUB_STEP_SUMMARY
+          echo "- **🌐 网站**: http://192.3.11.106:9000" >> $GITHUB_STEP_SUMMARY
+          echo "- **📦 提交**: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **🌿 分支**: \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **⏰ 部署时间**: \`$(date)\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **🔢 构建编号**: \`${{ github.run_number }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "### 🎉 部署成功！" >> $GITHUB_STEP_SUMMARY
+            echo "您的测试环境已成功更新，可以开始测试了！" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ❌ 部署失败" >> $GITHUB_STEP_SUMMARY
+            echo "请检查构建日志以了解失败原因。" >> $GITHUB_STEP_SUMMARY
+          fi
