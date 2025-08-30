@@ -129,46 +129,190 @@ jobs:
             # 设置正确的权限
             chmod -R 755 $DEPLOY_PATH
             
-            # 创建 nginx 配置（如果需要）
-            if [ ! -f "/etc/nginx/sites-available/mendian-test" ]; then
-              echo "🔧 创建 nginx 配置..."
-              tee /etc/nginx/sites-available/mendian-test > /dev/null <<EOF
+            # 检测Linux发行版
+            if command -v apt-get >/dev/null 2>&1; then
+                DISTRO="debian"
+                PACKAGE_MANAGER="apt-get"
+            elif command -v yum >/dev/null 2>&1; then
+                DISTRO="centos"
+                PACKAGE_MANAGER="yum"
+            elif command -v dnf >/dev/null 2>&1; then
+                DISTRO="centos"
+                PACKAGE_MANAGER="dnf"
+            else
+                echo "⚠️ 无法检测Linux发行版，假设为通用系统"
+                DISTRO="generic"
+            fi
+            
+            echo "📋 检测到系统类型: $DISTRO"
+            
+            # 检查并安装nginx
+            if ! command -v nginx >/dev/null 2>&1; then
+                echo "📦 nginx未安装，正在安装..."
+                case $DISTRO in
+                    "debian")
+                        sudo $PACKAGE_MANAGER update -y
+                        sudo $PACKAGE_MANAGER install -y nginx
+                        ;;
+                    "centos")
+                        sudo $PACKAGE_MANAGER install -y epel-release
+                        sudo $PACKAGE_MANAGER install -y nginx
+                        ;;
+                    *)
+                        echo "❌ 无法自动安装nginx，请手动安装"
+                        exit 1
+                        ;;
+                esac
+            fi
+            
+            # 确保nginx服务已启动
+            sudo systemctl enable nginx || sudo chkconfig nginx on
+            sudo systemctl start nginx || sudo service nginx start
+            
+            # 创建nginx配置目录（如果不存在）
+            sudo mkdir -p /etc/nginx/conf.d
+            sudo mkdir -p /etc/nginx/sites-available
+            sudo mkdir -p /etc/nginx/sites-enabled
+            
+            # 检查nginx主配置文件是否包含sites-enabled
+            NGINX_CONF="/etc/nginx/nginx.conf"
+            if ! grep -q "sites-enabled" "$NGINX_CONF" 2>/dev/null; then
+                echo "🔧 更新nginx主配置以包含sites-enabled目录..."
+                # 在http块中添加include语句
+                sudo sed -i '/http {/a\\tinclude /etc/nginx/sites-enabled/*;' "$NGINX_CONF" || {
+                    echo "⚠️ 无法自动更新nginx.conf，将使用conf.d目录"
+                    USE_CONF_D=true
+                }
+            fi
+            
+            # 创建站点配置文件
+            if [ "$USE_CONF_D" = true ]; then
+                SITE_CONFIG="/etc/nginx/conf.d/mendian-test.conf"
+            else
+                SITE_CONFIG="/etc/nginx/sites-available/mendian-test"
+            fi
+            
+            echo "🔧 创建nginx配置文件: $SITE_CONFIG"
+            sudo tee "$SITE_CONFIG" > /dev/null <<EOF
             server {
                 listen 9000;
-                server_name 192.3.11.106;
+                server_name 192.3.11.106 localhost _;
                 root $DEPLOY_PATH;
-                index index.html;
+                index index.html index.htm;
+                
+                # 日志文件
+                access_log /var/log/nginx/mendian-test-access.log;
+                error_log /var/log/nginx/mendian-test-error.log;
                 
                 # SPA 路由支持
                 location / {
                     try_files \$uri \$uri/ /index.html;
+                    # 添加CORS头（如果需要）
+                    add_header Access-Control-Allow-Origin *;
+                    add_header Access-Control-Allow-Methods 'GET, POST, OPTIONS';
+                    add_header Access-Control-Allow-Headers 'DNT,X-Mx-ReqToken,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type';
                 }
                 
                 # 静态资源缓存
-                location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+                location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|map)$ {
                     expires 1y;
                     add_header Cache-Control "public, immutable";
+                    access_log off;
+                }
+                
+                # API代理（如果需要）
+                location /api/ {
+                    proxy_pass http://localhost:7900/api/;
+                    proxy_http_version 1.1;
+                    proxy_set_header Upgrade \$http_upgrade;
+                    proxy_set_header Connection 'upgrade';
+                    proxy_set_header Host \$host;
+                    proxy_set_header X-Real-IP \$remote_addr;
+                    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto \$scheme;
+                    proxy_cache_bypass \$http_upgrade;
                 }
                 
                 # 安全配置
                 add_header X-Frame-Options "SAMEORIGIN" always;
                 add_header X-Content-Type-Options "nosniff" always;
                 add_header X-XSS-Protection "1; mode=block" always;
+                add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+                
+                # 禁止访问隐藏文件
+                location ~ /\. {
+                    deny all;
+                }
+                
+                # 禁止访问备份文件
+                location ~ ~$ {
+                    deny all;
+                }
             }
             EOF
-              
-              # 启用站点
-              ln -sf /etc/nginx/sites-available/mendian-test /etc/nginx/sites-enabled/
+            
+            # 启用站点（仅在使用sites-enabled时）
+            if [ "$USE_CONF_D" != true ] && [ -d "/etc/nginx/sites-enabled" ]; then
+                echo "🔗 启用站点配置..."
+                sudo ln -sf "$SITE_CONFIG" /etc/nginx/sites-enabled/mendian-test
+                
+                # 移除默认站点（如果存在且监听80端口）
+                if [ -f "/etc/nginx/sites-enabled/default" ]; then
+                    sudo rm -f /etc/nginx/sites-enabled/default
+                fi
             fi
             
-            # 测试 nginx 配置
-            nginx -t && systemctl reload nginx || service nginx reload
+            # 创建日志目录
+            sudo mkdir -p /var/log/nginx
+            sudo chmod 755 /var/log/nginx
+            
+            # 测试nginx配置
+            echo "🧪 测试nginx配置..."
+            if sudo nginx -t; then
+                echo "✅ nginx配置测试通过"
+                # 重新加载nginx
+                if sudo systemctl reload nginx; then
+                    echo "✅ nginx重新加载成功"
+                elif sudo service nginx reload; then
+                    echo "✅ nginx重新加载成功 (使用service命令)"
+                else
+                    echo "⚠️ nginx重新加载失败，尝试重启..."
+                    if sudo systemctl restart nginx; then
+                        echo "✅ nginx重启成功"
+                    elif sudo service nginx restart; then
+                        echo "✅ nginx重启成功 (使用service命令)"
+                    else
+                        echo "❌ nginx重启失败"
+                        exit 1
+                    fi
+                fi
+            else
+                echo "❌ nginx配置测试失败"
+                echo "📋 nginx配置文件内容:"
+                sudo cat "$SITE_CONFIG"
+                exit 1
+            fi
+            
+            # 检查端口监听状态
+            echo "🔍 检查端口9000监听状态..."
+            if sudo netstat -tlnp | grep :9000 || sudo ss -tlnp | grep :9000; then
+                echo "✅ 端口9000已正在监听"
+            else
+                echo "⚠️ 端口9000未在监听，可能存在问题"
+            fi
+            
+            # 显示nginx进程状态
+            echo "📊 nginx进程状态:"
+            sudo systemctl status nginx --no-pager -l || sudo service nginx status
             
             # 清理临时文件
             rm -f /tmp/deploy-package.tar.gz
             
             echo "✅ 部署完成！"
             echo "🌐 网站地址: http://192.3.11.106:9000"
+            echo "📋 nginx配置文件: $SITE_CONFIG"
+            echo "📝 访问日志: /var/log/nginx/mendian-test-access.log"
+            echo "📝 错误日志: /var/log/nginx/mendian-test-error.log"
 
       - name: 🧪 部署后健康检查
         uses: appleboy/ssh-action@v1.0.3
@@ -181,24 +325,130 @@ jobs:
             echo "🧪 执行健康检查..."
             
             SITE_URL="http://192.3.11.106:9000"
+            DEPLOY_PATH="${{ vars.DEPLOY_PATH || '/var/www/mendian-test' }}"
             
-            # 等待服务启动
+            # 检查部署文件是否存在
+            echo "📁 检查部署文件..."
+            if [ -f "$DEPLOY_PATH/index.html" ]; then
+                echo "✅ index.html文件存在"
+                echo "📋 文件大小: $(ls -lh $DEPLOY_PATH/index.html | awk '{print $5}')"
+            else
+                echo "❌ index.html文件不存在"
+                echo "📋 部署目录内容:"
+                ls -la "$DEPLOY_PATH" || echo "部署目录不存在"
+            fi
+            
+            # 检查nginx配置和状态
+            echo "🔧 检查nginx状态..."
+            if sudo systemctl is-active nginx >/dev/null 2>&1; then
+                echo "✅ nginx服务运行中"
+            elif sudo service nginx status >/dev/null 2>&1; then
+                echo "✅ nginx服务运行中 (service命令检测)"
+            else
+                echo "❌ nginx服务未运行"
+                echo "📋 nginx状态:"
+                sudo systemctl status nginx --no-pager -l || sudo service nginx status
+            fi
+            
+            # 检查端口监听
+            echo "🔍 检查端口监听状态..."
+            PORT_CHECK=$(sudo netstat -tlnp 2>/dev/null | grep :9000 || sudo ss -tlnp 2>/dev/null | grep :9000 || echo "")
+            if [ -n "$PORT_CHECK" ]; then
+                echo "✅ 端口9000正在监听:"
+                echo "$PORT_CHECK"
+            else
+                echo "❌ 端口9000未在监听"
+                echo "📋 所有监听端口:"
+                sudo netstat -tlnp 2>/dev/null || sudo ss -tlnp 2>/dev/null || echo "无法获取端口信息"
+            fi
+            
+            # 检查nginx错误日志
+            echo "📝 检查nginx错误日志..."
+            if [ -f "/var/log/nginx/mendian-test-error.log" ]; then
+                ERROR_COUNT=$(wc -l < /var/log/nginx/mendian-test-error.log)
+                if [ "$ERROR_COUNT" -gt 0 ]; then
+                    echo "⚠️ 发现 $ERROR_COUNT 行错误日志:"
+                    sudo tail -10 /var/log/nginx/mendian-test-error.log
+                else
+                    echo "✅ 暂无错误日志"
+                fi
+            else
+                echo "⚠️ 错误日志文件不存在"
+            fi
+            
+            # 等待服务完全启动
+            echo "⏳ 等待服务完全启动 (10秒)..."
             sleep 10
             
             # 健康检查
+            echo "🩺 开始HTTP健康检查..."
             for i in {1..5}; do
-              if curl -f -s --max-time 30 "$SITE_URL" > /dev/null; then
-                echo "✅ 健康检查通过 (尝试 $i/5)"
-                echo "🎉 部署成功！网站正常运行"
-                break
-              else
-                echo "⚠️ 健康检查失败，重试中... (尝试 $i/5)"
-                if [ $i -eq 5 ]; then
-                  echo "⚠️ 健康检查最终失败，但可能仍需要手动检查"
-                  echo "💡 请手动访问 $SITE_URL 确认部署状态"
+              echo "📡 尝试连接 $SITE_URL (第 $i/5 次)..."
+              
+              # 使用curl进行详细的健康检查
+              HTTP_STATUS=$(curl -o /tmp/health_check_output.html -w "%{http_code}" -s --max-time 30 "$SITE_URL" 2>/tmp/curl_error.log)
+              CURL_EXIT=$?
+              
+              if [ $CURL_EXIT -eq 0 ] && [ "$HTTP_STATUS" = "200" ]; then
+                echo "✅ 健康检查通过 (HTTP状态码: $HTTP_STATUS)"
+                
+                # 检查返回内容
+                if [ -f "/tmp/health_check_output.html" ]; then
+                  CONTENT_SIZE=$(wc -c < /tmp/health_check_output.html)
+                  echo "📄 响应内容大小: $CONTENT_SIZE 字节"
+                  
+                  if [ "$CONTENT_SIZE" -gt 100 ]; then
+                    echo "✅ 响应内容正常"
+                    echo "🎉 部署成功！网站正常运行"
+                    
+                    # 显示前几行内容确认
+                    echo "📋 响应内容预览:"
+                    head -5 /tmp/health_check_output.html
+                    
+                    rm -f /tmp/health_check_output.html /tmp/curl_error.log
+                    break
+                  else
+                    echo "⚠️ 响应内容过少，可能存在问题"
+                  fi
                 fi
-                sleep 10
+              else
+                echo "❌ 健康检查失败 (HTTP状态码: ${HTTP_STATUS:-'无'}, curl退出码: $CURL_EXIT)"
+                
+                if [ -f "/tmp/curl_error.log" ]; then
+                  echo "📋 curl错误信息:"
+                  cat /tmp/curl_error.log
+                fi
+                
+                if [ $i -eq 5 ]; then
+                  echo "⚠️ 健康检查最终失败，进行故障排查..."
+                  
+                  # 详细的故障排查信息
+                  echo "🔍 故障排查信息:"
+                  echo "1. Nginx配置测试:"
+                  sudo nginx -t
+                  
+                  echo "2. Nginx进程状态:"
+                  ps aux | grep nginx || echo "未找到nginx进程"
+                  
+                  echo "3. 系统端口占用:"
+                  sudo netstat -tlnp | grep :9000 || echo "端口9000未被占用"
+                  
+                  echo "4. 防火墙状态 (如果适用):"
+                  sudo iptables -L -n | grep 9000 || echo "未发现防火墙规则"
+                  
+                  echo "5. SELinux状态 (如果适用):"
+                  sestatus 2>/dev/null || echo "SELinux未启用或不可用"
+                  
+                  echo "💡 请根据以上信息手动检查，或访问 $SITE_URL 确认部署状态"
+                  echo "💡 也可以检查服务器日志: /var/log/nginx/mendian-test-error.log"
+                else
+                  echo "⏳ 等待10秒后重试..."
+                  sleep 10
+                fi
               fi
+              
+              # 清理临时文件
+              rm -f /tmp/health_check_output.html /tmp/curl_error.log
             done
 
       - name: 📱 发送通知 (可选)

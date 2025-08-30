@@ -1,0 +1,274 @@
+name: 🐳 Docker部署到测试服务器
+
+on:
+  push:
+    branches: [ main, master, develop ]
+    paths:
+      - 'frontend/**'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: '选择部署环境'
+        required: true
+        default: 'test'
+        type: choice
+        options:
+          - test
+          - staging
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docker-test-deploy
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '18'
+  PNPM_VERSION: '8.15.0'
+  IMAGE_NAME: mendian-frontend
+  CONTAINER_NAME: mendian-test
+
+jobs:
+  build-and-deploy:
+    name: 🏗️ Docker构建并部署
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'test' }}
+    
+    steps:
+      - name: 📂 检出代码
+        uses: actions/checkout@v4
+
+      - name: 🐳 设置 Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🏗️ 构建 Docker 镜像
+        run: |
+          echo "🏗️ 构建 Docker 镜像..."
+          
+          # 创建优化的 Dockerfile
+          cat > Dockerfile << 'EOF'
+          # 多阶段构建 - 构建阶段
+          FROM node:18-alpine AS builder
+          
+          WORKDIR /app
+          
+          # 安装 pnpm
+          RUN npm install -g pnpm@8.15.0
+          
+          # 复制依赖文件
+          COPY package*.json pnpm*.yaml ./
+          COPY frontend/package*.json ./frontend/
+          
+          # 安装依赖
+          RUN pnpm install --frozen-lockfile
+          
+          # 复制源码
+          COPY frontend ./frontend
+          
+          # 构建项目
+          WORKDIR /app/frontend
+          RUN pnpm build
+          
+          # 生产阶段
+          FROM nginx:alpine
+          
+          # 复制构建文件
+          COPY --from=builder /app/frontend/dist /usr/share/nginx/html
+          
+          # 复制 nginx 配置
+          COPY <<'NGINX_EOF' /etc/nginx/conf.d/default.conf
+          server {
+              listen 80;
+              server_name localhost;
+              root /usr/share/nginx/html;
+              index index.html;
+              
+              # SPA 路由支持
+              location / {
+                  try_files $uri $uri/ /index.html;
+              }
+              
+              # 静态资源缓存
+              location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+                  expires 1y;
+                  add_header Cache-Control "public, immutable";
+              }
+              
+              # 健康检查
+              location /health {
+                  access_log off;
+                  return 200 "healthy\n";
+                  add_header Content-Type text/plain;
+              }
+              
+              # 安全配置
+              add_header X-Frame-Options "SAMEORIGIN" always;
+              add_header X-Content-Type-Options "nosniff" always;
+              add_header X-XSS-Protection "1; mode=block" always;
+          }
+          NGINX_EOF
+          
+          EXPOSE 80
+          CMD ["nginx", "-g", "daemon off;"]
+          EOF
+          
+          # 构建镜像
+          docker build -t ${{ env.IMAGE_NAME }}:${{ github.sha }} .
+          docker tag ${{ env.IMAGE_NAME }}:${{ github.sha }} ${{ env.IMAGE_NAME }}:latest
+          
+          echo "✅ Docker 镜像构建完成"
+
+      - name: 💾 保存镜像
+        run: |
+          echo "💾 保存 Docker 镜像..."
+          docker save ${{ env.IMAGE_NAME }}:latest | gzip > mendian-image.tar.gz
+          echo "✅ 镜像已保存: mendian-image.tar.gz"
+          ls -lah mendian-image.tar.gz
+
+      - name: 📤 上传镜像到服务器
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.TEST_SERVER_HOST }}
+          username: ${{ secrets.TEST_SERVER_USER }}
+          key: ${{ secrets.TEST_SERVER_SSH_KEY }}
+          port: ${{ secrets.TEST_SERVER_PORT || 22 }}
+          source: "mendian-image.tar.gz"
+          target: "/tmp/"
+
+      - name: 🚀 部署到测试服务器
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.TEST_SERVER_HOST }}
+          username: ${{ secrets.TEST_SERVER_USER }}
+          key: ${{ secrets.TEST_SERVER_SSH_KEY }}
+          port: ${{ secrets.TEST_SERVER_PORT || 22 }}
+          script: |
+            echo "🚀 开始 Docker 部署..."
+            
+            # 设置变量
+            IMAGE_NAME="${{ env.IMAGE_NAME }}"
+            CONTAINER_NAME="${{ env.CONTAINER_NAME }}"
+            PORT="${{ vars.TEST_PORT || '8080' }}"
+            
+            # 停止并删除现有容器
+            if docker ps -a | grep -q $CONTAINER_NAME; then
+              echo "🛑 停止现有容器..."
+              docker stop $CONTAINER_NAME || true
+              docker rm $CONTAINER_NAME || true
+            fi
+            
+            # 删除旧镜像
+            if docker images | grep -q $IMAGE_NAME; then
+              echo "🗑️ 清理旧镜像..."
+              docker rmi $IMAGE_NAME:latest || true
+            fi
+            
+            # 加载新镜像
+            echo "📦 加载新镜像..."
+            docker load < /tmp/mendian-image.tar.gz
+            
+            # 启动新容器
+            echo "🚀 启动新容器..."
+            docker run -d \
+              --name $CONTAINER_NAME \
+              --restart unless-stopped \
+              -p $PORT:80 \
+              --health-cmd="curl -f http://localhost/health || exit 1" \
+              --health-interval=30s \
+              --health-timeout=10s \
+              --health-retries=3 \
+              $IMAGE_NAME:latest
+            
+            # 清理临时文件
+            rm -f /tmp/mendian-image.tar.gz
+            
+            echo "✅ 容器启动完成！"
+            echo "🌐 访问地址: http://${{ secrets.TEST_SERVER_HOST }}:$PORT"
+
+      - name: 🧪 健康检查
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.TEST_SERVER_HOST }}
+          username: ${{ secrets.TEST_SERVER_USER }}
+          key: ${{ secrets.TEST_SERVER_SSH_KEY }}
+          port: ${{ secrets.TEST_SERVER_PORT || 22 }}
+          script: |
+            echo "🧪 执行健康检查..."
+            
+            CONTAINER_NAME="${{ env.CONTAINER_NAME }}"
+            PORT="${{ vars.TEST_PORT || '8080' }}"
+            
+            # 等待容器启动
+            echo "⏳ 等待容器启动..."
+            sleep 15
+            
+            # 检查容器状态
+            if ! docker ps | grep -q $CONTAINER_NAME; then
+              echo "❌ 容器未正常运行"
+              docker logs $CONTAINER_NAME
+              exit 1
+            fi
+            
+            # HTTP 健康检查
+            for i in {1..10}; do
+              if curl -f -s --max-time 10 "http://localhost:$PORT/health" > /dev/null; then
+                echo "✅ 健康检查通过 (尝试 $i/10)"
+                echo "🎉 Docker 部署成功！"
+                
+                # 显示容器信息
+                echo "📊 容器状态:"
+                docker ps | grep $CONTAINER_NAME
+                echo "💾 资源使用:"
+                docker stats --no-stream $CONTAINER_NAME
+                break
+              else
+                echo "⚠️ 健康检查失败，重试中... (尝试 $i/10)"
+                if [ $i -eq 10 ]; then
+                  echo "❌ 健康检查最终失败"
+                  echo "📋 容器日志:"
+                  docker logs --tail 50 $CONTAINER_NAME
+                  exit 1
+                fi
+                sleep 10
+              fi
+            done
+
+      - name: 🧹 清理资源
+        if: always()
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.TEST_SERVER_HOST }}
+          username: ${{ secrets.TEST_SERVER_USER }}
+          key: ${{ secrets.TEST_SERVER_SSH_KEY }}
+          port: ${{ secrets.TEST_SERVER_PORT || 22 }}
+          script: |
+            echo "🧹 清理未使用的 Docker 资源..."
+            docker system prune -f || true
+            echo "✅ 清理完成"
+
+      - name: 📋 部署摘要
+        if: always()
+        run: |
+          STATUS="${{ job.status == 'success' && '✅ 部署成功' || '❌ 部署失败' }}"
+          PORT="${{ vars.TEST_PORT || '8080' }}"
+          
+          echo "## 🐳 Docker 测试部署摘要" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **📊 状态**: $STATUS" >> $GITHUB_STEP_SUMMARY
+          echo "- **🌐 访问地址**: http://${{ secrets.TEST_SERVER_HOST }}:$PORT" >> $GITHUB_STEP_SUMMARY
+          echo "- **🐳 容器名称**: \`${{ env.CONTAINER_NAME }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **📦 镜像**: \`${{ env.IMAGE_NAME }}:latest\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **🔢 构建编号**: \`${{ github.run_number }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **📦 提交**: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "### 🎉 Docker 部署成功！" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 🔧 管理命令" >> $GITHUB_STEP_SUMMARY
+            echo "- 查看日志: \`docker logs ${{ env.CONTAINER_NAME }}\`" >> $GITHUB_STEP_SUMMARY
+            echo "- 重启容器: \`docker restart ${{ env.CONTAINER_NAME }}\`" >> $GITHUB_STEP_SUMMARY
+            echo "- 停止容器: \`docker stop ${{ env.CONTAINER_NAME }}\`" >> $GITHUB_STEP_SUMMARY
+            echo "- 查看状态: \`docker ps | grep ${{ env.CONTAINER_NAME }}\`" >> $GITHUB_STEP_SUMMARY
+          fi
