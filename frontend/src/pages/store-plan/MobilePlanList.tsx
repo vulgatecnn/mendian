@@ -1,25 +1,13 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import {
-  Card,
-  List,
   Tag,
-  Space,
   Button,
-  Progress,
   Drawer,
-  Tabs,
-  Badge,
-  Avatar,
-  Statistic,
-  Row,
-  Col,
-  FloatButton,
   Input,
   Select,
   DatePicker,
   Modal,
-  message,
-  Empty
+  message
 } from 'antd'
 import {
   PlusOutlined,
@@ -31,7 +19,6 @@ import {
   DeleteOutlined,
   CalendarOutlined,
   TeamOutlined,
-  DollarOutlined,
   BarChartOutlined,
   ExclamationCircleOutlined,
   CheckCircleOutlined,
@@ -40,11 +27,9 @@ import {
 import { useNavigate } from 'react-router-dom'
 import { useDevice } from '@/hooks/useDevice'
 import { useStorePlan } from '@/services/query/hooks/useStorePlan'
-import StatusTag from './components/StatusTag'
 import dayjs from 'dayjs'
 import type { StorePlan } from '@/services/types/business'
 
-const { Search } = Input
 const { Option } = Select
 
 interface MobilePlanListProps {
@@ -59,7 +44,6 @@ const MobilePlanList: React.FC<MobilePlanListProps> = ({
   maxHeight = '100vh'
 }) => {
   const navigate = useNavigate()
-  const { isMobile } = useDevice()
   const [searchKeyword, setSearchKeyword] = useState('')
   const [filterVisible, setFilterVisible] = useState(false)
   const [selectedStatus, setSelectedStatus] = useState<string>()
@@ -67,7 +51,6 @@ const MobilePlanList: React.FC<MobilePlanListProps> = ({
   const [selectedRegion, setSelectedRegion] = useState<string>()
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null)
   const [hasMore, setHasMore] = useState(true)
-  const [loading, setLoading] = useState(false)
 
   // 查询开店计划列表
   const { 
@@ -88,12 +71,10 @@ const MobilePlanList: React.FC<MobilePlanListProps> = ({
 
   // 查询统计数据
   const { 
-    data: statistics,
-    isLoading: statsLoading 
+    data: statistics
   } = useStorePlan.useStatistics({})
 
   const plans = plansData?.items || []
-  const pagination = plansData?.pagination
 
   // 状态配置
   const statusConfig = {
@@ -121,7 +102,7 @@ const MobilePlanList: React.FC<MobilePlanListProps> = ({
     return Math.round((plan.completedCount / plan.plannedCount) * 100)
   }
 
-  // 渲染统计卡片（移动端优化）
+  // 现代化统计卡片渲染
   const renderStatsCards = () => {
     if (!showStats || !statistics) return null
 
@@ -129,84 +110,240 @@ const MobilePlanList: React.FC<MobilePlanListProps> = ({
       {
         title: '总计划',
         value: statistics.totalPlans,
-        color: '#1890ff',
-        icon: <BarChartOutlined />
+        gradient: 'var(--gradient-primary)',
+        icon: <BarChartOutlined />,
+        trend: '+12%'
       },
       {
         title: '进行中',
         value: statistics.statusDistribution.IN_PROGRESS || 0,
-        color: '#faad14',
-        icon: <ClockCircleOutlined />
+        gradient: 'var(--gradient-warning)',
+        icon: <ClockCircleOutlined />,
+        trend: '+5%'
       },
       {
         title: '已完成',
         value: statistics.statusDistribution.COMPLETED || 0,
-        color: '#52c41a',
-        icon: <CheckCircleOutlined />
+        gradient: 'var(--gradient-success)',
+        icon: <CheckCircleOutlined />,
+        trend: '+8%'
       },
       {
         title: '完成率',
         value: `${statistics.completionRate.toFixed(1)}%`,
-        color: statistics.completionRate > 80 ? '#52c41a' : statistics.completionRate > 60 ? '#faad14' : '#f5222d',
-        icon: <BarChartOutlined />
+        gradient: statistics.completionRate > 80 ? 'var(--gradient-success)' : 
+                 statistics.completionRate > 60 ? 'var(--gradient-warning)' : 'var(--gradient-error)',
+        icon: <BarChartOutlined />,
+        trend: statistics.completionRate > 75 ? '+3%' : '-1%'
       }
     ]
 
     return (
-      <Card 
-        style={{ margin: '16px', marginTop: showHeader ? 0 : 16 }}
-        bodyStyle={{ padding: '12px' }}
-      >
-        <Row gutter={[8, 8]}>
+      <div style={{ 
+        padding: 'var(--spacing-mobile-md)', 
+        paddingTop: showHeader ? 'var(--spacing-mobile-sm)' : 'var(--spacing-mobile-md)' 
+      }}>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, 1fr)',
+          gap: 'var(--spacing-mobile-sm)'
+        }}>
           {stats.map((stat, index) => (
-            <Col span={6} key={index}>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ color: stat.color, fontSize: '20px', marginBottom: 4 }}>
-                  {stat.icon}
+            <div 
+              key={index}
+              className="mobile-card-enter touch-feedback-light"
+              style={{
+                animationDelay: `${index * 100}ms`,
+                animationFillMode: 'both',
+                background: stat.gradient,
+                borderRadius: 'var(--border-radius-mobile-lg)',
+                padding: 'var(--spacing-mobile-md)',
+                boxShadow: 'var(--shadow-mobile-card)',
+                color: 'white',
+                position: 'relative',
+                overflow: 'hidden'
+              }}
+            >
+              {/* 背景装饰 */}
+              <div style={{
+                position: 'absolute',
+                top: '-10px',
+                right: '-10px',
+                fontSize: '40px',
+                opacity: 0.2,
+                transform: 'rotate(15deg)'
+              }}>
+                {stat.icon}
+              </div>
+              
+              {/* 内容 */}
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  marginBottom: 'var(--spacing-mobile-xs)'
+                }}>
+                  <div style={{ 
+                    fontSize: 'var(--font-size-mobile-lg)',
+                    marginRight: 'var(--spacing-mobile-xs)'
+                  }}>
+                    {stat.icon}
+                  </div>
+                  <div style={{
+                    fontSize: 'var(--font-size-mobile-xs)',
+                    fontWeight: 'var(--font-weight-medium)',
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    padding: '2px 6px',
+                    borderRadius: 'var(--border-radius-mobile-sm)',
+                    marginLeft: 'auto'
+                  }}>
+                    {stat.trend}
+                  </div>
                 </div>
-                <div style={{ fontSize: '16px', fontWeight: 'bold', color: stat.color }}>
+                
+                <div style={{ 
+                  fontSize: 'var(--font-size-mobile-2xl)',
+                  fontWeight: 'var(--font-weight-bold)',
+                  lineHeight: 1,
+                  marginBottom: 'var(--spacing-mobile-xs)'
+                }}>
                   {stat.value}
                 </div>
-                <div style={{ fontSize: '12px', color: '#999' }}>
+                
+                <div style={{ 
+                  fontSize: 'var(--font-size-mobile-xs)',
+                  opacity: 0.9,
+                  fontWeight: 'var(--font-weight-medium)'
+                }}>
                   {stat.title}
                 </div>
               </div>
-            </Col>
+            </div>
           ))}
-        </Row>
-      </Card>
+        </div>
+      </div>
     )
   }
 
-  // 渲染搜索栏
+  // 现代化搜索栏渲染
   const renderSearchBar = () => (
-    <Card 
-      style={{ margin: '16px', marginTop: 0 }}
-      bodyStyle={{ padding: '12px' }}
-    >
-      <Row gutter={8} align="middle">
-        <Col flex={1}>
-          <Search
-            placeholder="搜索计划名称"
-            value={searchKeyword}
-            onChange={(e) => setSearchKeyword(e.target.value)}
-            onSearch={() => refetch()}
-            size="small"
-          />
-        </Col>
-        <Col>
-          <Badge count={getFilterCount()} size="small">
-            <Button
-              icon={<FilterOutlined />}
-              size="small"
-              onClick={() => setFilterVisible(true)}
-            >
-              筛选
-            </Button>
-          </Badge>
-        </Col>
-      </Row>
-    </Card>
+    <div style={{ 
+      padding: '0 var(--spacing-mobile-md) var(--spacing-mobile-md)',
+      position: 'sticky',
+      top: showHeader ? 'var(--mobile-header-height)' : '0',
+      zIndex: 100,
+      background: 'var(--bg-primary)',
+      paddingTop: 'var(--spacing-mobile-sm)'
+    }}>
+      <div className="modern-search">
+        <input
+          className="search-input"
+          placeholder="搜索计划名称..."
+          value={searchKeyword}
+          onChange={(e) => setSearchKeyword(e.target.value)}
+          onKeyPress={(e) => e.key === 'Enter' && refetch()}
+        />
+        <SearchOutlined className="search-icon" />
+      </div>
+      
+      {/* 快速筛选和操作栏 */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 'var(--spacing-mobile-sm)',
+        marginTop: 'var(--spacing-mobile-sm)',
+        overflowX: 'auto',
+        paddingBottom: 'var(--spacing-mobile-xs)'
+      }}>
+        {/* 筛选按钮 */}
+        <button
+          className="touch-feedback-light"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--spacing-mobile-xs)',
+            padding: 'var(--spacing-mobile-xs) var(--spacing-mobile-sm)',
+            borderRadius: 'var(--border-radius-mobile-2xl)',
+            border: getFilterCount() > 0 ? '2px solid var(--color-primary-500)' : '1px solid var(--border-secondary)',
+            background: getFilterCount() > 0 ? 'var(--color-primary-50)' : 'var(--bg-primary)',
+            fontSize: 'var(--font-size-mobile-sm)',
+            fontWeight: 'var(--font-weight-medium)',
+            color: getFilterCount() > 0 ? 'var(--color-primary-600)' : 'var(--text-secondary)',
+            whiteSpace: 'nowrap',
+            transition: 'var(--transition-base)'
+          }}
+          onClick={() => setFilterVisible(true)}
+        >
+          <FilterOutlined style={{ fontSize: 'var(--font-size-mobile-sm)' }} />
+          筛选
+          {getFilterCount() > 0 && (
+            <span style={{
+              background: 'var(--color-primary-500)',
+              color: 'white',
+              borderRadius: '50%',
+              width: '16px',
+              height: '16px',
+              fontSize: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginLeft: '2px'
+            }}>
+              {getFilterCount()}
+            </span>
+          )}
+        </button>
+
+        {/* 快速状态筛选 */}
+        <button
+          className="touch-feedback-light"
+          style={{
+            padding: 'var(--spacing-mobile-xs) var(--spacing-mobile-sm)',
+            borderRadius: 'var(--border-radius-mobile-2xl)',
+            border: selectedStatus === 'IN_PROGRESS' ? '2px solid var(--color-warning-500)' : '1px solid var(--border-secondary)',
+            background: selectedStatus === 'IN_PROGRESS' ? 'var(--color-warning-50)' : 'var(--bg-primary)',
+            fontSize: 'var(--font-size-mobile-xs)',
+            color: selectedStatus === 'IN_PROGRESS' ? 'var(--color-warning-600)' : 'var(--text-secondary)',
+            whiteSpace: 'nowrap'
+          }}
+          onClick={() => setSelectedStatus(selectedStatus === 'IN_PROGRESS' ? undefined : 'IN_PROGRESS')}
+        >
+          进行中
+        </button>
+
+        <button
+          className="touch-feedback-light"
+          style={{
+            padding: 'var(--spacing-mobile-xs) var(--spacing-mobile-sm)',
+            borderRadius: 'var(--border-radius-mobile-2xl)',
+            border: selectedStatus === 'COMPLETED' ? '2px solid var(--color-success-500)' : '1px solid var(--border-secondary)',
+            background: selectedStatus === 'COMPLETED' ? 'var(--color-success-50)' : 'var(--bg-primary)',
+            fontSize: 'var(--font-size-mobile-xs)',
+            color: selectedStatus === 'COMPLETED' ? 'var(--color-success-600)' : 'var(--text-secondary)',
+            whiteSpace: 'nowrap'
+          }}
+          onClick={() => setSelectedStatus(selectedStatus === 'COMPLETED' ? undefined : 'COMPLETED')}
+        >
+          已完成
+        </button>
+
+        <button
+          className="touch-feedback-light"
+          style={{
+            padding: 'var(--spacing-mobile-xs) var(--spacing-mobile-sm)',
+            borderRadius: 'var(--border-radius-mobile-2xl)',
+            border: selectedStatus === 'URGENT' ? '2px solid var(--color-mobile-accent)' : '1px solid var(--border-secondary)',
+            background: selectedStatus === 'URGENT' ? 'rgba(255, 107, 107, 0.1)' : 'var(--bg-primary)',
+            fontSize: 'var(--font-size-mobile-xs)',
+            color: selectedStatus === 'URGENT' ? 'var(--color-mobile-accent)' : 'var(--text-secondary)',
+            whiteSpace: 'nowrap'
+          }}
+          onClick={() => setSelectedStatus(selectedStatus === 'URGENT' ? undefined : 'URGENT')}
+        >
+          紧急
+        </button>
+      </div>
+    </div>
   )
 
   // 计算筛选条件数量
@@ -219,7 +356,7 @@ const MobilePlanList: React.FC<MobilePlanListProps> = ({
     return count
   }
 
-  // 渲染计划卡片
+  // 现代化计划卡片渲染
   const renderPlanCard = (plan: StorePlan) => {
     const statusInfo = statusConfig[plan.status as keyof typeof statusConfig]
     const typeInfo = storeTypeConfig[plan.storeType as keyof typeof storeTypeConfig]
@@ -227,113 +364,218 @@ const MobilePlanList: React.FC<MobilePlanListProps> = ({
     const isOverdue = plan.endDate && dayjs().isAfter(dayjs(plan.endDate)) && plan.status !== 'COMPLETED'
 
     return (
-      <Card 
+      <div
         key={plan.id}
-        style={{ margin: '8px 16px' }}
-        bodyStyle={{ padding: '12px' }}
+        className="modern-list-item interactive-card mobile-card-enter touch-feedback-medium"
+        style={{ 
+          margin: '0 var(--spacing-mobile-md) var(--spacing-mobile-sm)',
+          animationDelay: '0ms',
+          cursor: 'pointer'
+        }}
         onClick={() => navigate(`/store-plan/${plan.id}`)}
       >
-        <div style={{ marginBottom: 8 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <div style={{ flex: 1, marginRight: 8 }}>
-              <div style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: 4 }}>
+        <div className="list-item-content">
+          {/* 卡片头部 */}
+          <div className="list-item-header">
+            <div style={{ flex: 1 }}>
+              <h4 className="list-item-title" style={{ 
+                fontSize: 'var(--font-size-mobile-lg)',
+                marginBottom: 'var(--spacing-mobile-xs)'
+              }}>
                 {plan.title}
-              </div>
-              <Space size="small" wrap>
-                <Tag color={typeInfo?.color}>{typeInfo?.text}</Tag>
-                <Tag 
-                  color={statusInfo?.color}
-                  icon={statusInfo?.icon}
-                >
-                  {statusInfo?.text}
-                </Tag>
+              </h4>
+              <div style={{ display: 'flex', gap: 'var(--spacing-mobile-xs)', flexWrap: 'wrap' }}>
+                <span className={`modern-status-tag ${typeInfo?.text === '直营' ? 'completed' : 'approved'}`}>
+                  {typeInfo?.text}
+                </span>
+                <span className={`modern-status-tag ${plan.status.toLowerCase()}`}>
+                  {statusInfo?.icon}
+                  <span>{statusInfo?.text}</span>
+                </span>
                 {plan.priority === 'URGENT' && (
-                  <Tag color="red">紧急</Tag>
+                  <span className="modern-status-tag urgent">
+                    ⚡ 紧急
+                  </span>
                 )}
                 {isOverdue && (
-                  <Tag color="red">延期</Tag>
+                  <span className="modern-status-tag rejected">
+                    ⏰ 延期
+                  </span>
                 )}
-              </Space>
+              </div>
             </div>
-            <Button
-              type="text"
-              size="small"
-              icon={<MoreOutlined />}
+            
+            <button
+              className="touch-feedback-light"
+              style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                border: 'none',
+                background: 'transparent',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--text-tertiary)',
+                fontSize: 'var(--font-size-mobile-lg)'
+              }}
               onClick={(e) => {
                 e.stopPropagation()
                 showPlanActions(plan)
               }}
-            />
+            >
+              <MoreOutlined />
+            </button>
           </div>
-        </div>
 
-        {/* 进度条 */}
-        <div style={{ marginBottom: 12 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-            <Text style={{ fontSize: '12px', color: '#666' }}>开店进度</Text>
-            <Text style={{ fontSize: '12px', color: '#666' }}>
-              {plan.completedCount}/{plan.plannedCount} 家
-            </Text>
+          {/* 现代化进度条 */}
+          <div style={{ marginBottom: 'var(--spacing-mobile-md)' }}>
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center', 
+              marginBottom: 'var(--spacing-mobile-xs)'
+            }}>
+              <span style={{ 
+                fontSize: 'var(--font-size-mobile-sm)', 
+                color: 'var(--text-secondary)',
+                fontWeight: 'var(--font-weight-medium)'
+              }}>
+                开店进度
+              </span>
+              <span style={{ 
+                fontSize: 'var(--font-size-mobile-sm)', 
+                color: 'var(--text-primary)',
+                fontWeight: 'var(--font-weight-semibold)'
+              }}>
+                {plan.completedCount}/{plan.plannedCount} 家
+              </span>
+            </div>
+            
+            {/* 自定义现代化进度条 */}
+            <div 
+              className={`modern-progress modern-progress-large ${
+                completionRate === 100 ? 'success' : 
+                completionRate > 80 ? 'success' : 
+                completionRate > 50 ? 'warning' : 'error'
+              }`}
+              style={{ 
+                '--progress-width': `${completionRate}%`
+              } as React.CSSProperties}
+            >
+              <div style={{
+                position: 'absolute',
+                right: completionRate > 15 ? '8px' : 'calc(100% + 8px)',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                fontSize: 'var(--font-size-mobile-xs)',
+                fontWeight: 'var(--font-weight-bold)',
+                color: completionRate > 15 ? 'white' : 'var(--text-primary)'
+              }}>
+                {completionRate}%
+              </div>
+            </div>
           </div>
-          <Progress
-            percent={completionRate}
-            size="small"
-            status={completionRate === 100 ? 'success' : 'active'}
-            strokeColor={completionRate > 80 ? '#52c41a' : completionRate > 50 ? '#faad14' : '#f5222d'}
-          />
-        </div>
 
-        {/* 详细信息 */}
-        <Row gutter={16}>
-          <Col span={8}>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ color: '#666', fontSize: '12px' }}>地区</div>
-              <div style={{ fontSize: '13px', fontWeight: 'bold' }}>
+          {/* 关键信息网格 */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: 'var(--spacing-mobile-sm)',
+            marginBottom: 'var(--spacing-mobile-md)'
+          }}>
+            <div style={{
+              background: 'rgba(24, 144, 255, 0.1)',
+              borderRadius: 'var(--border-radius-mobile-sm)',
+              padding: 'var(--spacing-mobile-xs)',
+              textAlign: 'center',
+              border: '1px solid rgba(24, 144, 255, 0.2)'
+            }}>
+              <div style={{ 
+                fontSize: 'var(--font-size-mobile-xs)', 
+                color: 'var(--color-primary-600)',
+                marginBottom: '2px',
+                fontWeight: 'var(--font-weight-medium)'
+              }}>
+                地区
+              </div>
+              <div style={{ 
+                fontSize: 'var(--font-size-mobile-sm)',
+                fontWeight: 'var(--font-weight-semibold)',
+                color: 'var(--color-primary-700)'
+              }}>
                 {plan.region?.name || '-'}
               </div>
             </div>
-          </Col>
-          <Col span={8}>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ color: '#666', fontSize: '12px' }}>预算</div>
-              <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#1890ff' }}>
+
+            <div style={{
+              background: 'rgba(82, 196, 26, 0.1)',
+              borderRadius: 'var(--border-radius-mobile-sm)',
+              padding: 'var(--spacing-mobile-xs)',
+              textAlign: 'center',
+              border: '1px solid rgba(82, 196, 26, 0.2)'
+            }}>
+              <div style={{ 
+                fontSize: 'var(--font-size-mobile-xs)', 
+                color: 'var(--color-success-600)',
+                marginBottom: '2px',
+                fontWeight: 'var(--font-weight-medium)'
+              }}>
+                预算
+              </div>
+              <div style={{ 
+                fontSize: 'var(--font-size-mobile-sm)',
+                fontWeight: 'var(--font-weight-semibold)',
+                color: 'var(--color-success-700)'
+              }}>
                 {plan.budget ? `${(plan.budget.toNumber() / 10000).toFixed(1)}万` : '-'}
               </div>
             </div>
-          </Col>
-          <Col span={8}>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ color: '#666', fontSize: '12px' }}>负责人</div>
-              <div style={{ fontSize: '13px', fontWeight: 'bold' }}>
+
+            <div style={{
+              background: 'rgba(250, 173, 20, 0.1)',
+              borderRadius: 'var(--border-radius-mobile-sm)',
+              padding: 'var(--spacing-mobile-xs)',
+              textAlign: 'center',
+              border: '1px solid rgba(250, 173, 20, 0.2)'
+            }}>
+              <div style={{ 
+                fontSize: 'var(--font-size-mobile-xs)', 
+                color: 'var(--color-warning-600)',
+                marginBottom: '2px',
+                fontWeight: 'var(--font-weight-medium)'
+              }}>
+                负责人
+              </div>
+              <div style={{ 
+                fontSize: 'var(--font-size-mobile-sm)',
+                fontWeight: 'var(--font-weight-semibold)',
+                color: 'var(--color-warning-700)'
+              }}>
                 {plan.createdBy?.name || '-'}
               </div>
             </div>
-          </Col>
-        </Row>
+          </div>
 
-        {/* 时间信息 */}
-        <div style={{ marginTop: 8, padding: '8px 0', borderTop: '1px solid #f0f0f0' }}>
-          <Row>
-            <Col span={12}>
-              <Space size="small">
-                <CalendarOutlined style={{ color: '#999', fontSize: '12px' }} />
-                <Text style={{ fontSize: '12px', color: '#666' }}>
-                  创建: {dayjs(plan.createdAt).format('MM-DD')}
-                </Text>
-              </Space>
-            </Col>
-            <Col span={12} style={{ textAlign: 'right' }}>
-              {plan.endDate && (
-                <Space size="small">
-                  <Text style={{ fontSize: '12px', color: isOverdue ? '#f5222d' : '#666' }}>
-                    截止: {dayjs(plan.endDate).format('MM-DD')}
-                  </Text>
-                </Space>
-              )}
-            </Col>
-          </Row>
+          {/* 时间轴信息 */}
+          <div className="list-item-meta">
+            <div className="meta-item">
+              <CalendarOutlined style={{ color: 'var(--color-primary-500)' }} />
+              <span>创建: {dayjs(plan.createdAt).format('MM-DD')}</span>
+            </div>
+            {plan.endDate && (
+              <div className="meta-item">
+                <ClockCircleOutlined style={{ 
+                  color: isOverdue ? 'var(--color-error-500)' : 'var(--color-success-500)' 
+                }} />
+                <span style={{ color: isOverdue ? 'var(--color-error-500)' : 'var(--text-tertiary)' }}>
+                  截止: {dayjs(plan.endDate).format('MM-DD')}
+                </span>
+              </div>
+            )}
+          </div>
         </div>
-      </Card>
+      </div>
     )
   }
 
@@ -520,19 +762,22 @@ const MobilePlanList: React.FC<MobilePlanListProps> = ({
   )
 
   return (
-    <div style={{ height: maxHeight, overflow: 'hidden' }}>
-      {/* 头部标题 */}
+    <div style={{ 
+      height: maxHeight, 
+      overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column',
+      background: 'var(--bg-primary)'
+    }}>
+      {/* 现代化头部标题 */}
       {showHeader && (
-        <div style={{ 
-          padding: '16px', 
-          background: '#fff', 
-          borderBottom: '1px solid #f0f0f0',
-          position: 'sticky',
-          top: 0,
-          zIndex: 10
-        }}>
-          <div style={{ fontSize: '18px', fontWeight: 'bold' }}>
-            开店计划
+        <div className="modern-navbar">
+          <div className="navbar-left"></div>
+          <div className="navbar-title">开店计划</div>
+          <div className="navbar-right">
+            <button className="navbar-action">
+              <TeamOutlined />
+            </button>
           </div>
         </div>
       )}
@@ -543,53 +788,155 @@ const MobilePlanList: React.FC<MobilePlanListProps> = ({
       {/* 搜索栏 */}
       {renderSearchBar()}
 
-      {/* 计划列表 */}
+      {/* 现代化计划列表 */}
       <div style={{ 
-        height: showHeader ? 'calc(100vh - 200px)' : 'calc(100vh - 150px)', 
-        overflow: 'auto',
-        paddingBottom: 80
+        flex: 1,
+        overflow: 'hidden',
+        background: 'linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%)'
       }}>
-        {plans.length > 0 ? (
-          <>
-            {plans.map(renderPlanCard)}
-            
-            {/* 无限滚动加载 */}
-            <InfiniteScroll
-              dataLength={plans.length}
-              next={loadMore}
-              hasMore={hasMore}
-              loader={
-                <div style={{ textAlign: 'center', padding: '20px' }}>
-                  <div>加载中...</div>
+        <div style={{
+          height: '100%',
+          overflow: 'auto',
+          paddingBottom: 'calc(var(--mobile-fab-size) + 32px)',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none'
+        }}>
+          {plans.length > 0 ? (
+            <>
+              {plans.map((plan, index) => (
+                <div 
+                  key={plan.id}
+                  style={{ 
+                    animationDelay: `${index * 50}ms`,
+                    animationFillMode: 'both'
+                  }}
+                  className="mobile-fade-in-up"
+                >
+                  {renderPlanCard(plan)}
                 </div>
-              }
-              endMessage={
-                <div style={{ textAlign: 'center', padding: '20px', color: '#999' }}>
-                  <div>没有更多数据了</div>
+              ))}
+              
+              {/* 现代化加载指示器 */}
+              {hasMore && (
+                <div style={{ 
+                  textAlign: 'center', 
+                  padding: 'var(--spacing-mobile-lg)',
+                  background: 'transparent'
+                }}>
+                  {isLoading ? (
+                    <div className="skeleton-loading" style={{ 
+                      width: '120px', 
+                      height: '20px', 
+                      margin: '0 auto' 
+                    }} />
+                  ) : (
+                    <button 
+                      className="touch-feedback-light"
+                      style={{
+                        padding: 'var(--spacing-mobile-sm) var(--spacing-mobile-lg)',
+                        borderRadius: 'var(--border-radius-mobile-2xl)',
+                        border: '1px solid var(--border-secondary)',
+                        background: 'var(--bg-primary)',
+                        color: 'var(--text-secondary)',
+                        fontSize: 'var(--font-size-mobile-sm)',
+                        fontWeight: 'var(--font-weight-medium)',
+                        boxShadow: 'var(--shadow-mobile-sm)'
+                      }}
+                      onClick={loadMore}
+                    >
+                      加载更多
+                    </button>
+                  )}
                 </div>
-              }
-            />
-          </>
-        ) : (
-          <div style={{ padding: '40px 16px', textAlign: 'center' }}>
-            <Empty 
-              description={isLoading ? '加载中...' : '暂无开店计划'}
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-            />
-          </div>
-        )}
+              )}
+              
+              {!hasMore && plans.length > 5 && (
+                <div style={{ 
+                  textAlign: 'center', 
+                  padding: 'var(--spacing-mobile-lg)',
+                  color: 'var(--text-tertiary)',
+                  fontSize: 'var(--font-size-mobile-sm)'
+                }}>
+                  <div style={{ 
+                    display: 'inline-block',
+                    padding: 'var(--spacing-mobile-xs) var(--spacing-mobile-md)',
+                    borderRadius: 'var(--border-radius-mobile-lg)',
+                    background: 'rgba(0, 0, 0, 0.05)',
+                    backdropFilter: 'blur(8px)'
+                  }}>
+                    ✨ 已显示全部 {plans.length} 条计划
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
+            <div style={{ 
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '60vh',
+              textAlign: 'center',
+              padding: 'var(--spacing-mobile-lg)'
+            }}>
+              {isLoading ? (
+                <div className="mobile-loading">
+                  <div className="skeleton-loading" style={{ 
+                    width: '200px', 
+                    height: '100px', 
+                    borderRadius: 'var(--border-radius-mobile-lg)',
+                    marginBottom: 'var(--spacing-mobile-md)'
+                  }} />
+                  <div style={{ color: 'var(--text-tertiary)' }}>加载中...</div>
+                </div>
+              ) : (
+                <div className="mobile-empty">
+                  <div className="empty-icon">📋</div>
+                  <div className="empty-text">暂无开店计划</div>
+                  <div className="empty-description">
+                    还没有创建任何开店计划<br />
+                    点击右下角按钮开始创建吧
+                  </div>
+                  <button
+                    className="touch-feedback-light"
+                    style={{
+                      marginTop: 'var(--spacing-mobile-md)',
+                      padding: 'var(--spacing-mobile-sm) var(--spacing-mobile-lg)',
+                      borderRadius: 'var(--border-radius-mobile-2xl)',
+                      border: '2px solid var(--color-primary-500)',
+                      background: 'var(--color-primary-50)',
+                      color: 'var(--color-primary-600)',
+                      fontSize: 'var(--font-size-mobile-base)',
+                      fontWeight: 'var(--font-weight-medium)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 'var(--spacing-mobile-xs)'
+                    }}
+                    onClick={() => navigate('/store-plan/create')}
+                  >
+                    <PlusOutlined />
+                    创建计划
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* 筛选抽屉 */}
       {renderFilterDrawer()}
 
-      {/* 悬浮按钮 */}
-      <FloatButton
-        icon={<PlusOutlined />}
-        type="primary"
-        style={{ right: 24, bottom: 24 }}
+      {/* 现代化悬浮操作按钮 */}
+      <button
+        className="modern-fab"
         onClick={() => navigate('/store-plan/create')}
-      />
+        style={{
+          animation: 'mobileSpring 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.5s both'
+        }}
+      >
+        <PlusOutlined />
+      </button>
     </div>
   )
 }

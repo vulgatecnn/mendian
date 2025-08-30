@@ -406,7 +406,8 @@ export class AntdClickTestUtils extends ClickTestUtils {
         await this.user.click(trigger)
         // 检查是否有notification出现
         await waitFor(() => {
-          const _notification = document.querySelector('.ant-notification')
+          // 检查notification是否出现，但不需要使用返回值
+          document.querySelector('.ant-notification')
           // notification可能不会立即出现，这是正常的
         }, { timeout: 1000 })
         results.push({ action: `Notification trigger: ${trigger.textContent}`, success: true })

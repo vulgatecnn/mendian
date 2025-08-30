@@ -12,20 +12,18 @@
  * 5. Remove unnecessary test cases
  */
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React from 'react'
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import {
   render,
   screen,
-  fireEvent,
   waitFor,
   userEvent,
   cleanup,
-  testAllClicks,
   expectAllClicksWork,
   TestHelpers,
   MockFactory,
-  assertions,
 } from '@/test/utils'
 
 // Import your component
@@ -324,7 +322,7 @@ describe('COMPONENT_NAME Component', () => {
       )
       
       // Basic accessibility checks
-      const issues = await testHelpers.checkA11y()
+      const issues = testHelpers.checkA11y()
       expect(issues).toHaveLength(0)
     })
   })
@@ -471,7 +469,7 @@ describe('COMPONENT_NAME Component', () => {
   })
 
   // Conditional test groups based on component features
-  describe.skipIf(!mockProps.onSave)('Save Functionality', () => {
+  describe('Save Functionality', () => {
     it('should call onSave with correct data', async () => {
       const testData = { field: 'value' }
       
@@ -489,7 +487,7 @@ describe('COMPONENT_NAME Component', () => {
     })
   })
 
-  describe.skipIf(!mockProps.onCancel)('Cancel Functionality', () => {
+  describe('Cancel Functionality', () => {
     it('should call onCancel when cancelled', async () => {
       render(
         <button

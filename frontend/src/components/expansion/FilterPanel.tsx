@@ -12,7 +12,6 @@ import {
   Col,
   Tag,
   Slider,
-  Switch,
   Collapse,
   Typography,
   Divider
@@ -27,7 +26,7 @@ import {
   UpOutlined
 } from '@ant-design/icons'
 import type { CandidateLocationQueryParams } from '@/services/types'
-import dayjs from 'dayjs'
+// dayjs removed - not used
 
 const { RangePicker } = DatePicker
 const { Panel } = Collapse
@@ -47,7 +46,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   showSaveFilter = true
 }) => {
   const [form] = Form.useForm()
-  const [expanded, setExpanded] = useState(false)
+  const [_expanded, setExpanded] = useState(false)
   const [activeFilters, setActiveFilters] = useState<string[]>([])
 
   useEffect(() => {
@@ -92,8 +91,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         minScore: values.minScore,
         maxScore: values.maxScore,
         discoveredBy: values.discoveredBy,
-        startDate: values.discoveredDateRange?.[0]?.toISOString(),
-        endDate: values.discoveredDateRange?.[1]?.toISOString(),
+        discoveredStartDate: values.discoveredDateRange?.[0]?.toISOString(),
+        discoveredEndDate: values.discoveredDateRange?.[1]?.toISOString(),
         tags: values.tags,
         keyword: values.keyword
       }

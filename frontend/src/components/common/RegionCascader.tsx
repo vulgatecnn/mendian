@@ -13,7 +13,7 @@ interface RegionOption {
   children?: RegionOption[]
 }
 
-export interface RegionCascaderProps extends Omit<CascaderProps<RegionOption>, 'options' | 'loadData'> {
+export interface RegionCascaderProps extends Omit<CascaderProps<RegionOption>, 'options' | 'loadData' | 'displayRender' | 'multiple'> {
   /**
    * 最大级别 (1-省, 2-市, 3-区县, 4-街道)
    * @default 3
@@ -47,6 +47,11 @@ export interface RegionCascaderProps extends Omit<CascaderProps<RegionOption>, '
    * 自定义显示标签
    */
   displayRender?: (labels: string[], selectedOptions: RegionOption[]) => React.ReactNode
+  
+  /**
+   * 支持多选
+   */
+  multiple?: boolean
 }
 
 /**
@@ -185,13 +190,13 @@ const RegionCascader: React.FC<RegionCascaderProps> = ({
     }
     
     if (!showFullPath) {
-      return (labels: string[], selectedOptions: RegionOption[]) => {
-        const lastOption = selectedOptions[selectedOptions.length - 1]
+      return (labels: string[], selectedOptions?: RegionOption[]) => {
+        const lastOption = selectedOptions?.[selectedOptions.length - 1]
         return lastOption ? lastOption.label : labels.join(' / ')
       }
     }
     
-    return (labels: string[]) => labels.join(' / ')
+    return (labels: string[], _selectedOptions?: RegionOption[]) => labels.join(' / ')
   }, [displayRender, showFullPath])
   
   // 过滤器函数
@@ -200,12 +205,12 @@ const RegionCascader: React.FC<RegionCascaderProps> = ({
   }, [])
   
   return (
-    <Cascader<RegionOption>
-      {...props}
+    <Cascader
+      {...(props as any)}
       options={options}
       loadData={loadAll ? undefined : loadData}
       onChange={handleChange}
-      displayRender={customDisplayRender}
+      displayRender={customDisplayRender as any}
       showSearch={{ filter }}
       changeOnSelect={!onlyLeaf}
       loading={loading}

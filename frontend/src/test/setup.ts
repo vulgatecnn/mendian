@@ -16,6 +16,8 @@ import '@testing-library/jest-dom'
 // Import all mocks and setup
 import { setupAllMocks } from './mocks'
 import { testHelpers } from './utils'
+// Import services test setup for MSW
+import '../services/tests/setup'
 
 // Global test configuration
 const GLOBAL_TEST_CONFIG = {

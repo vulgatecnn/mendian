@@ -10,8 +10,6 @@ import {
   Badge,
   Typography,
   Drawer,
-  List,
-  Avatar,
   Rate,
   Switch,
   Slider,
@@ -23,7 +21,6 @@ import {
   FilterOutlined,
   FullscreenOutlined,
   ReloadOutlined,
-  EyeOutlined,
   AppstoreOutlined,
   ZoomInOutlined,
   ZoomOutOutlined,
@@ -62,7 +59,7 @@ const LocationMap: React.FC<LocationMapProps> = ({
 
   const {
     candidateLocations,
-    mapData,
+    mapData: _mapData,
     isMapLoading,
     fetchMapData,
     fetchNearbyLocations
@@ -558,7 +555,7 @@ const LocationMap: React.FC<LocationMapProps> = ({
             
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <Text type="secondary">租金</Text>
-              <Text>¥{(selectedLocation.rent / 10000).toFixed(1)}万/月</Text>
+              <Text>¥{selectedLocation.rent ? (selectedLocation.rent / 10000).toFixed(1) : '待定'}万/月</Text>
             </div>
 
             {selectedLocation.score && (

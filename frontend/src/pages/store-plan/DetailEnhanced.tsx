@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import {
   Card,
   Descriptions,
@@ -12,21 +12,14 @@ import {
   Col,
   Progress,
   Timeline,
-  Table,
   Badge,
   Avatar,
   Statistic,
-  Divider,
   Alert,
   Typography,
   List,
-  Upload,
-  Drawer,
   Form,
   Input,
-  Select,
-  DatePicker,
-  Image,
   Tooltip,
   Empty,
   Spin
@@ -34,30 +27,20 @@ import {
 import {
   EditOutlined,
   DeleteOutlined,
-  ArrowLeftOutlined,
   ExclamationCircleOutlined,
   CheckCircleOutlined,
-  ClockCircleOutlined,
   UserOutlined,
   CalendarOutlined,
   DollarOutlined,
   BarChartOutlined,
   FileTextOutlined,
-  TeamOutlined,
-  HistoryOutlined,
   ShareAltOutlined,
   PrinterOutlined,
   DownloadOutlined,
   PlusOutlined,
-  WarningOutlined,
-  LinkOutlined,
-  CommentOutlined,
-  BellOutlined,
   SyncOutlined,
   SendOutlined,
   RollbackOutlined,
-  TrophyOutlined,
-  ShopOutlined
 } from '@ant-design/icons'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useStorePlan } from '@/services/query/hooks/useStorePlan'
@@ -67,11 +50,11 @@ import StatusTag from './components/StatusTag'
 import ProgressTracker from './components/ProgressTracker'
 import ChartsPanel from './components/ChartsPanel'
 import dayjs from 'dayjs'
-import type { StorePlan } from '@/services/types/business'
+// StorePlan type removed - not used
 
-const { Title, Text, Paragraph } = Typography
+const { Text, Paragraph } = Typography
 const { TextArea } = Input
-const { Option } = Select
+// Option removed - not used
 
 interface ActivityLog {
   id: string
@@ -107,9 +90,9 @@ const StorePlanDetailEnhanced: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const { isMobile } = useDevice()
   const [activeTab, setActiveTab] = useState('overview')
-  const [commentDrawer, setCommentDrawer] = useState(false)
+  const [_commentDrawer, _setCommentDrawer] = useState(false)
   const [newComment, setNewComment] = useState('')
-  const [form] = Form.useForm()
+  const [_form] = Form.useForm()
   
   // 查询计划详情
   const { 

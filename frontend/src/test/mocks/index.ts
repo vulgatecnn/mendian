@@ -1,4 +1,11 @@
 // 统一导出所有Mock工具
+import { vi } from 'vitest'
+import React from 'react'
+
+// Import functions for local use
+import { setupAntdMocks } from './antd'
+import { setupReactRouterMocks } from './react-router'
+import { setupReactQueryMocks } from './react-query'
 
 // Antd组件Mock
 export {

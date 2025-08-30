@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback } from 'react'
 import { Form, message } from 'antd'
 import type { UseFormModalOptions, UseFormModalReturn } from './types'
 
@@ -58,7 +58,7 @@ export function useFormModal<T = any>(
         response = await updateService?.(recordKey, values)
       }
 
-      if (response?.success) {
+      if (response?.success && response.data) {
         message.success(mode === 'create' ? '创建成功' : '更新成功')
         close()
         onSuccess?.(response.data, mode)

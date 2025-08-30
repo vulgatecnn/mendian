@@ -94,7 +94,7 @@ export function useDataTable<T = any>(
       setSelectedRowKeys(keys)
       setSelectedRows(rows)
     },
-    onSelectAll: (selected: boolean, rows: T[], changeRows: T[]) => {
+    onSelectAll: (_selected: boolean, _rows: T[], _changeRows: T[]) => {
       // 处理全选逻辑
     }
   }), [selectedRowKeys])

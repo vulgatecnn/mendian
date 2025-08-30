@@ -13,7 +13,7 @@
   --vh: 1vh; // 由JavaScript设置，解决iOS Safari地址栏问题
 }
 
-// 基础移动端样式
+// 基础移动端样式（现代化升级）
 .device-mobile {
   // 禁用选择和拖拽
   -webkit-user-select: none;
@@ -25,10 +25,31 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-size-adjust: 100%;
+  font-size: var(--font-size-mobile-base);
+  line-height: var(--line-height-mobile-normal);
   
   // 滚动优化
   -webkit-overflow-scrolling: touch;
   overflow-scrolling: touch;
+  
+  // 现代化交互优化
+  &, * {
+    box-sizing: border-box;
+  }
+  
+  // 触摸优化
+  input, button, select, textarea {
+    touch-action: manipulation;
+  }
+  
+  // 防止iOS缩放
+  input[type="text"], 
+  input[type="email"], 
+  input[type="password"], 
+  input[type="number"], 
+  textarea {
+    font-size: var(--font-size-mobile-base); // 16px防止iOS自动缩放
+  }
 }
 
 // 企业微信环境样式
@@ -175,73 +196,451 @@
   }
 }
 
-// 移动端按钮优化
+// 移动端按钮优化（现代化升级）
 .device-mobile {
   .ant-btn {
-    min-height: 44px;
-    border-radius: 8px;
-    font-size: 16px;
+    min-height: var(--mobile-btn-height);
+    border-radius: var(--mobile-btn-radius);
+    font-size: var(--font-size-mobile-base);
+    font-weight: var(--font-weight-medium);
     touch-action: manipulation;
+    border: none;
+    box-shadow: var(--mobile-btn-shadow);
+    transition: var(--transition-spring);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-mobile-xs);
     
+    // 主要按钮样式增强
+    &-primary {
+      background: var(--gradient-primary);
+      color: white;
+      
+      &:hover, &:focus {
+        background: var(--gradient-primary);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-mobile-base);
+      }
+      
+      &:active {
+        transform: translateY(0);
+        box-shadow: var(--shadow-mobile-sm);
+      }
+      
+      &:disabled {
+        background: var(--color-neutral-300);
+        transform: none;
+        box-shadow: none;
+      }
+    }
+    
+    // 默认按钮
+    &-default {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-secondary);
+      
+      &:hover, &:focus {
+        border-color: var(--color-primary-400);
+        color: var(--color-primary-500);
+        transform: translateY(-1px);
+      }
+      
+      &:active {
+        transform: translateY(0);
+      }
+    }
+    
+    // 文本按钮
+    &-text {
+      background: transparent;
+      color: var(--color-primary-500);
+      box-shadow: none;
+      
+      &:hover, &:focus {
+        background: rgba(24, 144, 255, 0.1);
+        color: var(--color-primary-600);
+      }
+    }
+    
+    // 链接按钮
+    &-link {
+      color: var(--color-primary-500);
+      text-decoration: underline;
+      text-decoration-color: transparent;
+      transition: all 0.2s ease;
+      
+      &:hover, &:focus {
+        text-decoration-color: var(--color-primary-500);
+      }
+    }
+    
+    // 危险按钮
+    &-dangerous, &-danger {
+      &.ant-btn-primary {
+        background: var(--gradient-error);
+        
+        &:hover, &:focus {
+          background: var(--gradient-error);
+          filter: brightness(1.1);
+        }
+      }
+      
+      &.ant-btn-default {
+        color: var(--color-error-500);
+        border-color: var(--color-error-300);
+        
+        &:hover, &:focus {
+          color: var(--color-error-600);
+          border-color: var(--color-error-500);
+        }
+      }
+    }
+    
+    // 按钮尺寸
     &-sm {
       min-height: 36px;
-      font-size: 14px;
+      font-size: var(--font-size-mobile-sm);
+      padding: var(--spacing-mobile-xs) var(--spacing-mobile-sm);
+      border-radius: var(--border-radius-mobile-sm);
     }
     
     &-lg {
-      min-height: 52px;
-      font-size: 18px;
+      min-height: var(--touch-target-large);
+      font-size: var(--font-size-mobile-lg);
+      padding: var(--spacing-mobile-sm) var(--spacing-mobile-lg);
+      border-radius: var(--border-radius-mobile-lg);
+    }
+    
+    // 圆形按钮
+    &-circle {
+      width: var(--mobile-btn-height);
+      height: var(--mobile-btn-height);
+      border-radius: 50%;
+      padding: 0;
+    }
+    
+    // 图标按钮
+    &-icon-only {
+      width: var(--mobile-btn-height);
+      padding: 0;
+      
+      .anticon {
+        font-size: var(--font-size-mobile-lg);
+      }
+    }
+    
+    // 按钮组优化
+    &-group {
+      .ant-btn:not(:first-child) {
+        margin-left: 0;
+        border-left: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      
+      .ant-btn:first-child {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+      }
+      
+      .ant-btn:last-child {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+      }
+      
+      .ant-btn:not(:first-child):not(:last-child) {
+        border-radius: 0;
+      }
+    }
+    
+    // 加载状态
+    &-loading {
+      pointer-events: none;
+      
+      .ant-btn-loading-icon {
+        margin-right: var(--spacing-mobile-xs);
+      }
+    }
+    
+    // 触摸反馈
+    &:active {
+      transform: scale(0.96);
+    }
+    
+    // 无障碍支持
+    &:focus-visible {
+      outline: 2px solid var(--color-primary-500);
+      outline-offset: 2px;
     }
   }
 }
 
-// 移动端输入框优化
+// 移动端输入框优化（现代化升级）
 .device-mobile {
   .ant-input,
   .ant-select-selector {
-    min-height: 44px;
-    border-radius: 8px;
-    font-size: 16px; // 防止iOS缩放
+    min-height: var(--mobile-input-height);
+    border-radius: var(--mobile-input-radius);
+    font-size: var(--font-size-mobile-base); // 防止iOS缩放
+    border: 1px solid var(--border-secondary);
+    box-shadow: var(--shadow-mobile-sm);
+    transition: var(--transition-base);
+    background: var(--bg-primary);
+    
+    &:focus, &:focus-within {
+      border-color: var(--color-primary-500);
+      box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+      transform: translateY(-1px);
+    }
+    
+    &:hover:not(:focus) {
+      border-color: var(--color-primary-300);
+    }
   }
   
+  // 输入框包装器
   .ant-input-affix-wrapper {
-    min-height: 44px;
-    border-radius: 8px;
+    min-height: var(--mobile-input-height);
+    border-radius: var(--mobile-input-radius);
+    padding: var(--mobile-input-padding);
+    border: 1px solid var(--border-secondary);
+    box-shadow: var(--shadow-mobile-sm);
+    transition: var(--transition-base);
     
     .ant-input {
       min-height: auto;
-      font-size: 16px;
+      font-size: var(--font-size-mobile-base);
+      border: none;
+      box-shadow: none;
+      background: transparent;
+      
+      &:focus {
+        box-shadow: none;
+      }
+    }
+    
+    &:focus-within {
+      border-color: var(--color-primary-500);
+      box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+      transform: translateY(-1px);
+    }
+    
+    // 图标样式
+    .ant-input-prefix, .ant-input-suffix {
+      color: var(--text-tertiary);
+      
+      .anticon {
+        font-size: var(--font-size-mobile-lg);
+      }
+    }
+  }
+  
+  // 文本域
+  .ant-input {
+    &[type="textarea"], &.ant-input-textarea {
+      min-height: 80px;
+      resize: vertical;
+      font-family: var(--font-family);
+    }
+  }
+  
+  // Select组件
+  .ant-select {
+    min-height: var(--mobile-input-height);
+    
+    .ant-select-selector {
+      padding: var(--mobile-input-padding) !important;
+      
+      .ant-select-selection-item {
+        line-height: calc(var(--mobile-input-height) - 2px) !important;
+        font-size: var(--font-size-mobile-base);
+      }
+      
+      .ant-select-selection-placeholder {
+        color: var(--text-tertiary);
+        line-height: calc(var(--mobile-input-height) - 2px) !important;
+      }
+    }
+    
+    &.ant-select-focused .ant-select-selector {
+      border-color: var(--color-primary-500) !important;
+      box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2) !important;
+    }
+  }
+  
+  // 表单标签优化
+  .ant-form-item-label {
+    padding-bottom: var(--spacing-mobile-xs);
+    
+    label {
+      font-size: var(--font-size-mobile-sm);
+      font-weight: var(--font-weight-medium);
+      color: var(--text-primary);
+      
+      &.ant-form-item-required {
+        &::before {
+          color: var(--color-error-500);
+          font-size: var(--font-size-mobile-sm);
+        }
+      }
+    }
+  }
+  
+  // 表单错误状态
+  .ant-form-item-has-error {
+    .ant-input, 
+    .ant-input-affix-wrapper, 
+    .ant-select-selector {
+      border-color: var(--color-error-500);
+      
+      &:focus, &:focus-within {
+        box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.2);
+      }
+    }
+  }
+  
+  // 表单成功状态
+  .ant-form-item-has-success {
+    .ant-input, 
+    .ant-input-affix-wrapper, 
+    .ant-select-selector {
+      border-color: var(--color-success-500);
     }
   }
 }
 
-// 移动端卡片优化
+// 移动端卡片优化（现代化升级）
 .device-mobile {
   .ant-card {
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: var(--mobile-card-radius);
+    box-shadow: var(--mobile-card-shadow);
+    background: var(--mobile-card-bg);
+    border: none;
+    overflow: hidden;
+    transition: var(--transition-spring);
     
-    .ant-card-head {
-      padding: 12px 16px;
-      min-height: auto;
-      
-      .ant-card-head-title {
-        font-size: 16px;
-        font-weight: 600;
+    // 悬停效果（适用于支持hover的设备）
+    @media (hover: hover) {
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-mobile-lg);
       }
     }
     
-    .ant-card-body {
-      padding: 16px;
+    // 卡片头部现代化
+    .ant-card-head {
+      padding: var(--spacing-mobile-md) var(--spacing-mobile-md) var(--spacing-mobile-sm);
+      min-height: auto;
+      background: transparent;
+      border-bottom: none;
+      
+      .ant-card-head-title {
+        font-size: var(--font-size-mobile-lg);
+        font-weight: var(--font-weight-semibold);
+        color: var(--text-primary);
+        line-height: var(--line-height-mobile-compact);
+        margin: 0;
+        
+        // 添加渐变文字效果（可选）
+        &.gradient-text {
+          background: var(--gradient-primary);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+      }
+      
+      .ant-card-extra {
+        font-size: var(--font-size-mobile-sm);
+        color: var(--text-secondary);
+      }
     }
     
+    // 卡片主体现代化
+    .ant-card-body {
+      padding: 0 var(--spacing-mobile-md) var(--spacing-mobile-md);
+      
+      // 改进内容间距
+      > *:not(:last-child) {
+        margin-bottom: var(--spacing-mobile-sm);
+      }
+    }
+    
+    // 小卡片样式
     &-small {
       .ant-card-head {
-        padding: 8px 12px;
+        padding: var(--spacing-mobile-sm) var(--spacing-mobile-md) var(--spacing-mobile-xs);
+        
+        .ant-card-head-title {
+          font-size: var(--font-size-mobile-base);
+        }
       }
       
       .ant-card-body {
-        padding: 12px;
+        padding: 0 var(--spacing-mobile-md) var(--spacing-mobile-md);
+      }
+    }
+    
+    // 卡片操作区域
+    .ant-card-actions {
+      border-top: 1px solid var(--color-neutral-100);
+      background: rgba(248, 249, 251, 0.5);
+      backdrop-filter: var(--backdrop-blur-sm);
+      
+      li {
+        margin: 0;
+        
+        > span {
+          padding: var(--spacing-mobile-sm);
+          font-size: var(--font-size-mobile-sm);
+          
+          &:hover {
+            color: var(--color-primary-500);
+            background: rgba(24, 144, 255, 0.1);
+          }
+        }
+        
+        &:not(:last-child) {
+          border-right: 1px solid var(--color-neutral-100);
+        }
+      }
+    }
+    
+    // 特殊卡片类型
+    &.success-card {
+      border-left: 4px solid var(--color-success-500);
+      background: var(--gradient-success);
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      color: white;
+      
+      .ant-card-head-title {
+        color: white;
+      }
+    }
+    
+    &.warning-card {
+      border-left: 4px solid var(--color-warning-500);
+      background: var(--gradient-warning);
+    }
+    
+    &.error-card {
+      border-left: 4px solid var(--color-error-500);
+      background: var(--gradient-error);
+    }
+    
+    // 交互式卡片
+    &.interactive-card {
+      cursor: pointer;
+      transition: var(--transition-spring);
+      
+      &:active {
+        transform: scale(0.98);
+      }
+      
+      &:focus {
+        outline: 2px solid var(--color-primary-500);
+        outline-offset: 2px;
       }
     }
   }
@@ -580,4 +979,544 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+// ====== 现代化移动端交互效果 ======
+
+// 页面转场动画
+.page-transition-enter {
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+.page-transition-enter-active {
+  transform: translateX(0);
+  opacity: 1;
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s ease;
+}
+
+.page-transition-exit {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.page-transition-exit-active {
+  transform: translateX(-30%);
+  opacity: 0;
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s ease;
+}
+
+// 移动端弹跳动画
+@keyframes mobileSpring {
+  0% {
+    transform: scale(0.8) translateY(20px);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05) translateY(-5px);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes mobileFadeInUp {
+  0% {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes mobileSlideInRight {
+  0% {
+    transform: translateX(30px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+// 现代化卡片进入动画
+.mobile-card-enter {
+  animation: mobileSpring 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.mobile-fade-in-up {
+  animation: mobileFadeInUp 0.4s ease-out forwards;
+}
+
+.mobile-slide-in-right {
+  animation: mobileSlideInRight 0.3s ease-out forwards;
+}
+
+// 触摸反馈类
+.touch-feedback-light {
+  touch-action: manipulation;
+  transition: var(--transition-fast);
+  
+  &:active {
+    transform: scale(0.98);
+    background-color: rgba(0, 0, 0, 0.02);
+  }
+}
+
+.touch-feedback-medium {
+  touch-action: manipulation;
+  transition: var(--transition-spring);
+  
+  &:active {
+    transform: scale(0.95) translateY(1px);
+    box-shadow: var(--shadow-mobile-sm);
+  }
+}
+
+.touch-feedback-strong {
+  touch-action: manipulation;
+  transition: var(--transition-bounce);
+  
+  &:active {
+    transform: scale(0.92) translateY(2px);
+    box-shadow: var(--shadow-mobile-sm);
+  }
+}
+
+// 现代化进度指示器
+.modern-progress {
+  background: var(--mobile-progress-bg);
+  border-radius: var(--mobile-progress-radius);
+  height: var(--mobile-progress-height);
+  overflow: hidden;
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: var(--gradient-primary);
+    border-radius: inherit;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    width: var(--progress-width, 0%);
+  }
+  
+  &.success::before {
+    background: var(--gradient-success);
+  }
+  
+  &.warning::before {
+    background: var(--gradient-warning);
+  }
+  
+  &.error::before {
+    background: var(--gradient-error);
+  }
+}
+
+// 为支持进度条文字显示，增加较大的高度
+.modern-progress-large {
+  height: 20px;
+  border-radius: 10px;
+  
+  &::before {
+    border-radius: 10px;
+  }
+}
+
+// 现代化状态标签
+.modern-status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-mobile-xs);
+  padding: var(--spacing-mobile-xs) var(--spacing-mobile-sm);
+  border-radius: var(--border-radius-mobile-lg);
+  font-size: var(--font-size-mobile-xs);
+  font-weight: var(--font-weight-medium);
+  line-height: 1;
+  transition: var(--transition-base);
+  
+  &.draft {
+    background: rgba(140, 140, 140, 0.1);
+    color: var(--mobile-status-draft);
+    border: 1px solid rgba(140, 140, 140, 0.2);
+  }
+  
+  &.pending {
+    background: rgba(255, 167, 38, 0.1);
+    color: var(--mobile-status-pending);
+    border: 1px solid rgba(255, 167, 38, 0.2);
+  }
+  
+  &.approved {
+    background: rgba(82, 196, 26, 0.1);
+    color: var(--mobile-status-approved);
+    border: 1px solid rgba(82, 196, 26, 0.2);
+  }
+  
+  &.rejected {
+    background: rgba(255, 77, 79, 0.1);
+    color: var(--mobile-status-rejected);
+    border: 1px solid rgba(255, 77, 79, 0.2);
+  }
+  
+  &.completed {
+    background: rgba(78, 205, 196, 0.1);
+    color: var(--mobile-status-completed);
+    border: 1px solid rgba(78, 205, 196, 0.2);
+  }
+  
+  .anticon {
+    font-size: var(--font-size-mobile-xs);
+  }
+}
+
+// 现代化浮动操作按钮
+.modern-fab {
+  position: fixed;
+  bottom: calc(var(--safe-area-inset-bottom) + 24px);
+  right: 24px;
+  width: var(--mobile-fab-size);
+  height: var(--mobile-fab-size);
+  border-radius: 50%;
+  background: var(--gradient-primary);
+  color: white;
+  border: none;
+  box-shadow: var(--shadow-mobile-float);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-mobile-xl);
+  cursor: pointer;
+  transition: var(--transition-spring);
+  z-index: 1000;
+  
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: var(--shadow-mobile-xl);
+  }
+  
+  &:active {
+    transform: scale(0.95);
+  }
+  
+  &.fab-extended {
+    width: auto;
+    padding: 0 var(--spacing-mobile-md);
+    border-radius: var(--border-radius-mobile-2xl);
+    gap: var(--spacing-mobile-xs);
+    
+    .fab-text {
+      font-size: var(--font-size-mobile-base);
+      font-weight: var(--font-weight-medium);
+    }
+  }
+}
+
+// 现代化列表项
+.modern-list-item {
+  background: var(--bg-primary);
+  border-radius: var(--mobile-list-item-radius);
+  margin-bottom: var(--mobile-list-gap);
+  box-shadow: var(--shadow-mobile-sm);
+  overflow: hidden;
+  transition: var(--transition-base);
+  
+  &:hover {
+    box-shadow: var(--shadow-mobile-base);
+    transform: translateY(-1px);
+  }
+  
+  &:active {
+    transform: scale(0.98);
+  }
+  
+  .list-item-content {
+    padding: var(--mobile-list-item-padding);
+    
+    .list-item-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--spacing-mobile-xs);
+      
+      .list-item-title {
+        font-size: var(--font-size-mobile-base);
+        font-weight: var(--font-weight-semibold);
+        color: var(--text-primary);
+        margin: 0;
+      }
+      
+      .list-item-extra {
+        font-size: var(--font-size-mobile-sm);
+        color: var(--text-tertiary);
+      }
+    }
+    
+    .list-item-description {
+      font-size: var(--font-size-mobile-sm);
+      color: var(--text-secondary);
+      line-height: var(--line-height-mobile-relaxed);
+      margin-bottom: var(--spacing-mobile-sm);
+    }
+    
+    .list-item-meta {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-mobile-md);
+      font-size: var(--font-size-mobile-xs);
+      color: var(--text-tertiary);
+      
+      .meta-item {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-mobile-xs);
+        
+        .anticon {
+          font-size: var(--font-size-mobile-sm);
+        }
+      }
+    }
+  }
+  
+  .list-item-actions {
+    padding: var(--spacing-mobile-sm) var(--spacing-mobile-md);
+    background: rgba(248, 249, 251, 0.5);
+    border-top: 1px solid var(--border-tertiary);
+    display: flex;
+    gap: var(--spacing-mobile-sm);
+    
+    .action-btn {
+      flex: 1;
+      height: 36px;
+      border-radius: var(--border-radius-mobile-sm);
+      font-size: var(--font-size-mobile-sm);
+      font-weight: var(--font-weight-medium);
+    }
+  }
+}
+
+// 现代化搜索框
+.modern-search {
+  position: relative;
+  
+  .search-input {
+    width: 100%;
+    height: var(--mobile-input-height);
+    padding: var(--spacing-mobile-sm) var(--spacing-mobile-xl) var(--spacing-mobile-sm) var(--spacing-mobile-md);
+    border: 1px solid var(--border-secondary);
+    border-radius: var(--border-radius-mobile-2xl);
+    background: rgba(248, 249, 251, 0.8);
+    backdrop-filter: var(--backdrop-blur-sm);
+    font-size: var(--font-size-mobile-base);
+    transition: var(--transition-base);
+    
+    &:focus {
+      outline: none;
+      border-color: var(--color-primary-500);
+      background: var(--bg-primary);
+      box-shadow: 0 0 0 3px rgba(24, 144, 255, 0.1);
+    }
+    
+    &::placeholder {
+      color: var(--text-tertiary);
+    }
+  }
+  
+  .search-icon {
+    position: absolute;
+    right: var(--spacing-mobile-md);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-tertiary);
+    font-size: var(--font-size-mobile-lg);
+    pointer-events: none;
+  }
+}
+
+// 现代化导航栏
+.modern-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--mobile-nav-height);
+  background: var(--mobile-nav-bg);
+  backdrop-filter: var(--mobile-nav-backdrop);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: var(--mobile-nav-shadow);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--spacing-mobile-md);
+  padding-top: var(--safe-area-inset-top);
+  z-index: 1000;
+  
+  .navbar-left, .navbar-right {
+    min-width: 60px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .navbar-left {
+    justify-content: flex-start;
+  }
+  
+  .navbar-right {
+    justify-content: flex-end;
+  }
+  
+  .navbar-title {
+    flex: 1;
+    text-align: center;
+    font-size: var(--font-size-mobile-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+  }
+  
+  .navbar-action {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition-base);
+    
+    &:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+    
+    &:active {
+      transform: scale(0.9);
+      background: rgba(0, 0, 0, 0.1);
+    }
+    
+    .anticon {
+      font-size: var(--font-size-mobile-lg);
+    }
+  }
+}
+
+// 骨架屏加载动画
+@keyframes shimmer {
+  0% {
+    background-position: -468px 0;
+  }
+  100% {
+    background-position: 468px 0;
+  }
+}
+
+.skeleton-loading {
+  display: inline-block;
+  height: 1em;
+  position: relative;
+  overflow: hidden;
+  background-color: var(--color-neutral-200);
+  border-radius: var(--border-radius-mobile-sm);
+  
+  &::after {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0,
+      rgba(255, 255, 255, 0.2) 20%,
+      rgba(255, 255, 255, 0.5) 60%,
+      rgba(255, 255, 255, 0)
+    );
+    animation: shimmer 2s infinite;
+    content: '';
+  }
+}
+
+// 移动端工具类增强
+.mobile-only-flex {
+  @media (max-width: 767px) {
+    display: flex !important;
+  }
+  @media (min-width: 768px) {
+    display: none !important;
+  }
+}
+
+.mobile-grid-2 {
+  @media (max-width: 767px) {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-mobile-sm);
+  }
+}
+
+.mobile-full-width {
+  @media (max-width: 767px) {
+    width: 100% !important;
+  }
+}
+
+// 现代化移动端分页按钮
+.modern-pagination-btn {
+  padding: var(--spacing-mobile-xs) var(--spacing-mobile-sm);
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--border-radius-mobile-base);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: var(--font-size-mobile-xs);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: var(--transition-base);
+  
+  &:hover {
+    background: var(--color-primary-50);
+    border-color: var(--color-primary-300);
+    color: var(--color-primary-600);
+  }
+  
+  &:active {
+    transform: scale(0.96);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    
+    &:hover {
+      background: var(--bg-primary);
+      border-color: var(--border-secondary);
+      color: var(--text-primary);
+      transform: none;
+    }
+  }
+}
+
+// 移动端详情折叠面板样式
+.mobile-details-collapse {
+  .ant-collapse-ghost {
+    .ant-collapse-header {
+      padding: var(--spacing-mobile-xs) 0 var(--spacing-mobile-xs) !important;
+      
+      .ant-collapse-expand-icon {
+        color: var(--text-tertiary) !important;
+        font-size: var(--font-size-mobile-xs) !important;
+      }
+    }
+    
+    .ant-collapse-content {
+      .ant-collapse-content-box {
+        padding: 0 !important;
+      }
+    }
+  }
 }

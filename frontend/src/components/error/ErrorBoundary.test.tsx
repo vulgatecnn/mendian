@@ -189,7 +189,7 @@ describe('ErrorBoundary', () => {
 
   describe('Custom Fallback', () => {
     it('should render custom fallback when provided', () => {
-      const customFallback = (error: Error, errorInfo: any, retry: () => void) => (
+      const customFallback = (error: Error, _errorInfo: any, retry: () => void) => (
         <div data-testid="custom-fallback">
           <h1>Custom Error Page</h1>
           <p>Error: {error.message}</p>
@@ -215,7 +215,7 @@ describe('ErrorBoundary', () => {
     })
 
     it('should handle custom fallback retry function', async () => {
-      const customFallback = (error: Error, errorInfo: any, retry: () => void) => (
+      const customFallback = (_error: Error, _errorInfo: any, retry: () => void) => (
         <div data-testid="custom-fallback">
           <button onClick={retry} data-testid="custom-retry">
             Retry

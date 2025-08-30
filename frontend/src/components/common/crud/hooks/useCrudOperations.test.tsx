@@ -27,7 +27,7 @@ const mockMessage = {
 }
 
 vi.mock('antd', async () => {
-  const actual = await vi.importActual('antd')
+  const actual = await vi.importActual('antd') as any
   return {
     ...actual,
     Modal: {

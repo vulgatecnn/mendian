@@ -6,7 +6,6 @@ import {
   Typography,
   Button,
   Avatar,
-  Timeline,
   Badge,
   Divider
 } from 'antd'
@@ -19,7 +18,6 @@ import {
   ClockCircleOutlined,
   CheckCircleOutlined,
   ExclamationCircleOutlined,
-  UserOutlined,
   CalendarOutlined,
   MessageOutlined
 } from '@ant-design/icons'

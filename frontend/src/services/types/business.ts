@@ -126,7 +126,10 @@ export interface CandidateLocationQueryParams {
   maxScore?: number
   regionId?: string
   discoveredBy?: string
+  discoveredStartDate?: string
+  discoveredEndDate?: string
   keyword?: string
+  tags?: string[]
 }
 
 export interface CompetitorInfo {

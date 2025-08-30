@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { message, Upload } from 'antd'
+import { message } from 'antd'
 import type { UseImportExportOptions, UseImportExportReturn } from './types'
 
 /**

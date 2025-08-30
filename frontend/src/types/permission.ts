@@ -27,7 +27,7 @@ export type PermissionResource =
 /**
  * 权限检查模式
  */
-export type PermissionMode = 'all' | 'any'
+export type PermissionMode = 'all' | 'any' | 'strict' | 'loose'
 
 /**
  * 权限定义接口

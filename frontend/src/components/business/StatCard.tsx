@@ -117,7 +117,7 @@ const StatCard: React.FC<StatCardProps> = ({
     <Card
       {...(className && { className })}
       style={cardStyle}
-      bodyStyle={{ padding: 0 }}
+      styles={{ body: { padding: 0 } }}
       loading={loading}
       {...rest}
     >

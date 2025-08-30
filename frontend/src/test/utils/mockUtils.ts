@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import { vi, type MockedFunction } from 'vitest'
+import { vi } from 'vitest'
 import { QueryClient } from '@tanstack/react-query'
 
 // 通用Mock工厂
@@ -210,7 +210,7 @@ export class QueryMockUtils {
     }
   }
 
-  static mockUseMutation<T = any, V = any>() {
+  static mockUseMutation<T = any>() {
     return {
       mutate: vi.fn(),
       mutateAsync: vi.fn(),
@@ -220,6 +220,19 @@ export class QueryMockUtils {
       data: null as T | null,
       error: null,
       reset: vi.fn(),
+    }
+  }
+
+  static createLoadingQuery<T = any>() {
+    return {
+      data: null as T | null,
+      isLoading: true,
+      error: null,
+      refetch: vi.fn(),
+      isError: false,
+      isSuccess: false,
+      isFetching: true,
+      isRefetching: false,
     }
   }
 }
@@ -304,7 +317,7 @@ export class TimeMockUtils {
 
   static mockDayjs() {
     return vi.mock('dayjs', () => {
-      const mockDayjs: any = vi.fn((date?: any) => ({
+      const mockDayjs: any = vi.fn((_date?: any) => ({
         format: vi.fn(() => '2024-01-01'),
         toDate: vi.fn(() => new Date('2024-01-01')),
         valueOf: vi.fn(() => new Date('2024-01-01').valueOf()),

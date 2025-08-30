@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * Page Component Test Template
  * 
@@ -15,22 +16,17 @@
 import React from 'react'
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import {
-  render,
   renderPage,
   renderWithPermissions,
   renderUnauthenticated,
   screen,
-  fireEvent,
   waitFor,
   userEvent,
   cleanup,
-  testAllClicks,
   expectAllClicksWork,
   TestHelpers,
   MockFactory,
   QueryMockUtils,
-  BusinessQueryMocks,
-  assertions,
   scenarioBuilder,
 } from '@/test/utils'
 import { setupAllMocks } from '@/test/mocks'
@@ -718,7 +714,7 @@ describe('PAGE_NAME Page', () => {
         </div>
       )
       
-      const issues = await testHelpers.checkA11y()
+      const issues = testHelpers.checkA11y()
       expect(issues).toHaveLength(0)
     })
   })

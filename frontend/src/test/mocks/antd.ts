@@ -365,15 +365,24 @@ export const antdMocks = {
   },
   
   // 加载中
-  Spin: vi.fn(({ children, spinning = false, ...props }) =>
+  Spin: vi.fn(({ children, spinning = false, tip, ...props }) =>
     React.createElement('div', {
       className: spinning ? 'ant-spin-spinning' : 'ant-spin',
       'data-testid': 'mock-spin',
       ...props,
-    }, spinning 
-      ? React.createElement('div', { className: 'ant-spin-dot' }, 'Loading...')
-      : children
-    )
+    }, [
+      spinning && React.createElement('div', { 
+        key: 'spinner',
+        className: 'ant-spin-dot' 
+      }, 'Loading...'),
+      tip && React.createElement('div', { 
+        key: 'tip',
+        className: 'ant-spin-text' 
+      }, tip),
+      children && React.createElement('div', { 
+        key: 'children' 
+      }, children)
+    ].filter(Boolean))
   ),
   
   // 卡片

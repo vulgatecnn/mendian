@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Card,
   Table,
@@ -12,9 +12,7 @@ import {
   Select,
   DatePicker,
   InputNumber,
-  Upload,
   List,
-  Avatar,
   Timeline,
   Descriptions,
   Badge,
@@ -26,11 +24,8 @@ import {
   Typography,
   Popconfirm,
   Tooltip,
-  Image,
   Rate,
-  Divider,
-  Empty,
-  message
+  Empty
 } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import {
@@ -39,32 +34,19 @@ import {
   DeleteOutlined,
   EyeOutlined,
   PlayCircleOutlined,
-  PauseCircleOutlined,
   CheckCircleOutlined,
-  ExclamationCircleOutlined,
-  UploadOutlined,
-  DownloadOutlined,
   ToolOutlined,
-  SafetyCertificateOutlined,
-  FileTextOutlined,
-  CameraOutlined,
-  StarOutlined,
-  WarningOutlined
+  SafetyCertificateOutlined
 } from '@ant-design/icons'
 import dayjs from 'dayjs'
 
 import { usePreparationStore } from '@/stores/preparationStore'
 import { 
   ENGINEERING_STATUS_COLORS, 
-  PRIORITY_COLORS,
   type EngineeringTask,
   type EngineeringStatusType,
-  type Priority,
-  type CreateEngineeringTaskRequest,
-  type UpdateEngineeringTaskRequest,
   type QualityCheck,
-  type SafetyRecord,
-  type MaterialUsage
+  type SafetyRecord
 } from '@shared/types'
 
 const { Title, Text } = Typography
@@ -289,8 +271,6 @@ const EngineeringTaskForm: React.FC<{
 
 // 质量检查记录组件
 const QualityCheckList: React.FC<{ taskId: string }> = ({ taskId }) => {
-  const [checks, setChecks] = useState<QualityCheck[]>([])
-  const [loading, setLoading] = useState(false)
 
   // 这里应该从API获取质量检查记录
   useEffect(() => {
@@ -304,7 +284,7 @@ const QualityCheckList: React.FC<{ taskId: string }> = ({ taskId }) => {
       checkDate: '2024-01-15',
       checkType: '基础结构检查',
       checkPoints: [
-        { name: '地基深度', standard: '≥2米', score: 95, result: 'PASS', notes: '符合要求' },
+        { name: '地基深度', standard: '≥2米', score: 95, result: 'PASS' },
         { name: '钢筋间距', standard: '200mm±10mm', score: 90, result: 'PASS' },
         { name: '混凝土强度', standard: 'C30', score: 92, result: 'PASS' }
       ],
@@ -331,7 +311,7 @@ const QualityCheckList: React.FC<{ taskId: string }> = ({ taskId }) => {
                     <Tag color={check.result === 'PASS' ? 'green' : 'red'}>
                       {check.result === 'PASS' ? '通过' : '未通过'}
                     </Tag>
-                    <Rate disabled defaultValue={check.overallScore / 20} />
+                    <Rate disabled defaultValue={(check.overallScore || 0) / 20} />
                     <Text type="secondary">({check.overallScore}分)</Text>
                   </Space>
                 }
@@ -342,7 +322,7 @@ const QualityCheckList: React.FC<{ taskId: string }> = ({ taskId }) => {
                       检查时间：{dayjs(check.checkDate).format('YYYY-MM-DD')}
                     </Text>
                     <div style={{ marginTop: 8 }}>
-                      {check.checkPoints.map((point, index) => (
+                      {check.checkPoints?.map((point, index) => (
                         <Tag
                           key={index}
                           color={point.result === 'PASS' ? 'green' : 'red'}
@@ -365,18 +345,18 @@ const QualityCheckList: React.FC<{ taskId: string }> = ({ taskId }) => {
 
 // 安全记录组件
 const SafetyRecordList: React.FC<{ taskId: string }> = ({ taskId }) => {
-  const [records, setRecords] = useState<SafetyRecord[]>([])
 
   const mockRecords: SafetyRecord[] = [
     {
       id: '1',
       taskId,
-      recordDate: new Date('2024-01-14'),
+      recordDate: '2024-01-14T10:00:00Z',
       type: 'INSPECTION',
       description: '日常安全检查，所有工人佩戴安全帽，施工区域围栏完整',
       severity: 'LOW',
-      status: 'CLOSED',
-      reporter: '安全员'
+      status: 'RESOLVED',
+      responsible: '安全员',
+      createdAt: '2024-01-14T10:00:00Z'
     }
   ]
 
@@ -408,7 +388,7 @@ const SafetyRecordList: React.FC<{ taskId: string }> = ({ taskId }) => {
                   <Text>{record.description}</Text>
                 </div>
                 <div style={{ marginTop: 4, fontSize: 12, color: '#666' }}>
-                  {record.reporter} · {dayjs(record.recordDate).format('YYYY-MM-DD HH:mm')}
+                  {record.responsible} · {dayjs(record.recordDate).format('YYYY-MM-DD HH:mm')}
                 </div>
               </div>
             </Timeline.Item>
@@ -428,8 +408,7 @@ const EngineeringManagement: React.FC<{ projectId: string }> = ({ projectId }) =
     isLoading,
     fetchEngineeringTasks,
     setSelectedEngineeringTaskIds,
-    deleteEngineeringTask,
-    updateEngineeringStatus
+    deleteEngineeringTask
   } = usePreparationStore()
 
   // 本地状态

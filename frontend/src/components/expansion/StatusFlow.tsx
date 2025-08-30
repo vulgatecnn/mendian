@@ -10,7 +10,6 @@ import {
   Card,
   Typography,
   Tag,
-  Tooltip,
   message
 } from 'antd'
 import {
@@ -20,7 +19,6 @@ import {
   CheckCircleOutlined,
   CloseCircleOutlined,
   StarOutlined,
-  ExclamationCircleOutlined,
   EditOutlined,
   RightOutlined
 } from '@ant-design/icons'
@@ -136,6 +134,7 @@ const StatusFlow: React.FC<StatusFlowProps> = ({
     
     // 预设一些常用的变更原因
     const reasons = {
+      DISCOVERED: '新发现候选位置',
       INVESTIGATING: '开始实地调研评估',
       NEGOTIATING: '进入商务条件谈判',
       APPROVED: '通过内部审核',

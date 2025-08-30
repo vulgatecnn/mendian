@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * Service/API Test Template
  * 
@@ -18,7 +19,6 @@ import {
   MockFactory,
   ApiMockUtils,
   HttpMockUtils,
-  TimeMockUtils,
   cleanup,
 } from '@/test/utils'
 
@@ -77,7 +77,7 @@ class MockService {
   }
 
   async getList(params: any = {}) {
-    const { page = 1, pageSize = 20, search, filters } = params
+    const { page = 1, pageSize = 20, search } = params
     
     // Generate mock data
     const items = Array.from({ length: pageSize }, () => MockFactory.generateStorePlan())
@@ -258,7 +258,7 @@ describe('SERVICE_NAME Service', () => {
     })
 
     it('should handle creation conflicts', async () => {
-      const testData = { name: '重复名称' }
+      // const testData = { name: '重复名称' }
       
       // Mock conflict response
       mockHttp.post.mockRejectedValueOnce({

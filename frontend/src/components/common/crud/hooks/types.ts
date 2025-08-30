@@ -1,11 +1,4 @@
-import type { FormInstance } from 'antd/es/form'
-import type { 
-  SearchField, 
-  ActionConfig, 
-  BatchAction,
-  FormField,
-  FormModalRef
-} from '../'
+// Type definitions for CRUD hooks - removed unused imports
 
 /**
  * 数据表格Hook类型定义
@@ -84,7 +77,7 @@ export interface UseFormModalReturn<T = any> {
 /**
  * 导入导出Hook类型定义
  */
-export interface UseImportExportOptions<T = any> {
+export interface UseImportExportOptions {
   // 服务
   exportService?: (params?: any) => Promise<{ success: boolean; data?: any; message?: string }>
   importService?: (formData: FormData) => Promise<{ success: boolean; data?: any; message?: string }>
@@ -95,7 +88,7 @@ export interface UseImportExportOptions<T = any> {
   onError?: (error: Error) => void
 }
 
-export interface UseImportExportReturn<T = any> {
+export interface UseImportExportReturn {
   // 状态
   exportLoading: boolean
   importLoading: boolean
@@ -113,7 +106,7 @@ export interface UseImportExportReturn<T = any> {
 /**
  * CRUD操作Hook类型定义
  */
-export interface UseCrudOperationsOptions<T = any> {
+export interface UseCrudOperationsOptions {
   // 服务
   deleteService?: (id: string) => Promise<{ success: boolean; data?: any; message?: string }>
   batchDeleteService?: (ids: string[]) => Promise<{ success: boolean; data?: any; message?: string }>

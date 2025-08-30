@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { expect } from 'vitest'
 import type { UserEvent } from '@testing-library/user-event'
@@ -401,7 +401,7 @@ export class TestHelpers {
   }
 
   // 可访问性测试助手
-  async checkA11y(container: HTMLElement = document.body) {
+  checkA11y(container: HTMLElement = document.body) {
     // 检查基本的可访问性
     const issues: string[] = []
     

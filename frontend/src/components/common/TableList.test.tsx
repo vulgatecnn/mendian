@@ -24,7 +24,7 @@ import TableList, { TableActions } from './TableList'
 // Mock Antd Grid hook
 const mockUseBreakpoint = vi.fn()
 vi.mock('antd', async () => {
-  const actual = await vi.importActual('antd')
+  const actual = await vi.importActual('antd') as any
   return {
     ...actual,
     Grid: {

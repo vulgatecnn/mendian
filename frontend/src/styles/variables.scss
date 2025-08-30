@@ -94,12 +94,97 @@
   --transition-base: all 0.3s ease;
   --transition-fast: all 0.2s ease;
   --transition-slow: all 0.5s ease;
+  --transition-spring: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
   // z-index
   --z-dropdown: 1000;
   --z-modal: 1100;
   --z-popover: 1200;
   --z-tooltip: 1300;
+
+  // ====== 移动端专用设计令牌 ======
+  
+  // 移动端渐变系统
+  --gradient-primary: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%);
+  --gradient-success: linear-gradient(135deg, #52c41a 0%, #73d13d 100%);
+  --gradient-warning: linear-gradient(135deg, #faad14 0%, #ffd666 100%);
+  --gradient-error: linear-gradient(135deg, #ff4d4f 0%, #ff7875 100%);
+  --gradient-card: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+  --gradient-hero: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+  // 移动端阴影系统（更柔和、更现代）
+  --shadow-mobile-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-mobile-base: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-mobile-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-mobile-xl: 0 12px 32px rgba(0, 0, 0, 0.16);
+  --shadow-mobile-card: 0 2px 16px rgba(0, 0, 0, 0.04);
+  --shadow-mobile-float: 0 8px 32px rgba(0, 0, 0, 0.12);
+
+  // 移动端圆角系统（更大的圆角）
+  --border-radius-mobile-sm: 8px;
+  --border-radius-mobile-base: 12px;
+  --border-radius-mobile-lg: 16px;
+  --border-radius-mobile-xl: 20px;
+  --border-radius-mobile-2xl: 24px;
+  --border-radius-mobile-card: 16px;
+
+  // 移动端间距系统（触摸友好）
+  --spacing-mobile-xs: 6px;
+  --spacing-mobile-sm: 12px;
+  --spacing-mobile-md: 20px;
+  --spacing-mobile-lg: 32px;
+  --spacing-mobile-xl: 48px;
+  --spacing-mobile-2xl: 64px;
+
+  // 移动端触摸目标尺寸
+  --touch-target-min: 44px;
+  --touch-target-comfortable: 48px;
+  --touch-target-large: 56px;
+
+  // 移动端字体层级（优化的移动端阅读体验）
+  --font-size-mobile-xs: 11px;
+  --font-size-mobile-sm: 13px;
+  --font-size-mobile-base: 15px;
+  --font-size-mobile-lg: 17px;
+  --font-size-mobile-xl: 19px;
+  --font-size-mobile-2xl: 22px;
+  --font-size-mobile-3xl: 28px;
+  --font-size-mobile-hero: 32px;
+
+  // 移动端行高系统
+  --line-height-mobile-compact: 1.3;
+  --line-height-mobile-normal: 1.4;
+  --line-height-mobile-relaxed: 1.6;
+
+  // 移动端色彩增强（更高对比度，更好的可读性）
+  --color-mobile-accent: #ff6b6b;
+  --color-mobile-info: #4ecdc4;
+  --color-mobile-purple: #a55eea;
+  --color-mobile-orange: #ffa726;
+
+  // 毛玻璃效果
+  --backdrop-blur-sm: blur(4px);
+  --backdrop-blur-base: blur(8px);
+  --backdrop-blur-lg: blur(16px);
+  --backdrop-overlay: rgba(255, 255, 255, 0.8);
+  --backdrop-overlay-dark: rgba(0, 0, 0, 0.6);
+
+  // 移动端容器最大宽度
+  --container-mobile-max: 100%;
+  --container-tablet-max: 768px;
+  --container-desktop-max: 1200px;
+
+  // 安全区域变量（增强）
+  --safe-area-inset-top: env(safe-area-inset-top, 0);
+  --safe-area-inset-right: env(safe-area-inset-right, 0);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0);
+  --safe-area-inset-left: env(safe-area-inset-left, 0);
+
+  // 移动端特定高度
+  --mobile-header-height: 56px;
+  --mobile-tabbar-height: 60px;
+  --mobile-fab-size: 56px;
 }
 
 // 暗色主题
@@ -143,4 +228,52 @@
 
   // 分割线
   --divider: var(--color-neutral-200);
+}
+
+// 移动端语义化变量
+:root {
+  // 移动端卡片样式
+  --mobile-card-bg: var(--gradient-card);
+  --mobile-card-shadow: var(--shadow-mobile-card);
+  --mobile-card-radius: var(--border-radius-mobile-card);
+  --mobile-card-padding: var(--spacing-mobile-md);
+
+  // 移动端按钮样式
+  --mobile-btn-height: var(--touch-target-comfortable);
+  --mobile-btn-radius: var(--border-radius-mobile-base);
+  --mobile-btn-shadow: var(--shadow-mobile-sm);
+
+  // 移动端输入框样式
+  --mobile-input-height: var(--touch-target-comfortable);
+  --mobile-input-radius: var(--border-radius-mobile-base);
+  --mobile-input-padding: var(--spacing-mobile-sm) var(--spacing-mobile-md);
+
+  // 移动端导航样式
+  --mobile-nav-height: var(--mobile-header-height);
+  --mobile-nav-bg: rgba(255, 255, 255, 0.9);
+  --mobile-nav-backdrop: var(--backdrop-blur-base);
+  --mobile-nav-shadow: var(--shadow-mobile-sm);
+
+  // 移动端列表样式
+  --mobile-list-item-padding: var(--spacing-mobile-md);
+  --mobile-list-item-radius: var(--border-radius-mobile-base);
+  --mobile-list-gap: var(--spacing-mobile-sm);
+
+  // 移动端状态色彩
+  --mobile-status-draft: var(--color-neutral-400);
+  --mobile-status-pending: var(--color-mobile-orange);
+  --mobile-status-approved: var(--color-success-500);
+  --mobile-status-rejected: var(--color-error-500);
+  --mobile-status-completed: var(--color-mobile-info);
+
+  // 移动端优先级色彩
+  --mobile-priority-low: var(--color-neutral-400);
+  --mobile-priority-medium: var(--color-warning-500);
+  --mobile-priority-high: var(--color-mobile-orange);
+  --mobile-priority-urgent: var(--color-mobile-accent);
+
+  // 移动端进度条样式
+  --mobile-progress-height: 6px;
+  --mobile-progress-radius: var(--border-radius-mobile-sm);
+  --mobile-progress-bg: var(--color-neutral-200);
 }

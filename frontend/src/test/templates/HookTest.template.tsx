@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * Custom Hook Test Template
  * 
@@ -19,12 +20,9 @@ import { renderHook, act, waitFor } from '@testing-library/react'
 import {
   QueryClient,
   QueryClientProvider,
-  useQuery,
-  useMutation,
 } from '@tanstack/react-query'
 import {
   createTestQueryClient,
-  QueryMockUtils,
   MockFactory,
   cleanup,
 } from '@/test/utils'
@@ -64,10 +62,10 @@ const createWrapper = (queryClient?: QueryClient) => {
 }
 
 // Mock hook implementation for template
-const mockUseHook = (params: any) => {
+const mockUseHook = (_params: any) => {
   const [data, setData] = React.useState(null)
   const [loading, setLoading] = React.useState(false)
-  const [error, setError] = React.useState(null)
+  const [error] = React.useState(null)
 
   const refetch = React.useCallback(() => {
     setLoading(true)
@@ -202,7 +200,8 @@ describe('HOOK_NAME Hook', () => {
         expect(result.current.data).not.toBeNull()
       })
 
-      const firstData = result.current.data
+      // Store first data for comparison if needed
+      // const firstData = result.current.data
 
       // Refetch
       act(() => {

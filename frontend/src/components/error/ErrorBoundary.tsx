@@ -62,7 +62,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   /**
    * 错误信息处理
    */
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  override componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo)
     
     this.setState({
@@ -118,7 +118,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     }
   }
 
-  render() {
+  override render() {
     const { hasError, error, errorInfo, errorId } = this.state
     const { children, fallback } = this.props
 
@@ -243,7 +243,7 @@ export const withErrorBoundary = <P extends object>(
   const WrappedComponent = React.forwardRef<any, P>((props, ref) => {
     return (
       <ErrorBoundary {...errorBoundaryConfig}>
-        <Component {...props} ref={ref} />
+        <Component {...(props as any)} ref={ref} />
       </ErrorBoundary>
     )
   })

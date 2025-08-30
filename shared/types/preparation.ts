@@ -65,6 +65,11 @@ export interface EngineeringTask {
   supplierId?: string;
   createdAt: string;
   updatedAt: string;
+  // 新增字段
+  projectName?: string;
+  taskType?: string;
+  contractAmount?: number;
+  progressPercentage?: number;
 }
 
 // 质量检查记录

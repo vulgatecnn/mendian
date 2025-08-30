@@ -14,12 +14,9 @@ import {
   EnvironmentOutlined,
   PhoneOutlined,
   EyeOutlined,
-  StarOutlined,
-  DollarOutlined,
   CalendarOutlined,
   TeamOutlined,
   CheckCircleOutlined,
-  ExclamationCircleOutlined,
   CloseCircleOutlined,
   PauseCircleOutlined,
   SearchOutlined

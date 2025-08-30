@@ -61,21 +61,21 @@ const MockAuthProvider: React.FC<{
   authState?: ExtendedRenderOptions['authState']
 }> = ({ children, authState }) => {
   // 这里可以根据需要mock认证状态
-  const mockAuthContext = {
-    isAuthenticated: authState?.isAuthenticated ?? true,
-    user: authState?.user ?? {
-      id: 'test-user-1',
-      name: '测试用户',
-      email: 'test@example.com',
-      department: '测试部门'
-    },
-    permissions: authState?.permissions ?? ['store:read', 'store:write'],
-    roles: authState?.roles ?? ['商务人员'],
-    login: vi.fn(),
-    logout: vi.fn(),
-    hasPermission: vi.fn().mockReturnValue(true),
-    hasRole: vi.fn().mockReturnValue(true),
-  }
+  // const mockAuthContext = {
+  //   isAuthenticated: authState?.isAuthenticated ?? true,
+  //   user: authState?.user ?? {
+  //     id: 'test-user-1',
+  //     name: '测试用户',
+  //     email: 'test@example.com',
+  //     department: '测试部门'
+  //   },
+  //   permissions: authState?.permissions ?? ['store:read', 'store:write'],
+  //   roles: authState?.roles ?? ['商务人员'],
+  //   login: vi.fn(),
+  //   logout: vi.fn(),
+  //   hasPermission: vi.fn().mockReturnValue(true),
+  //   hasRole: vi.fn().mockReturnValue(true),
+  // }
 
   // 在实际项目中，这里应该使用真实的AuthProvider
   // 现在只是将context值传递给children

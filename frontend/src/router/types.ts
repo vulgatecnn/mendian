@@ -61,7 +61,7 @@ export interface BreadcrumbItem {
   /** 路径 */
   path?: string
   /** 图标 */
-  icon?: string
+  icon?: React.ReactNode
   /** 是否可点击 */
   clickable?: boolean
 }

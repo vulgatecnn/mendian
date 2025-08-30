@@ -65,7 +65,7 @@ export function useCrudOperations<T = any>(
   }, [deleteService, onSuccess, onError, afterOperation])
 
   // 批量删除
-  const handleBatchDelete = useCallback(async (selectedKeys: React.Key[], selectedRows: T[]) => {
+  const handleBatchDelete = useCallback(async (selectedKeys: React.Key[], _selectedRows: T[]) => {
     if (selectedKeys.length === 0) {
       message.warning('请选择要删除的记录')
       return Promise.resolve()
@@ -138,7 +138,7 @@ export function useCrudOperations<T = any>(
   const handleBatchOperation = useCallback(async (
     operation: string,
     selectedKeys: React.Key[],
-    selectedRows: T[],
+    _selectedRows: T[],
     service: (keys: string[]) => Promise<any>,
     confirmConfig?: {
       title: string

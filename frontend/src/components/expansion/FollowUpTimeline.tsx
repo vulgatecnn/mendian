@@ -13,10 +13,8 @@ import {
   Upload,
   Typography,
   Avatar,
-  Tooltip,
   Divider,
   Badge,
-  message
 } from 'antd'
 import {
   PhoneOutlined,
@@ -24,13 +22,11 @@ import {
   TeamOutlined,
   FileTextOutlined,
   CheckCircleOutlined,
-  ClockCircleOutlined,
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
   PaperClipOutlined,
   CalendarOutlined,
-  UserOutlined
 } from '@ant-design/icons'
 import { useExpansionStore } from '@/stores/expansionStore'
 import type { FollowUpRecord } from '@/services/types'
@@ -347,7 +343,7 @@ const FollowUpTimeline: React.FC<FollowUpTimelineProps> = ({
             <Upload
               multiple
               beforeUpload={() => false} // 阻止自动上传
-              onChange={(info) => {
+              onChange={(_info) => {
                 // 处理文件列表
               }}
             >

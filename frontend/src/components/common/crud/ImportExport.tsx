@@ -10,7 +10,8 @@ import {
   Alert,
   Typography,
   Tag,
-  Card
+  Card,
+  Space
 } from 'antd'
 import {
   UploadOutlined,
@@ -98,7 +99,7 @@ const ImportExport: React.FC<ImportExportProps> = ({
   // 状态管理
   const [currentStep, setCurrentStep] = useState(0)
   const [mode, setMode] = useState<'import' | 'export'>('import')
-  const [uploading, setUploading] = useState(false)
+  const [_uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [importResult, setImportResult] = useState<ImportResult | null>(null)
   const [exportFormat, setExportFormat] = useState<ExportConfig['format']>('excel')
