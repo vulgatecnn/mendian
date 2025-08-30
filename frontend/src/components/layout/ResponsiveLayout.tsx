@@ -22,26 +22,41 @@ const ResponsiveLayout: React.FC<ResponsiveLayoutProps> = ({
     // 强制模式优先
     if (forceMobile) {
       setIsMobile(true)
+      document.body.classList.add('mobile-layout')
+      document.body.classList.remove('desktop-layout')
       return
     }
 
     if (forceDesktop) {
       setIsMobile(false)
+      document.body.classList.add('desktop-layout')
+      document.body.classList.remove('mobile-layout')
       return
     }
 
-    // 根据屏幕尺寸判断
-    // md断点以下(768px)使用移动端布局
-    const shouldUseMobile = !screens.md
+    // 根据屏幕尺寸判断 - 使用更准确的判断逻辑
+    const width = window.innerWidth
+    const shouldUseMobile = width < 768 || !screens.md
+    
     setIsMobile(shouldUseMobile)
 
     // 设置全局CSS类
     if (shouldUseMobile) {
       document.body.classList.add('mobile-layout')
       document.body.classList.remove('desktop-layout')
+      // 添加设备相关类名
+      document.body.classList.add('device-mobile')
     } else {
       document.body.classList.add('desktop-layout')
       document.body.classList.remove('mobile-layout')
+      document.body.classList.remove('device-mobile')
+      // 添加桌面设备类名
+      if (width >= 1024) {
+        document.body.classList.add('device-desktop')
+      } else {
+        document.body.classList.add('device-tablet')
+        document.body.classList.remove('device-desktop')
+      }
     }
   }, [screens, forceMobile, forceDesktop])
 

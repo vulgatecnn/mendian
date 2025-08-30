@@ -134,9 +134,13 @@ const MobileLayout: React.FC = () => {
           justifyContent: 'space-between',
           borderBottom: '1px solid #f0f0f0',
           boxShadow: '0 1px 4px rgba(0,21,41,.08)',
-          position: 'sticky',
+          position: 'fixed',
           top: 0,
-          zIndex: 100
+          left: 0,
+          right: 0,
+          zIndex: 1000,
+          height: 56, // 移动端头部高度
+          minHeight: 56
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -218,7 +222,8 @@ const MobileLayout: React.FC = () => {
       <Content
         style={{
           padding: '16px',
-          minHeight: 280,
+          paddingTop: 72, // 为固定头部留出空间
+          minHeight: 'calc(100vh - 56px)', // 考虑头部高度
           background: '#f5f5f5'
         }}
       >

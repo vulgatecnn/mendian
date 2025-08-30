@@ -223,14 +223,14 @@ body {
   padding-left: 24px;
 }
 
-// 响应式设计断点
+// 响应式设计断点 - 与JavaScript保持一致
 $breakpoints: (
-  xs: 480px,
-  sm: 576px,
-  md: 768px,
-  lg: 992px,
-  xl: 1200px,
-  xxl: 1600px
+  xs: 0px,
+  sm: 480px,    // 小手机
+  md: 768px,    // 大手机/小平板
+  lg: 1024px,   // 平板横屏/小桌面
+  xl: 1280px,   // 桌面
+  xxl: 1600px   // 大桌面
 );
 
 // 业务组件样式
@@ -284,6 +284,17 @@ $breakpoints: (
   padding: 24px;
   background-color: #ffffff;
   min-height: calc(100vh - 64px);
+
+  // 移动端优化
+  @media (max-width: 767px) {
+    padding: 12px;
+    min-height: calc(100vh - 56px);
+  }
+  
+  // 小手机优化
+  @media (max-width: 479px) {
+    padding: 8px;
+  }
 
   @include respond-to(sm) {
     padding: 16px;
@@ -390,7 +401,7 @@ $breakpoints: (
 }
 
 // 移动端优化
-@include respond-to(xs) {
+@media (max-width: 767px) {
   .hide-on-mobile {
     display: none !important;
   }
@@ -400,6 +411,59 @@ $breakpoints: (
 
     > * + * {
       margin-top: 16px;
+    }
+  }
+  
+  // 移动端按钮优化
+  .ant-btn {
+    min-height: 44px;
+    border-radius: 8px;
+    font-size: 16px;
+    touch-action: manipulation;
+  }
+  
+  // 移动端表格优化
+  .ant-table {
+    font-size: 14px;
+    
+    .ant-table-thead > tr > th {
+      padding: 8px 4px;
+      font-size: 12px;
+    }
+    
+    .ant-table-tbody > tr > td {
+      padding: 8px 4px;
+    }
+  }
+}
+
+// 超小屏幕优化（小于480px）
+@media (max-width: 479px) {
+  .ant-table {
+    display: none;
+  }
+  
+  .adaptive-table-mobile-list {
+    display: block !important;
+  }
+  
+  // 极小屏幕下的字体调整
+  html {
+    font-size: 14px;
+  }
+}
+
+// 平板优化
+@media (min-width: 768px) and (max-width: 1279px) {
+  .page-container {
+    padding: 20px;
+  }
+  
+  // 平板表格优化
+  .ant-table {
+    .ant-table-thead > tr > th,
+    .ant-table-tbody > tr > td {
+      padding: 12px 8px;
     }
   }
 }

@@ -10,15 +10,15 @@ import { UAParser } from 'ua-parser-js'
 export type DeviceType = 'mobile' | 'tablet' | 'desktop'
 
 /**
- * 屏幕尺寸断点
+ * 屏幕尺寸断点 - 优化移动端适配
  */
 export const BREAKPOINTS = {
   xs: 0,
-  sm: 576,
-  md: 768,
-  lg: 992,
-  xl: 1200,
-  xxl: 1600
+  sm: 480,    // 小手机
+  md: 768,    // 大手机/小平板
+  lg: 1024,   // 平板横屏/小桌面
+  xl: 1280,   // 桌面
+  xxl: 1600   // 大桌面
 } as const
 
 /**
@@ -60,14 +60,19 @@ export function getDeviceInfo(): DeviceInfo {
   const result = parser.getResult()
   const userAgent = navigator.userAgent.toLowerCase()
   
-  // 检测设备类型
-  const isMobile = /mobile|android|iphone|ipod|blackberry|iemobile|opera mini/i.test(userAgent) ||
-                   result.device.type === 'mobile' ||
-                   (window.innerWidth <= BREAKPOINTS.md)
+  // 检测设备类型 - 改进设备识别逻辑
+  const userAgentMobile = /mobile|android|iphone|ipod|blackberry|iemobile|opera mini|webos|phone/i.test(userAgent)
+  const userAgentTablet = /tablet|ipad|kindle|playbook|nexus(?!.*mobile)/i.test(userAgent)
+  const deviceTypeMobile = result.device.type === 'mobile'
+  const deviceTypeTablet = result.device.type === 'tablet'
   
-  const isTablet = /tablet|ipad/i.test(userAgent) ||
-                   result.device.type === 'tablet' ||
-                   (window.innerWidth > BREAKPOINTS.md && window.innerWidth <= BREAKPOINTS.lg)
+  // 基于屏幕尺寸的设备类型判断
+  const screenWidth = window.innerWidth
+  const isMobile = userAgentMobile || deviceTypeMobile || 
+                   (!userAgentTablet && !deviceTypeTablet && screenWidth < BREAKPOINTS.md)
+  
+  const isTablet = !isMobile && (userAgentTablet || deviceTypeTablet || 
+                   (screenWidth >= BREAKPOINTS.md && screenWidth < BREAKPOINTS.xl))
   
   const isDesktop = !isMobile && !isTablet
   
