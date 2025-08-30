@@ -15,6 +15,7 @@ import {
   Row,
   Col
 } from 'antd'
+import AdaptiveTable from '@/components/responsive/AdaptiveTable'
 import {
   PlusOutlined,
   EditOutlined,
@@ -468,7 +469,7 @@ const StorePlanList: React.FC = () => {
       {/* 统计卡片 */}
       <Row gutter={16} style={{ marginBottom: 16 }}>
         {statsCards.map((stat, index) => (
-          <Col span={6} key={index}>
+          <Col xs={24} sm={12} md={6} lg={6} key={index}>
             <Card>
               <Statistic
                 title={stat.title}
@@ -506,13 +507,14 @@ const StorePlanList: React.FC = () => {
 
       {/* 主表格 */}
       <Card>
-        <Table<StorePlan>
+        <AdaptiveTable<StorePlan>
           rowKey="id"
           columns={columns}
           dataSource={storePlans}
           rowSelection={rowSelection}
           loading={isLoading}
-          scroll={{ x: 1200 }}
+          mobileCardLayout
+          mobilePagination
           pagination={{
             current: pagination.current,
             pageSize: pagination.pageSize,
@@ -523,6 +525,44 @@ const StorePlanList: React.FC = () => {
             pageSizeOptions: ['10', '20', '50', '100']
           }}
           onChange={handleTableChange}
+          mobileCardRender={(record, index) => (
+            <Card
+              size="small"
+              title={record.name}
+              extra={
+                <Space>
+                  {record.priority === 'urgent' && <Badge color="red" text="紧急" />}
+                  <Button size="small" type="primary" onClick={() => handleView(record.id)}>
+                    查看
+                  </Button>
+                </Space>
+              }
+              style={{ marginBottom: 8 }}
+            >
+              <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                <div>
+                  <Tag color={typeMap[record.type as keyof typeof typeMap]?.color}>
+                    {typeMap[record.type as keyof typeof typeMap]?.text}
+                  </Tag>
+                  <Tag color={statusMap[record.status as keyof typeof statusMap]?.color} 
+                       icon={statusMap[record.status as keyof typeof statusMap]?.icon}>
+                    {statusMap[record.status as keyof typeof statusMap]?.text}
+                  </Tag>
+                </div>
+                <Progress percent={record.progress} size="small" />
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#666' }}>地区：{record.region?.name}</span>
+                  <span style={{ color: '#666' }}>预算：¥{(record.budget / 10000).toFixed(1)}万</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#666' }}>负责人：{record.createdByName}</span>
+                  <span style={{ color: '#666' }}>
+                    目标日期：{dayjs(record.targetOpenDate).format('MM-DD')}
+                  </span>
+                </div>
+              </Space>
+            </Card>
+          )}
         />
       </Card>
     </div>

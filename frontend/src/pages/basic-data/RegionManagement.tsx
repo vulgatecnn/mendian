@@ -481,7 +481,7 @@ const RegionManagement: React.FC = () => {
       {/* 统计信息 */}
       {stats && (
         <Row gutter={16} style={{ marginBottom: 16 }}>
-          <Col span={6}>
+          <Col xs={24} sm={12} md={6} lg={6}>
             <Card size="small">
               <Statistic
                 title="总大区数"
@@ -490,7 +490,7 @@ const RegionManagement: React.FC = () => {
               />
             </Card>
           </Col>
-          <Col span={6}>
+          <Col xs={24} sm={12} md={6} lg={6}>
             <Card size="small">
               <Statistic
                 title="启用大区"
@@ -500,7 +500,7 @@ const RegionManagement: React.FC = () => {
               />
             </Card>
           </Col>
-          <Col span={6}>
+          <Col xs={24} sm={12} md={6} lg={6}>
             <Card size="small">
               <Statistic
                 title="管理城市"
@@ -510,7 +510,7 @@ const RegionManagement: React.FC = () => {
               />
             </Card>
           </Col>
-          <Col span={6}>
+          <Col xs={24} sm={12} md={6} lg={6}>
             <Card size="small">
               <Statistic
                 title="管理门店"
@@ -604,7 +604,7 @@ const RegionManagement: React.FC = () => {
           }}
         >
           <Row gutter={16}>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item
                 name="name"
                 label="大区名称"
@@ -613,7 +613,7 @@ const RegionManagement: React.FC = () => {
                 <Input placeholder="请输入大区名称" />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item
                 name="code"
                 label="大区编码"
@@ -625,7 +625,7 @@ const RegionManagement: React.FC = () => {
           </Row>
           
           <Row gutter={16}>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item
                 name="managerId"
                 label="负责人ID"
@@ -638,7 +638,7 @@ const RegionManagement: React.FC = () => {
                 </Select>
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item
                 name="managerName"
                 label="负责人姓名"
@@ -675,19 +675,19 @@ const RegionManagement: React.FC = () => {
           <div>
             <Title level={4}>基本信息</Title>
             <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-              <Col span={12}>
+              <Col xs={24} sm={12}>
                 <Text strong>大区名称：</Text>
                 <Text>{selectedRegion.name}</Text>
               </Col>
-              <Col span={12}>
+              <Col xs={24} sm={12}>
                 <Text strong>大区编码：</Text>
                 <Text>{selectedRegion.code}</Text>
               </Col>
-              <Col span={12}>
+              <Col xs={24} sm={12}>
                 <Text strong>负责人：</Text>
                 <Text>{selectedRegion.managerName}</Text>
               </Col>
-              <Col span={12}>
+              <Col xs={24} sm={12}>
                 <Text strong>状态：</Text>
                 <Tag color={selectedRegion.status === 'active' ? 'green' : 'red'}>
                   {selectedRegion.status === 'active' ? '启用' : '禁用'}
@@ -702,10 +702,10 @@ const RegionManagement: React.FC = () => {
 
             <Title level={4}>统计信息</Title>
             <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-              <Col span={8}>
+              <Col xs={24} sm={12}>
                 <Statistic title="城市数量" value={selectedRegion.cityCount} />
               </Col>
-              <Col span={8}>
+              <Col xs={24} sm={12}>
                 <Statistic title="门店数量" value={selectedRegion.storeCount} />
               </Col>
             </Row>

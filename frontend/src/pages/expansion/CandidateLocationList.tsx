@@ -44,6 +44,7 @@ import {
 } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import PageHeader from '@/components/common/PageHeader'
+import AdaptiveTable from '@/components/responsive/AdaptiveTable'
 import dayjs from 'dayjs'
 
 const CandidateLocationList: React.FC = () => {
@@ -410,7 +411,7 @@ const CandidateLocationList: React.FC = () => {
       {/* 统计卡片 */}
       <Row gutter={16} style={{ marginBottom: 16 }}>
         {statsCards.map((stat, index) => (
-          <Col span={6} key={index}>
+          <Col xs={24} sm={12} md={6} lg={6} key={index}>
             <Card>
               <Statistic
                 title={stat.title}
@@ -427,12 +428,13 @@ const CandidateLocationList: React.FC = () => {
 
       {/* 主表格 */}
       <Card>
-        <Table
+        <AdaptiveTable
           rowKey="id"
           columns={columns}
           dataSource={mockData}
           loading={loading}
-          scroll={{ x: 1400 }}
+          mobileCardLayout
+          mobilePagination
           pagination={{
             current: 1,
             pageSize: 10,
@@ -442,6 +444,53 @@ const CandidateLocationList: React.FC = () => {
             showTotal: (total, range) => `第 ${range[0]}-${range[1]} 条/总共 ${total} 条`,
             pageSizeOptions: ['10', '20', '50', '100']
           }}
+          mobileCardRender={(record, index) => (
+            <Card
+              size="small"
+              title={
+                <Space>
+                  <span>{record.name}</span>
+                  {record.priority === 'URGENT' && <Badge color="red" text="紧急" />}
+                </Space>
+              }
+              extra={
+                <Button size="small" type="primary" onClick={() => handleView(record.id)}>
+                  查看
+                </Button>
+              }
+              style={{ marginBottom: 8 }}
+            >
+              <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                <Text type="secondary" style={{ fontSize: '12px' }}>
+                  {record.businessCircle}
+                </Text>
+                <div>
+                  <Tag color={propertyTypeMap[record.propertyType as keyof typeof propertyTypeMap]?.color}>
+                    {propertyTypeMap[record.propertyType as keyof typeof propertyTypeMap]?.text}
+                  </Tag>
+                  <Tag color={statusMap[record.status as keyof typeof statusMap]?.color} 
+                       icon={statusMap[record.status as keyof typeof statusMap]?.icon}>
+                    {statusMap[record.status as keyof typeof statusMap]?.text}
+                  </Tag>
+                  <Tag color={priorityMap[record.priority as keyof typeof priorityMap]?.color}>
+                    {priorityMap[record.priority as keyof typeof priorityMap]?.text}
+                  </Tag>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#666' }}>评分：{record.score?.toFixed(1)}/10</span>
+                  <span style={{ color: '#666' }}>面积：{record.area}㎡</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#666' }}>租金：¥{(record.rent / 10000).toFixed(1)}万/月</span>
+                  <span style={{ color: '#666' }}>跟进：{record._count?.followUpRecords || 0}次</span>
+                </div>
+                <div style={{ fontSize: '12px', color: '#999' }}>
+                  <EnvironmentOutlined style={{ marginRight: 4 }} />
+                  {record.address}
+                </div>
+              </Space>
+            </Card>
+          )}
         />
       </Card>
     </div>
