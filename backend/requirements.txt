@@ -1,0 +1,24 @@
+# Django 核心
+Django==4.2.7
+djangorestframework==3.14.0
+
+# 数据库
+psycopg2-binary==2.9.9  # PostgreSQL 数据库适配器
+
+# API 文档
+drf-spectacular==0.26.5
+
+# CORS 支持
+django-cors-headers==4.3.0
+
+# 任务队列
+celery==5.3.4
+redis==5.0.1
+
+# 工具库
+python-dotenv==1.0.0
+requests==2.31.0
+cryptography==41.0.7  # 加密库，用于企微凭证加密
+
+# 开发工具
+ipython==8.17.2

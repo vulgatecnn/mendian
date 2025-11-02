@@ -1,0 +1,2367 @@
+openapi: 3.0.3
+info:
+  title: 门店生命周期管理系统 API
+  version: 1.0.0
+  description: "\n好饭碗门店生命周期管理系统的 RESTful API 文档\n\n## 系统概述\n\n门店生命周期管理系统是一个全面的门店管理平台，用于管理从门店规划、选址到施工、开业和持续运营的整个过程。\n\
+    \n## 认证方式\n\n系统使用 Session 认证，需要先登录获取会话。\n\n## 权限控制\n\n系统采用基于角色的访问控制（RBAC）模型：\n\
+    - 用户通过角色获得权限\n- 每个API接口都需要相应的权限\n- 权限不足时返回 403 状态码\n\n## 响应格式\n\n大部分接口返回统一的响应格式：\n\
+    ```json\n{\n    \"code\": 0,           // 状态码，0表示成功\n    \"message\": \"成功\",\
+    \    // 响应消息\n    \"data\": {}           // 响应数据\n}\n```\n\n## 错误码说明\n\n- 0: 成功\n\
+    - 1000: 未知错误\n- 1001: 参数错误\n- 1002: 权限不足\n- 2001-2003: 企业微信集成相关错误\n- 3001-3003:\
+    \ 用户管理相关错误\n- 4001-4003: 角色管理相关错误\n    "
+  contact:
+    name: 系统管理员
+    email: admin@example.com
+  license:
+    name: 内部使用
+paths:
+  /api/departments/:
+    get:
+      operationId: departments_list
+      description: 获取部门列表，支持按父部门筛选。需要 system.department.view 权限。
+      summary: 获取部门列表
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: parent_id
+        schema:
+          type: string
+        description: 父部门ID，0或null表示查询根部门
+        examples:
+          查询根部门:
+            value: '0'
+          查询指定父部门:
+            value: '1'
+      tags:
+      - 部门管理
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDepartmentSimpleList'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+    post:
+      operationId: departments_create
+      description: 创建新部门。需要 system.department.create 权限。
+      summary: 创建部门
+      tags:
+      - 部门管理
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DepartmentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DepartmentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DepartmentRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Department'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+  /api/departments/sync_from_wechat/:
+    post:
+      operationId: departments_sync_from_wechat_create
+      description: 从企业微信API同步部门信息到系统。可以指定同步特定部门或同步所有部门。需要 system.department.sync 权限。
+      summary: 从企业微信同步部门
+      tags:
+      - 部门管理
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+              description: Unspecified request body
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: {}
+              description: Unspecified request body
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: {}
+              description: Unspecified request body
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+  /api/departments/tree/:
+    get:
+      operationId: departments_tree_retrieve
+      description: 获取完整的部门树形结构，包含所有层级的部门。使用缓存提高性能。需要 system.department.view 权限。
+      summary: 获取部门树形结构
+      tags:
+      - 部门管理
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+  /api/departments/{id}/:
+    get:
+      operationId: departments_retrieve
+      description: 根据部门ID获取部门详细信息，包含子部门。需要 system.department.view 权限。
+      summary: 获取部门详情
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+          title: 部门ID
+        description: A unique integer value identifying this 部门.
+        required: true
+      tags:
+      - 部门管理
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Department'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+    delete:
+      operationId: departments_destroy
+      description: 删除部门。需要 system.department.delete 权限。
+      summary: 删除部门
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+          title: 部门ID
+        description: A unique integer value identifying this 部门.
+        required: true
+      tags:
+      - 部门管理
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+    put:
+      operationId: departments_update
+      description: 更新部门信息。需要 system.department.update 权限。
+      summary: 更新部门
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+          title: 部门ID
+        description: A unique integer value identifying this 部门.
+        required: true
+      tags:
+      - 部门管理
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DepartmentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DepartmentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DepartmentRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Department'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+    patch:
+      operationId: departments_partial_update
+      description: 部分更新部门信息。需要 system.department.update 权限。
+      summary: 部分更新部门
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+          title: 部门ID
+        description: A unique integer value identifying this 部门.
+        required: true
+      tags:
+      - 部门管理
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDepartmentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDepartmentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDepartmentRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Department'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+  /api/users/:
+    get:
+      operationId: users_list
+      description: 获取用户列表，支持分页和多条件筛选。需要 system.user.view 权限。
+      summary: 获取用户列表
+      parameters:
+      - in: query
+        name: department_id
+        schema:
+          type: integer
+        description: 部门ID筛选
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+        description: 启用状态筛选
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: 页码
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: 每页数量（最大100）
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: 搜索关键词（用户名、姓名、手机号）
+      tags:
+      - 用户管理
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUserSimpleList'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+    post:
+      operationId: users_create
+      description: 创建新用户。需要 system.user.create 权限。
+      summary: 创建用户
+      tags:
+      - 用户管理
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+  /api/users/sync_from_wechat/:
+    post:
+      operationId: users_sync_from_wechat_create
+      description: 从企业微信API同步用户信息到系统。可以指定同步特定部门或同步所有部门的用户。需要 system.user.sync 权限。
+      summary: 从企业微信同步用户
+      tags:
+      - 用户管理
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+              description: Unspecified request body
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: {}
+              description: Unspecified request body
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: {}
+              description: Unspecified request body
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+  /api/users/{id}/:
+    get:
+      operationId: users_retrieve
+      description: 根据用户ID获取用户详细信息，包含部门和角色信息。需要 system.user.view 权限。
+      summary: 获取用户详情
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this 用户.
+        required: true
+      tags:
+      - 用户管理
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+    delete:
+      operationId: users_destroy
+      description: 删除用户。需要 system.user.delete 权限。
+      summary: 删除用户
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this 用户.
+        required: true
+      tags:
+      - 用户管理
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+    put:
+      operationId: users_update
+      description: 更新用户信息。需要 system.user.update 权限。
+      summary: 更新用户
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this 用户.
+        required: true
+      tags:
+      - 用户管理
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+    patch:
+      operationId: users_partial_update
+      description: 部分更新用户信息。需要 system.user.update 权限。
+      summary: 部分更新用户
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this 用户.
+        required: true
+      tags:
+      - 用户管理
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+  /api/users/{id}/assign_roles/:
+    post:
+      operationId: users_assign_roles_create
+      description: 为指定用户分配角色。会替换用户当前的所有角色。需要 system.user.manage 权限。
+      summary: 分配用户角色
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this 用户.
+        required: true
+      tags:
+      - 用户管理
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+              description: Unspecified request body
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: {}
+              description: Unspecified request body
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: {}
+              description: Unspecified request body
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+  /api/users/{id}/toggle_status/:
+    post:
+      operationId: users_toggle_status_create
+      description: 启用或停用指定用户。可以指定目标状态或切换当前状态。需要 system.user.manage 权限。
+      summary: 启用/停用用户
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this 用户.
+        required: true
+      tags:
+      - 用户管理
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+              description: Unspecified request body
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: {}
+              description: Unspecified request body
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: {}
+              description: Unspecified request body
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+  /api/roles/:
+    get:
+      operationId: roles_list
+      description: 获取角色列表，支持按名称和状态筛选。需要 system.role.view 权限。
+      summary: 获取角色列表
+      parameters:
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+        description: 启用状态筛选
+      - in: query
+        name: name
+        schema:
+          type: string
+        description: 角色名称（支持模糊查询）
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - 角色管理
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedRoleList'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+    post:
+      operationId: roles_create
+      description: 创建新角色，可以同时分配权限。需要 system.role.manage 权限。
+      summary: 创建角色
+      tags:
+      - 角色管理
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+              description: Unspecified request body
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: {}
+              description: Unspecified request body
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: {}
+              description: Unspecified request body
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+  /api/roles/{id}/:
+    get:
+      operationId: roles_retrieve
+      description: 根据角色ID获取角色详细信息，包含权限和成员信息。需要 system.role.view 权限。
+      summary: 获取角色详情
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+          title: 角色ID
+        description: A unique integer value identifying this 角色.
+        required: true
+      tags:
+      - 角色管理
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+    delete:
+      operationId: roles_destroy
+      description: 删除角色。如果角色已被用户使用，则无法删除。需要 system.role.manage 权限。
+      summary: 删除角色
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+          title: 角色ID
+        description: A unique integer value identifying this 角色.
+        required: true
+      tags:
+      - 角色管理
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+    put:
+      operationId: roles_update
+      description: 更新角色信息。需要 system.role.manage 权限。
+      summary: 更新角色
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+          title: 角色ID
+        description: A unique integer value identifying this 角色.
+        required: true
+      tags:
+      - 角色管理
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RoleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RoleRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+    patch:
+      operationId: roles_partial_update
+      description: 部分更新角色信息。需要 system.role.manage 权限。
+      summary: 部分更新角色
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+          title: 角色ID
+        description: A unique integer value identifying this 角色.
+        required: true
+      tags:
+      - 角色管理
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedRoleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedRoleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedRoleRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+  /api/roles/{id}/add_members/:
+    post:
+      operationId: roles_add_members_create
+      description: |-
+        添加角色成员
+
+        请求体：
+        {
+            "user_ids": [1, 2, 3]  // 用户ID列表
+        }
+
+        权限：system.role.manage
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+          title: 角色ID
+        description: A unique integer value identifying this 角色.
+        required: true
+      tags:
+      - roles
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RoleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RoleRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+          description: ''
+  /api/roles/{id}/assign_permissions/:
+    post:
+      operationId: roles_assign_permissions_create
+      description: 为指定角色分配权限。会替换角色当前的所有权限。需要 system.role.manage 权限。
+      summary: 分配角色权限
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+          title: 角色ID
+        description: A unique integer value identifying this 角色.
+        required: true
+      tags:
+      - 角色管理
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+              description: Unspecified request body
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: {}
+              description: Unspecified request body
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: {}
+              description: Unspecified request body
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '500':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+  /api/roles/{id}/members/:
+    get:
+      operationId: roles_members_retrieve
+      description: |-
+        获取角色成员列表
+
+        权限：system.role.view
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+          title: 角色ID
+        description: A unique integer value identifying this 角色.
+        required: true
+      tags:
+      - roles
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+          description: ''
+  /api/permissions/:
+    get:
+      operationId: permissions_list
+      description: 获取权限列表，支持按模块筛选和分组。需要 system.permission.view 权限。
+      summary: 获取权限列表
+      parameters:
+      - in: query
+        name: group_by_module
+        schema:
+          type: boolean
+        description: 是否按模块分组返回
+      - in: query
+        name: module
+        schema:
+          type: string
+        description: 模块名称筛选
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - 权限管理
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: {}
+                      description: Unspecified response body
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+  /api/permissions/{id}/:
+    get:
+      operationId: permissions_retrieve
+      description: 根据权限ID获取权限详细信息。需要 system.permission.view 权限。
+      summary: 获取权限详情
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+          title: 权限ID
+        description: A unique integer value identifying this 权限.
+        required: true
+      tags:
+      - 权限管理
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Permission'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+  /api/audit-logs/:
+    get:
+      operationId: audit_logs_list
+      description: 获取审计日志列表，支持多条件筛选和分页。仅管理员可查看。需要 system.audit.view 权限。
+      summary: 获取审计日志列表
+      parameters:
+      - in: query
+        name: action
+        schema:
+          type: string
+        description: 操作类型筛选
+      - in: query
+        name: end_time
+        schema:
+          type: string
+          format: date-time
+        description: 结束时间筛选（ISO格式）
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: 页码
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: 每页数量（最大100）
+      - in: query
+        name: start_time
+        schema:
+          type: string
+          format: date-time
+        description: 开始时间筛选（ISO格式）
+      - in: query
+        name: target_type
+        schema:
+          type: string
+        description: 操作对象类型筛选
+      - in: query
+        name: user_id
+        schema:
+          type: integer
+        description: 操作人用户ID筛选
+      - in: query
+        name: username
+        schema:
+          type: string
+        description: 操作人用户名筛选（支持模糊查询）
+      tags:
+      - 审计日志
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAuditLogList'
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+  /api/audit-logs/{id}/:
+    get:
+      operationId: audit_logs_retrieve
+      description: 根据日志ID获取审计日志详细信息。需要 system.audit.view 权限。
+      summary: 获取审计日志详情
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+          title: 日志ID
+        description: A unique integer value identifying this 审计日志.
+        required: true
+      tags:
+      - 审计日志
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditLog'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+  /api/cache/clear/:
+    post:
+      operationId: cache_clear_create
+      description: |-
+        清除缓存
+
+        请求体：
+        {
+            "cache_type": "all|department_tree|user_permissions|wechat_token|permission_list",
+            "user_id": 123  // 仅当 cache_type 为 user_permissions 时需要
+        }
+
+        权限：system.cache.manage
+      tags:
+      - cache
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/cache/stats/:
+    get:
+      operationId: cache_stats_retrieve
+      description: |-
+        获取缓存统计信息
+
+        返回各类缓存的状态和统计信息
+
+        权限：system.cache.view
+      tags:
+      - cache
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+components:
+  schemas:
+    AuditLog:
+      type: object
+      description: |-
+        审计日志序列化器
+        包含操作人信息的嵌套序列化
+      properties:
+        id:
+          type: integer
+          readOnly: true
+          title: 日志ID
+        user:
+          type: integer
+          readOnly: true
+          nullable: true
+          title: 操作人
+        user_info:
+          allOf:
+          - $ref: '#/components/schemas/UserSimple'
+          readOnly: true
+        username:
+          type: string
+          readOnly: true
+          nullable: true
+        user_full_name:
+          type: string
+          readOnly: true
+        action:
+          type: string
+          readOnly: true
+          title: 操作类型
+        target_type:
+          type: string
+          readOnly: true
+          title: 操作对象类型
+        target_id:
+          type: integer
+          readOnly: true
+          title: 操作对象ID
+        details:
+          type: object
+          additionalProperties: {}
+          readOnly: true
+          title: 操作详情
+        ip_address:
+          type: string
+          readOnly: true
+          title: IP地址
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: 操作时间
+      required:
+      - action
+      - created_at
+      - details
+      - id
+      - ip_address
+      - target_id
+      - target_type
+      - user
+      - user_full_name
+      - user_info
+      - username
+    Department:
+      type: object
+      description: |-
+        部门序列化器
+        支持嵌套序列化子部门
+      properties:
+        id:
+          type: integer
+          readOnly: true
+          title: 部门ID
+        wechat_dept_id:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          title: 企微部门ID
+        name:
+          type: string
+          title: 部门名称
+          maxLength: 100
+        parent:
+          type: integer
+          title: 上级部门
+          nullable: true
+        parent_name:
+          type: string
+          readOnly: true
+          nullable: true
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          title: 排序
+        level:
+          type: string
+          readOnly: true
+        path_names:
+          type: string
+          readOnly: true
+        children:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: 创建时间
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: 更新时间
+      required:
+      - children
+      - created_at
+      - id
+      - level
+      - name
+      - parent_name
+      - path_names
+      - updated_at
+      - wechat_dept_id
+    DepartmentRequest:
+      type: object
+      description: |-
+        部门序列化器
+        支持嵌套序列化子部门
+      properties:
+        wechat_dept_id:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          title: 企微部门ID
+        name:
+          type: string
+          minLength: 1
+          title: 部门名称
+          maxLength: 100
+        parent:
+          type: integer
+          title: 上级部门
+          nullable: true
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          title: 排序
+      required:
+      - name
+      - wechat_dept_id
+    DepartmentSimple:
+      type: object
+      description: |-
+        部门简单序列化器（不包含子部门）
+        用于列表展示和关联查询
+      properties:
+        id:
+          type: integer
+          readOnly: true
+          title: 部门ID
+        wechat_dept_id:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          title: 企微部门ID
+        name:
+          type: string
+          title: 部门名称
+          maxLength: 100
+        parent:
+          type: integer
+          title: 上级部门
+          nullable: true
+        parent_name:
+          type: string
+          readOnly: true
+          nullable: true
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          title: 排序
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: 创建时间
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: 更新时间
+      required:
+      - created_at
+      - id
+      - name
+      - parent_name
+      - updated_at
+      - wechat_dept_id
+    DepartmentSimpleRequest:
+      type: object
+      description: |-
+        部门简单序列化器（不包含子部门）
+        用于列表展示和关联查询
+      properties:
+        wechat_dept_id:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          title: 企微部门ID
+        name:
+          type: string
+          minLength: 1
+          title: 部门名称
+          maxLength: 100
+        parent:
+          type: integer
+          title: 上级部门
+          nullable: true
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          title: 排序
+      required:
+      - name
+      - wechat_dept_id
+    PaginatedAuditLogList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditLog'
+    PaginatedDepartmentSimpleList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/DepartmentSimple'
+    PaginatedRoleList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Role'
+    PaginatedUserSimpleList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserSimple'
+    PatchedDepartmentRequest:
+      type: object
+      description: |-
+        部门序列化器
+        支持嵌套序列化子部门
+      properties:
+        wechat_dept_id:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          title: 企微部门ID
+        name:
+          type: string
+          minLength: 1
+          title: 部门名称
+          maxLength: 100
+        parent:
+          type: integer
+          title: 上级部门
+          nullable: true
+        order:
+          type: integer
+          maximum: 2147483647
+          minimum: -2147483648
+          title: 排序
+    PatchedRoleRequest:
+      type: object
+      description: |-
+        角色序列化器
+        包含权限列表和成员数量
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: 角色名称
+          maxLength: 50
+        description:
+          type: string
+          title: 角色描述
+        is_active:
+          type: boolean
+          title: 启用状态
+        permission_ids:
+          type: array
+          items:
+            type: integer
+          writeOnly: true
+          description: 权限ID列表
+    PatchedUserRequest:
+      type: object
+      description: |-
+        用户序列化器
+        支持部门信息和角色信息的嵌套序列化
+      properties:
+        username:
+          type: string
+          minLength: 1
+          title: 用户名
+          description: 必填；长度为150个字符或以下；只能包含字母、数字、特殊字符“@”、“.”、“-”和“_”。
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        first_name:
+          type: string
+          title: 名字
+          maxLength: 150
+        last_name:
+          type: string
+          title: 姓氏
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: 电子邮件地址
+          maxLength: 254
+        phone:
+          type: string
+          minLength: 1
+          title: 手机号
+          maxLength: 11
+        wechat_user_id:
+          type: string
+          minLength: 1
+          title: 企微用户ID
+          maxLength: 64
+        department:
+          type: integer
+          title: 所属部门
+          nullable: true
+        position:
+          type: string
+          title: 职位
+          maxLength: 50
+        is_active:
+          type: boolean
+          title: 启用状态
+        is_staff:
+          type: boolean
+          title: 工作人员状态
+          description: 指明用户是否可以登录到这个管理站点。
+        is_superuser:
+          type: boolean
+          title: 超级用户状态
+          description: 指明该用户缺省拥有所有权限。
+    Permission:
+      type: object
+      description: |-
+        权限序列化器
+        用于权限的展示和管理
+      properties:
+        id:
+          type: integer
+          readOnly: true
+          title: 权限ID
+        code:
+          type: string
+          title: 权限编码
+          maxLength: 100
+        name:
+          type: string
+          title: 权限名称
+          maxLength: 100
+        module:
+          type: string
+          title: 所属模块
+          maxLength: 50
+        description:
+          type: string
+          title: 权限描述
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: 创建时间
+      required:
+      - code
+      - created_at
+      - id
+      - module
+      - name
+    PermissionRequest:
+      type: object
+      description: |-
+        权限序列化器
+        用于权限的展示和管理
+      properties:
+        code:
+          type: string
+          minLength: 1
+          title: 权限编码
+          maxLength: 100
+        name:
+          type: string
+          minLength: 1
+          title: 权限名称
+          maxLength: 100
+        module:
+          type: string
+          minLength: 1
+          title: 所属模块
+          maxLength: 50
+        description:
+          type: string
+          title: 权限描述
+      required:
+      - code
+      - module
+      - name
+    Role:
+      type: object
+      description: |-
+        角色序列化器
+        包含权限列表和成员数量
+      properties:
+        id:
+          type: integer
+          readOnly: true
+          title: 角色ID
+        name:
+          type: string
+          title: 角色名称
+          maxLength: 50
+        description:
+          type: string
+          title: 角色描述
+        is_active:
+          type: boolean
+          title: 启用状态
+        permission_list:
+          type: array
+          items:
+            $ref: '#/components/schemas/Permission'
+          readOnly: true
+        member_count:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: 创建时间
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: 更新时间
+      required:
+      - created_at
+      - id
+      - member_count
+      - name
+      - permission_list
+      - updated_at
+    RoleRequest:
+      type: object
+      description: |-
+        角色序列化器
+        包含权限列表和成员数量
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: 角色名称
+          maxLength: 50
+        description:
+          type: string
+          title: 角色描述
+        is_active:
+          type: boolean
+          title: 启用状态
+        permission_ids:
+          type: array
+          items:
+            type: integer
+          writeOnly: true
+          description: 权限ID列表
+      required:
+      - name
+    RoleSimple:
+      type: object
+      description: |-
+        角色简单序列化器
+        用于用户序列化中的角色信息嵌套
+      properties:
+        id:
+          type: integer
+          readOnly: true
+          title: 角色ID
+        name:
+          type: string
+          title: 角色名称
+          maxLength: 50
+        description:
+          type: string
+          title: 角色描述
+        is_active:
+          type: boolean
+          title: 启用状态
+      required:
+      - id
+      - name
+    RoleSimpleRequest:
+      type: object
+      description: |-
+        角色简单序列化器
+        用于用户序列化中的角色信息嵌套
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: 角色名称
+          maxLength: 50
+        description:
+          type: string
+          title: 角色描述
+        is_active:
+          type: boolean
+          title: 启用状态
+      required:
+      - name
+    User:
+      type: object
+      description: |-
+        用户序列化器
+        支持部门信息和角色信息的嵌套序列化
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          title: 用户名
+          description: 必填；长度为150个字符或以下；只能包含字母、数字、特殊字符“@”、“.”、“-”和“_”。
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        full_name:
+          type: string
+          readOnly: true
+        first_name:
+          type: string
+          title: 名字
+          maxLength: 150
+        last_name:
+          type: string
+          title: 姓氏
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: 电子邮件地址
+          maxLength: 254
+        phone:
+          type: string
+          title: 手机号
+          maxLength: 11
+        wechat_user_id:
+          type: string
+          title: 企微用户ID
+          maxLength: 64
+        department:
+          type: integer
+          title: 所属部门
+          nullable: true
+        department_info:
+          allOf:
+          - $ref: '#/components/schemas/DepartmentSimple'
+          readOnly: true
+        position:
+          type: string
+          title: 职位
+          maxLength: 50
+        is_active:
+          type: boolean
+          title: 启用状态
+        is_staff:
+          type: boolean
+          title: 工作人员状态
+          description: 指明用户是否可以登录到这个管理站点。
+        is_superuser:
+          type: boolean
+          title: 超级用户状态
+          description: 指明该用户缺省拥有所有权限。
+        role_list:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoleSimple'
+          readOnly: true
+        date_joined:
+          type: string
+          format: date-time
+          readOnly: true
+          title: 加入日期
+        last_login:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+          title: 上次登录
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: 创建时间
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: 更新时间
+      required:
+      - created_at
+      - date_joined
+      - department_info
+      - full_name
+      - id
+      - last_login
+      - phone
+      - role_list
+      - updated_at
+      - username
+      - wechat_user_id
+    UserRequest:
+      type: object
+      description: |-
+        用户序列化器
+        支持部门信息和角色信息的嵌套序列化
+      properties:
+        username:
+          type: string
+          minLength: 1
+          title: 用户名
+          description: 必填；长度为150个字符或以下；只能包含字母、数字、特殊字符“@”、“.”、“-”和“_”。
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        first_name:
+          type: string
+          title: 名字
+          maxLength: 150
+        last_name:
+          type: string
+          title: 姓氏
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: 电子邮件地址
+          maxLength: 254
+        phone:
+          type: string
+          minLength: 1
+          title: 手机号
+          maxLength: 11
+        wechat_user_id:
+          type: string
+          minLength: 1
+          title: 企微用户ID
+          maxLength: 64
+        department:
+          type: integer
+          title: 所属部门
+          nullable: true
+        position:
+          type: string
+          title: 职位
+          maxLength: 50
+        is_active:
+          type: boolean
+          title: 启用状态
+        is_staff:
+          type: boolean
+          title: 工作人员状态
+          description: 指明用户是否可以登录到这个管理站点。
+        is_superuser:
+          type: boolean
+          title: 超级用户状态
+          description: 指明该用户缺省拥有所有权限。
+      required:
+      - phone
+      - username
+      - wechat_user_id
+    UserSimple:
+      type: object
+      description: |-
+        用户简单序列化器
+        用于列表展示和关联查询
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          title: 用户名
+          description: 必填；长度为150个字符或以下；只能包含字母、数字、特殊字符“@”、“.”、“-”和“_”。
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        full_name:
+          type: string
+          readOnly: true
+        phone:
+          type: string
+          title: 手机号
+          maxLength: 11
+        department:
+          type: integer
+          title: 所属部门
+          nullable: true
+        department_name:
+          type: string
+          readOnly: true
+          nullable: true
+        position:
+          type: string
+          title: 职位
+          maxLength: 50
+        is_active:
+          type: boolean
+          title: 启用状态
+      required:
+      - department_name
+      - full_name
+      - id
+      - phone
+      - username
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+servers:
+- url: http://localhost:8000
+  description: 开发环境
+- url: https://api.example.com
+  description: 生产环境
+tags:
+- name: 部门管理
+  description: 部门信息管理和企业微信同步
+- name: 用户管理
+  description: 用户账号管理、启用停用、角色分配
+- name: 角色管理
+  description: 角色创建、权限分配、成员管理
+- name: 权限管理
+  description: 权限查询和管理
+- name: 审计日志
+  description: 系统操作日志查询
+externalDocs:
+  description: 更多文档
+  url: https://docs.example.com

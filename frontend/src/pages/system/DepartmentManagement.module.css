@@ -1,0 +1,50 @@
+/* 部门管理页面样式 */
+.container {
+  padding: 20px;
+}
+
+.header {
+  margin-bottom: 20px;
+}
+
+.title {
+  margin: 0 !important;
+}
+
+.actions {
+  margin-top: 16px;
+}
+
+.treeContainer {
+  background: #f7f8fa;
+  padding: 16px;
+  border-radius: 6px;
+  min-height: 400px;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 60px 20px;
+  color: #86909c;
+}
+
+.emptyIcon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.emptyText {
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+.departmentItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.departmentId {
+  color: #86909c;
+  font-size: 12px;
+}
