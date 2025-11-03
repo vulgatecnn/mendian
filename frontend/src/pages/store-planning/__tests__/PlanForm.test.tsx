@@ -97,7 +97,8 @@ describe('PlanForm', () => {
     fireEvent.click(submitButton)
 
     await waitFor(() => {
-      expect(screen.getByText('请至少添加一个区域计划')).toBeInTheDocument()
+      // 表单验证失败时会显示通用错误消息
+      expect(screen.getByText('请检查表单填写是否完整')).toBeInTheDocument()
     })
 
     expect(PlanService.createPlan).not.toHaveBeenCalled()

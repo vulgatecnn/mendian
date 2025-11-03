@@ -68,7 +68,7 @@ class Department(models.Model):
 class User(AbstractUser):
     """用户模型"""
     phone = models.CharField(max_length=11, unique=True, verbose_name='手机号')
-    wechat_user_id = models.CharField(max_length=64, unique=True, verbose_name='企微用户ID')
+    wechat_user_id = models.CharField(max_length=64, blank=True, null=True, verbose_name='企微用户ID')
     department = models.ForeignKey(
         Department,
         on_delete=models.SET_NULL,

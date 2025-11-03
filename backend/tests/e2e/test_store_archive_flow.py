@@ -35,18 +35,18 @@ class TestStoreArchiveFlow:
             supplier_type='construction',
             contact_person='张三',
             contact_phone='13900139000',
-            cooperation_status='active'
+            status='cooperating'
         )
         
         # 创建法人主体
         self.legal_entity = LegalEntity.objects.create(
             code='ENTITY001',
             name='测试法人主体',
-            unified_social_credit_code='91110000000000000X',
+            credit_code='91110000000000000X',
             legal_representative='李四',
             registered_capital=Decimal('1000000.00'),
             registered_address='北京市朝阳区测试路1号',
-            operation_status='operating'
+            status='operating'
         )
         
         self.test_user = test_user

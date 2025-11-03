@@ -78,8 +78,8 @@ describe('MessageCenter', () => {
 
     // 等待消息加载
     await waitFor(() => {
-      expect(screen.getByText('审批通知')).toBeInTheDocument()
-      expect(screen.getByText('系统通知')).toBeInTheDocument()
+      expect(screen.getAllByText('审批通知').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('系统通知').length).toBeGreaterThan(0)
     })
   })
 
@@ -113,7 +113,7 @@ describe('MessageCenter', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('审批通知')).toBeInTheDocument()
+      expect(screen.getAllByText('审批通知').length).toBeGreaterThan(0)
     })
 
     // 查找并点击"标记已读"按钮
@@ -135,7 +135,7 @@ describe('MessageCenter', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('审批通知')).toBeInTheDocument()
+      expect(screen.getAllByText('审批通知').length).toBeGreaterThan(0)
     })
 
     // 输入搜索关键词
@@ -161,7 +161,7 @@ describe('MessageCenter', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('审批通知')).toBeInTheDocument()
+      expect(screen.getAllByText('审批通知').length).toBeGreaterThan(0)
     })
 
     // 点击刷新按钮

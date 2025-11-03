@@ -51,6 +51,7 @@ def test_user(db, test_department):
         username='testuser',
         defaults={
             'phone': '13800138000',
+            'wechat_user_id': 'test_wechat_user',
             'department': test_department,
             'first_name': '测试',
             'last_name': '用户',
@@ -72,6 +73,7 @@ def admin_user(db, test_department):
         username='adminuser',
         defaults={
             'phone': '13800138001',
+            'wechat_user_id': 'admin_wechat_user',
             'department': test_department,
             'first_name': '管理员',
             'last_name': '用户',

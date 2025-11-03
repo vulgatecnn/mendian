@@ -30,11 +30,11 @@ class TestStoreExpansionFlow:
         self.legal_entity = LegalEntity.objects.create(
             code='TEST_ENTITY',
             name='测试法人主体',
-            unified_social_credit_code='91110000000000000X',
+            credit_code='91110000000000000X',
             legal_representative='张三',
             registered_capital=Decimal('1000000.00'),
             registered_address='北京市朝阳区测试路1号',
-            operation_status='operating'
+            status='operating'
         )
         
         # 创建报店审批模板

@@ -34,7 +34,7 @@ class TestStorePreparationFlow:
             supplier_type='construction',
             contact_person='李四',
             contact_phone='13900139000',
-            cooperation_status='active'
+            status='cooperating'
         )
         
         # 创建候选点位和跟进单（已签约）
