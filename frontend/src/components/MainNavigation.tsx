@@ -14,7 +14,10 @@ import {
   IconStorage,
   IconTool,
   IconFile,
-  IconDesktop
+  IconDesktop,
+  IconImport,
+  IconExport,
+  IconBook
 } from '@arco-design/web-react/icon';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { PermissionGuard } from './PermissionGuard';
@@ -44,6 +47,14 @@ export const MainNavigation: React.FC<MainNavigationProps> = ({
     // 首页
     if (path === '/') return ['home'];
     
+    // 开店计划管理模块
+    if (path.includes('/store-planning/dashboard')) return ['store-dashboard'];
+    if (path.includes('/store-planning/reports')) return ['store-reports'];
+    if (path.includes('/store-planning/plans')) return ['store-plans'];
+    if (path.includes('/store-planning/import')) return ['store-import'];
+    if (path.includes('/store-planning/export')) return ['store-export'];
+    if (path.includes('/store-planning/templates')) return ['store-templates'];
+    
     // 系统管理模块
     if (path.includes('/system/departments')) return ['system-departments'];
     if (path.includes('/system/users')) return ['system-users'];
@@ -58,6 +69,9 @@ export const MainNavigation: React.FC<MainNavigationProps> = ({
     const path = location.pathname;
     const openKeys: string[] = [];
     
+    if (path.includes('/store-planning/')) {
+      openKeys.push('store-planning');
+    }
     if (path.includes('/system/')) {
       openKeys.push('system');
     }
@@ -70,6 +84,24 @@ export const MainNavigation: React.FC<MainNavigationProps> = ({
     switch (key) {
       case 'home':
         navigate('/');
+        break;
+      case 'store-dashboard':
+        navigate('/store-planning/dashboard');
+        break;
+      case 'store-reports':
+        navigate('/store-planning/reports');
+        break;
+      case 'store-plans':
+        navigate('/store-planning/plans');
+        break;
+      case 'store-import':
+        navigate('/store-planning/import');
+        break;
+      case 'store-export':
+        navigate('/store-planning/export');
+        break;
+      case 'store-templates':
+        navigate('/store-planning/templates');
         break;
       case 'system-departments':
         navigate('/system/departments');
@@ -102,20 +134,57 @@ export const MainNavigation: React.FC<MainNavigationProps> = ({
         首页
       </Item>
 
-      {/* 开店计划管理 - 暂未实现 */}
+      {/* 开店计划管理 */}
       <SubMenu
         key="store-planning"
         title={
-          <span style={{ color: '#ccc' }}>
+          <span>
             <IconDashboard />
             开店计划管理
           </span>
         }
       >
-        <Item key="store-plans" disabled>
-          <IconFile />
-          门店计划
-        </Item>
+        <PermissionGuard permission="store_planning.plan.view">
+          <Item key="store-dashboard">
+            <IconDashboard />
+            执行仪表板
+          </Item>
+        </PermissionGuard>
+        
+        <PermissionGuard permission="store_planning.plan.view">
+          <Item key="store-reports">
+            <IconFile />
+            分析报表
+          </Item>
+        </PermissionGuard>
+        
+        <PermissionGuard permission="store_planning.plan.view">
+          <Item key="store-plans">
+            <IconFile />
+            门店计划
+          </Item>
+        </PermissionGuard>
+        
+        <PermissionGuard permission="store_planning.plan.import">
+          <Item key="store-import">
+            <IconImport />
+            数据导入
+          </Item>
+        </PermissionGuard>
+        
+        <PermissionGuard permission="store_planning.plan.export">
+          <Item key="store-export">
+            <IconExport />
+            数据导出
+          </Item>
+        </PermissionGuard>
+        
+        <PermissionGuard permission="store_planning.plan.view">
+          <Item key="store-templates">
+            <IconBook />
+            导入模板
+          </Item>
+        </PermissionGuard>
       </SubMenu>
 
       {/* 拓店管理 - 暂未实现 */}

@@ -1,8 +1,13 @@
-# 系统管理模块 API 文档
+# 门店生命周期管理系统 - 系统管理模块 API 文档
 
 ## 概述
 
-系统管理模块提供了完整的用户、部门、角色和权限管理功能，支持与企业微信集成。本文档详细说明了所有API接口的使用方法。
+系统管理模块是门店生命周期管理系统的基础设施模块，提供了完整的用户、部门、角色和权限管理功能，支持与企业微信集成。本文档详细说明了所有API接口的使用方法。
+
+### 版本信息
+- **版本**: v1.0.0
+- **最后更新**: 2024-11-02
+- **联系人**: 系统管理员 (admin@example.com)
 
 ## 快速开始
 
@@ -83,6 +88,119 @@ http://localhost:8000/admin/
 |------|------|------|------|
 | GET | `/api/audit-logs/` | 获取审计日志列表 | system.audit.view |
 | GET | `/api/audit-logs/{id}/` | 获取审计日志详情 | system.audit.view |
+
+## 数据模型
+
+### 部门模型 (Department)
+
+```json
+{
+  "id": 1,
+  "name": "技术部",
+  "wechat_dept_id": 1001,
+  "parent": {
+    "id": 0,
+    "name": "总公司"
+  },
+  "order": 1,
+  "level": 2,
+  "path_names": "总公司/技术部",
+  "children": [
+    {
+      "id": 2,
+      "name": "前端组",
+      "parent": 1
+    }
+  ],
+  "created_at": "2024-01-01T00:00:00Z",
+  "updated_at": "2024-01-01T00:00:00Z"
+}
+```
+
+### 用户模型 (User)
+
+```json
+{
+  "id": 1,
+  "username": "zhangsan",
+  "first_name": "三",
+  "last_name": "张",
+  "full_name": "张三",
+  "phone": "13800138000",
+  "wechat_user_id": "zhangsan001",
+  "department": {
+    "id": 1,
+    "name": "技术部"
+  },
+  "position": "高级工程师",
+  "is_active": true,
+  "roles": [
+    {
+      "id": 1,
+      "name": "系统管理员"
+    }
+  ],
+  "created_at": "2024-01-01T00:00:00Z",
+  "updated_at": "2024-01-01T00:00:00Z"
+}
+```
+
+### 角色模型 (Role)
+
+```json
+{
+  "id": 1,
+  "name": "系统管理员",
+  "description": "拥有系统所有权限的管理员角色",
+  "is_active": true,
+  "permissions": [
+    {
+      "id": 1,
+      "code": "system.department.view",
+      "name": "查看部门",
+      "module": "系统管理"
+    }
+  ],
+  "member_count": 5,
+  "created_at": "2024-01-01T00:00:00Z",
+  "updated_at": "2024-01-01T00:00:00Z"
+}
+```
+
+### 权限模型 (Permission)
+
+```json
+{
+  "id": 1,
+  "code": "system.department.view",
+  "name": "查看部门",
+  "module": "系统管理",
+  "description": "允许查看部门信息和部门树结构"
+}
+```
+
+### 审计日志模型 (AuditLog)
+
+```json
+{
+  "id": 1,
+  "user": {
+    "id": 1,
+    "username": "admin",
+    "full_name": "管理员"
+  },
+  "user_full_name": "管理员",
+  "action": "create",
+  "target_type": "Role",
+  "target_id": 1,
+  "details": {
+    "name": "新角色",
+    "description": "新创建的角色"
+  },
+  "ip_address": "192.168.1.100",
+  "created_at": "2024-01-01T00:00:00Z"
+}
+```
 
 ## 使用示例
 
@@ -192,6 +310,103 @@ curl -X GET "http://localhost:8000/api/permissions/?group_by_module=true" \
 
 ```bash
 curl -X GET "http://localhost:8000/api/audit-logs/?username=admin&action=create&start_time=2024-01-01T00:00:00Z&page=1" \
+  -H "Content-Type: application/json" \
+  --cookie "sessionid=your_session_id"
+```
+
+响应示例：
+```json
+{
+  "count": 100,
+  "next": "http://localhost:8000/api/audit-logs/?page=2",
+  "previous": null,
+  "results": [
+    {
+      "id": 1,
+      "user_full_name": "管理员",
+      "action": "create",
+      "target_type": "Role",
+      "target_id": 1,
+      "details": {
+        "name": "新角色",
+        "description": "新创建的角色"
+      },
+      "ip_address": "192.168.1.100",
+      "created_at": "2024-01-01T00:00:00Z"
+    }
+  ]
+}
+```
+
+### 9. 获取权限列表（按模块分组）
+
+```bash
+curl -X GET "http://localhost:8000/api/permissions/?group_by_module=true" \
+  -H "Content-Type: application/json" \
+  --cookie "sessionid=your_session_id"
+```
+
+响应示例：
+```json
+{
+  "系统管理": [
+    {
+      "id": 1,
+      "code": "system.department.view",
+      "name": "查看部门",
+      "module": "系统管理",
+      "description": "允许查看部门信息"
+    },
+    {
+      "id": 2,
+      "code": "system.user.manage",
+      "name": "管理用户",
+      "module": "系统管理",
+      "description": "允许创建、编辑、删除用户"
+    }
+  ],
+  "门店管理": [
+    {
+      "id": 10,
+      "code": "store.view",
+      "name": "查看门店",
+      "module": "门店管理",
+      "description": "允许查看门店信息"
+    }
+  ]
+}
+```
+
+### 10. 角色成员管理
+
+#### 获取角色成员列表
+```bash
+curl -X GET "http://localhost:8000/api/roles/1/members/" \
+  -H "Content-Type: application/json" \
+  --cookie "sessionid=your_session_id"
+```
+
+#### 添加角色成员
+```bash
+curl -X POST "http://localhost:8000/api/roles/1/add_members/" \
+  -H "Content-Type: application/json" \
+  -d '{"user_ids": [1, 2, 3]}' \
+  --cookie "sessionid=your_session_id"
+```
+
+### 11. 缓存管理
+
+#### 清理指定缓存
+```bash
+curl -X POST "http://localhost:8000/api/cache/clear/" \
+  -H "Content-Type: application/json" \
+  -d '{"cache_keys": ["department_tree", "user_permissions"]}' \
+  --cookie "sessionid=your_session_id"
+```
+
+#### 清理所有缓存
+```bash
+curl -X POST "http://localhost:8000/api/cache/clear_all/" \
   -H "Content-Type: application/json" \
   --cookie "sessionid=your_session_id"
 ```

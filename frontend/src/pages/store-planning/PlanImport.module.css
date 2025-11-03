@@ -1,0 +1,18 @@
+/* 数据导入页面样式 */
+
+.container {
+  padding: 24px;
+}
+
+.uploadArea {
+  margin-top: 24px;
+}
+
+.uploadContent {
+  padding: 40px 0;
+  text-align: center;
+}
+
+.resultArea {
+  margin-top: 24px;
+}

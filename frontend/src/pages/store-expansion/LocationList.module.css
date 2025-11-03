@@ -1,0 +1,46 @@
+/* 候选点位列表页面样式 */
+
+.container {
+  padding: 24px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.filters {
+  margin-bottom: 16px;
+  padding: 16px;
+  background-color: #f7f8fa;
+  border-radius: 6px;
+}
+
+.locationName {
+  font-weight: 500;
+  color: #1d2129;
+}
+
+.locationName:hover {
+  color: #165dff;
+  cursor: pointer;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+  
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .filters {
+    padding: 12px;
+  }
+}

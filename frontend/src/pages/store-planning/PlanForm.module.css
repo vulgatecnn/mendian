@@ -1,0 +1,37 @@
+/* 开店计划表单页面样式 */
+
+.container {
+  padding: 24px;
+}
+
+.header {
+  margin-bottom: 24px;
+}
+
+.header h3 {
+  margin: 0;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sectionHeader h5 {
+  margin: 0;
+}
+
+.summary {
+  margin-top: 16px;
+  padding: 16px;
+  background-color: #f7f8fa;
+  border-radius: 4px;
+}
+
+.actions {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #e5e6eb;
+  text-align: center;
+}

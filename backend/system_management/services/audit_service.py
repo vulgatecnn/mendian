@@ -23,12 +23,24 @@ class AuditLogger:
     ACTION_REMOVE = 'remove'
     ACTION_LOGIN = 'login'
     ACTION_LOGOUT = 'logout'
+    ACTION_PUBLISH = 'publish'
+    ACTION_CANCEL = 'cancel'
+    ACTION_APPROVE = 'approve'
+    ACTION_REJECT = 'reject'
+    ACTION_SUBMIT = 'submit'
+    ACTION_IMPORT = 'import'
+    ACTION_EXPORT = 'export'
     
     # 目标类型常量
     TARGET_USER = 'user'
     TARGET_ROLE = 'role'
     TARGET_PERMISSION = 'permission'
     TARGET_DEPARTMENT = 'department'
+    TARGET_STORE_PLAN = 'store_plan'
+    TARGET_REGIONAL_PLAN = 'regional_plan'
+    TARGET_BUSINESS_REGION = 'business_region'
+    TARGET_STORE_TYPE = 'store_type'
+    TARGET_PLAN_APPROVAL = 'plan_approval'
     
     @staticmethod
     def get_client_ip(request) -> str:
@@ -206,6 +218,183 @@ class AuditLogger:
             action=cls.ACTION_ASSIGN,
             target_type=cls.TARGET_ROLE,
             target_id=role_id,
+            details=details or {}
+        )
+    
+    # 开店计划相关审计日志方法
+    @classmethod
+    def log_store_plan_create(cls, request, plan_id: int, details: Optional[Dict[str, Any]] = None):
+        """记录开店计划创建操作"""
+        return cls.log(
+            request=request,
+            action=cls.ACTION_CREATE,
+            target_type=cls.TARGET_STORE_PLAN,
+            target_id=plan_id,
+            details=details or {}
+        )
+    
+    @classmethod
+    def log_store_plan_update(cls, request, plan_id: int, details: Optional[Dict[str, Any]] = None):
+        """记录开店计划更新操作"""
+        return cls.log(
+            request=request,
+            action=cls.ACTION_UPDATE,
+            target_type=cls.TARGET_STORE_PLAN,
+            target_id=plan_id,
+            details=details or {}
+        )
+    
+    @classmethod
+    def log_store_plan_delete(cls, request, plan_id: int, details: Optional[Dict[str, Any]] = None):
+        """记录开店计划删除操作"""
+        return cls.log(
+            request=request,
+            action=cls.ACTION_DELETE,
+            target_type=cls.TARGET_STORE_PLAN,
+            target_id=plan_id,
+            details=details or {}
+        )
+    
+    @classmethod
+    def log_store_plan_publish(cls, request, plan_id: int, details: Optional[Dict[str, Any]] = None):
+        """记录开店计划发布操作"""
+        return cls.log(
+            request=request,
+            action=cls.ACTION_PUBLISH,
+            target_type=cls.TARGET_STORE_PLAN,
+            target_id=plan_id,
+            details=details or {}
+        )
+    
+    @classmethod
+    def log_store_plan_cancel(cls, request, plan_id: int, details: Optional[Dict[str, Any]] = None):
+        """记录开店计划取消操作"""
+        return cls.log(
+            request=request,
+            action=cls.ACTION_CANCEL,
+            target_type=cls.TARGET_STORE_PLAN,
+            target_id=plan_id,
+            details=details or {}
+        )
+    
+    @classmethod
+    def log_business_region_create(cls, request, region_id: int, details: Optional[Dict[str, Any]] = None):
+        """记录经营区域创建操作"""
+        return cls.log(
+            request=request,
+            action=cls.ACTION_CREATE,
+            target_type=cls.TARGET_BUSINESS_REGION,
+            target_id=region_id,
+            details=details or {}
+        )
+    
+    @classmethod
+    def log_business_region_update(cls, request, region_id: int, details: Optional[Dict[str, Any]] = None):
+        """记录经营区域更新操作"""
+        return cls.log(
+            request=request,
+            action=cls.ACTION_UPDATE,
+            target_type=cls.TARGET_BUSINESS_REGION,
+            target_id=region_id,
+            details=details or {}
+        )
+    
+    @classmethod
+    def log_business_region_delete(cls, request, region_id: int, details: Optional[Dict[str, Any]] = None):
+        """记录经营区域删除操作"""
+        return cls.log(
+            request=request,
+            action=cls.ACTION_DELETE,
+            target_type=cls.TARGET_BUSINESS_REGION,
+            target_id=region_id,
+            details=details or {}
+        )
+    
+    @classmethod
+    def log_store_type_create(cls, request, store_type_id: int, details: Optional[Dict[str, Any]] = None):
+        """记录门店类型创建操作"""
+        return cls.log(
+            request=request,
+            action=cls.ACTION_CREATE,
+            target_type=cls.TARGET_STORE_TYPE,
+            target_id=store_type_id,
+            details=details or {}
+        )
+    
+    @classmethod
+    def log_store_type_update(cls, request, store_type_id: int, details: Optional[Dict[str, Any]] = None):
+        """记录门店类型更新操作"""
+        return cls.log(
+            request=request,
+            action=cls.ACTION_UPDATE,
+            target_type=cls.TARGET_STORE_TYPE,
+            target_id=store_type_id,
+            details=details or {}
+        )
+    
+    @classmethod
+    def log_store_type_delete(cls, request, store_type_id: int, details: Optional[Dict[str, Any]] = None):
+        """记录门店类型删除操作"""
+        return cls.log(
+            request=request,
+            action=cls.ACTION_DELETE,
+            target_type=cls.TARGET_STORE_TYPE,
+            target_id=store_type_id,
+            details=details or {}
+        )
+    
+    @classmethod
+    def log_plan_approval_submit(cls, request, approval_id: int, details: Optional[Dict[str, Any]] = None):
+        """记录计划审批提交操作"""
+        return cls.log(
+            request=request,
+            action=cls.ACTION_SUBMIT,
+            target_type=cls.TARGET_PLAN_APPROVAL,
+            target_id=approval_id,
+            details=details or {}
+        )
+    
+    @classmethod
+    def log_plan_approval_approve(cls, request, approval_id: int, details: Optional[Dict[str, Any]] = None):
+        """记录计划审批通过操作"""
+        return cls.log(
+            request=request,
+            action=cls.ACTION_APPROVE,
+            target_type=cls.TARGET_PLAN_APPROVAL,
+            target_id=approval_id,
+            details=details or {}
+        )
+    
+    @classmethod
+    def log_plan_approval_reject(cls, request, approval_id: int, details: Optional[Dict[str, Any]] = None):
+        """记录计划审批拒绝操作"""
+        return cls.log(
+            request=request,
+            action=cls.ACTION_REJECT,
+            target_type=cls.TARGET_PLAN_APPROVAL,
+            target_id=approval_id,
+            details=details or {}
+        )
+    
+    @classmethod
+    def log_plan_data_import(cls, request, details: Optional[Dict[str, Any]] = None):
+        """记录计划数据导入操作"""
+        return cls.log(
+            request=request,
+            action=cls.ACTION_IMPORT,
+            target_type=cls.TARGET_STORE_PLAN,
+            target_id=0,  # 批量操作使用0作为ID
+            details=details or {}
+        )
+    
+    @classmethod
+    def log_plan_data_export(cls, request, details: Optional[Dict[str, Any]] = None):
+        """记录计划数据导出操作"""
+        return cls.log(
+            request=request,
+            action=cls.ACTION_EXPORT,
+            target_type=cls.TARGET_STORE_PLAN,
+            target_id=0,  # 批量操作使用0作为ID
             details=details or {}
         )
 

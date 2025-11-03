@@ -1,0 +1,23 @@
+/* 开店计划列表页面样式 */
+
+.container {
+  padding: 24px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.header h3 {
+  margin: 0;
+}
+
+.filters {
+  margin-bottom: 16px;
+  padding: 16px;
+  background-color: #f7f8fa;
+  border-radius: 4px;
+}

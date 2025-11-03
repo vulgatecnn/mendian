@@ -40,9 +40,18 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'drf_spectacular',
+    'django_filters',
     
     # 本地应用
     'system_management',
+    'store_planning',
+    'base_data',
+    'store_expansion',
+    'store_preparation',
+    'store_archive',
+    'approval',
+    'notification',
+    'wechat_integration',
 ]
 
 MIDDLEWARE = [
@@ -148,6 +157,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Django REST Framework 配置
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'system_management.jwt_authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
@@ -306,6 +316,27 @@ CELERY_TIMEZONE = 'Asia/Shanghai'
 CELERY_ENABLE_UTC = False
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60  # 任务最长执行时间：30分钟
+
+# Celery Beat 定时任务配置
+from celery.schedules import crontab
+
+CELERY_BEAT_SCHEDULE = {
+    # 每天凌晨 2 点执行全量同步
+    'sync-wechat-all-daily': {
+        'task': 'wechat_integration.tasks.sync_wechat_all',
+        'schedule': crontab(hour=2, minute=0),
+    },
+    # 每 4 小时同步一次用户信息
+    'sync-wechat-users-4hours': {
+        'task': 'wechat_integration.tasks.sync_wechat_users',
+        'schedule': crontab(minute=0, hour='*/4'),
+    },
+    # 每 6 小时同步一次部门信息
+    'sync-wechat-departments-6hours': {
+        'task': 'wechat_integration.tasks.sync_wechat_departments',
+        'schedule': crontab(minute=0, hour='*/6'),
+    },
+}
 
 
 # 日志配置

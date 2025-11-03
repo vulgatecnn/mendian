@@ -1,0 +1,69 @@
+/* 虚拟滚动列表样式 */
+
+.virtual-list-container {
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.virtual-list-phantom {
+  position: relative;
+  width: 100%;
+}
+
+.virtual-list-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  will-change: transform;
+}
+
+.virtual-list-item {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.virtual-list-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-3);
+  font-size: 14px;
+}
+
+.virtual-list-loading {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.loading-spinner {
+  color: var(--color-primary);
+  font-size: 14px;
+}
+
+/* 滚动条样式优化 */
+.virtual-list-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.virtual-list-container::-webkit-scrollbar-track {
+  background: var(--color-fill-2);
+  border-radius: 4px;
+}
+
+.virtual-list-container::-webkit-scrollbar-thumb {
+  background: var(--color-fill-4);
+  border-radius: 4px;
+}
+
+.virtual-list-container::-webkit-scrollbar-thumb:hover {
+  background: var(--color-fill-3);
+}

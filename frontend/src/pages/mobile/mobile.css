@@ -1,0 +1,1185 @@
+/**
+ * 移动端样式
+ */
+
+/* 通用移动端容器 */
+.mobile-plan-list,
+.mobile-plan-detail {
+  min-height: 100vh;
+  background-color: #f7f8fa;
+}
+
+/* 移动端头部 */
+.mobile-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #fff;
+  padding: 12px 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mobile-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1d2129;
+  flex: 1;
+}
+
+.mobile-header .refresh-button {
+  padding: 4px 8px;
+  margin-right: 8px;
+}
+
+.mobile-header .network-status {
+  font-size: 12px;
+}
+
+.mobile-header .back-button {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.mobile-header .back-button:active {
+  background-color: #f2f3f5;
+}
+
+/* 缓存数据提示 */
+.cache-notice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  background: #fff7e6;
+  border-bottom: 1px solid #ffd666;
+  color: #d48806;
+  font-size: 13px;
+}
+
+/* 刷新指示器 */
+.refresh-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  color: #86909c;
+  font-size: 14px;
+}
+
+/* 移动端内容区域 */
+.mobile-content {
+  padding: 12px;
+  overflow-y: auto;
+  max-height: calc(100vh - 56px);
+}
+
+/* 计划卡片 */
+.mobile-plan-card {
+  margin-bottom: 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.mobile-plan-card .arco-card-body {
+  padding: 16px;
+}
+
+.plan-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.plan-card-header .plan-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1d2129;
+  flex: 1;
+  margin-right: 8px;
+  line-height: 1.4;
+}
+
+.plan-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.plan-card-info .info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+
+.plan-card-info .info-row .label {
+  color: #86909c;
+}
+
+.plan-card-info .info-row .value {
+  color: #1d2129;
+  font-weight: 500;
+}
+
+.plan-card-info .info-row .value.highlight {
+  color: #165dff;
+  font-weight: 600;
+}
+
+.plan-card-info .completion-rate {
+  font-weight: 600;
+}
+
+.plan-card-info .completion-rate.high {
+  color: #00b42a;
+}
+
+.plan-card-info .completion-rate.medium {
+  color: #ff7d00;
+}
+
+.plan-card-info .completion-rate.low {
+  color: #f53f3f;
+}
+
+.plan-card-footer {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f2f3f5;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.plan-card-footer .view-detail {
+  color: #165dff;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 加载更多 */
+.loading-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  color: #86909c;
+  font-size: 14px;
+}
+
+.no-more {
+  text-align: center;
+  padding: 16px;
+  color: #86909c;
+  font-size: 14px;
+}
+
+/* 详情页样式 */
+.mobile-plan-detail.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.detail-card {
+  margin-bottom: 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.detail-card .arco-card-header {
+  padding: 16px;
+  border-bottom: 1px solid #f2f3f5;
+}
+
+.detail-card .arco-card-header-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1d2129;
+}
+
+.detail-card .arco-card-body {
+  padding: 16px;
+}
+
+/* 描述信息 */
+.detail-card .description {
+  margin-top: 12px;
+}
+
+.detail-card .description .label {
+  color: #86909c;
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.detail-card .description .value {
+  color: #1d2129;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* 进度摘要 */
+.progress-summary {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 20px;
+  padding: 16px 0;
+  background: #f7f8fa;
+  border-radius: 8px;
+}
+
+.progress-summary .progress-item {
+  text-align: center;
+}
+
+.progress-summary .progress-item .label {
+  font-size: 12px;
+  color: #86909c;
+  margin-bottom: 8px;
+}
+
+.progress-summary .progress-item .value {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1d2129;
+}
+
+.progress-summary .progress-item .value.large {
+  font-size: 24px;
+}
+
+.progress-summary .progress-item .value.highlight {
+  color: #165dff;
+}
+
+.progress-summary .progress-item .unit {
+  font-size: 12px;
+  color: #86909c;
+  margin-top: 4px;
+}
+
+/* 进度条 */
+.progress-bar {
+  margin-bottom: 16px;
+}
+
+/* 预算信息 */
+.budget-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: #f7f8fa;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.budget-info .label {
+  color: #86909c;
+}
+
+.budget-info .value {
+  color: #1d2129;
+  font-weight: 600;
+}
+
+/* 区域计划列表 */
+.regional-plans {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.regional-plan-item {
+  padding: 16px;
+  background: #f7f8fa;
+  border-radius: 8px;
+}
+
+.regional-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.regional-header .region-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1d2129;
+}
+
+.regional-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+
+.regional-stats .stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.regional-stats .stat-item .label {
+  color: #86909c;
+}
+
+.regional-stats .stat-item .value {
+  color: #1d2129;
+  font-weight: 500;
+}
+
+.regional-stats .stat-item .value.highlight {
+  color: #165dff;
+  font-weight: 600;
+}
+
+.regional-budget {
+  margin-top: 12px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.regional-budget .label {
+  color: #86909c;
+}
+
+.regional-budget .value {
+  color: #1d2129;
+  font-weight: 500;
+}
+
+/* 取消原因 */
+.cancel-reason {
+  background: #fff1f0;
+  border: 1px solid #ffccc7;
+}
+
+.cancel-reason .label {
+  color: #f53f3f;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.cancel-reason .value {
+  color: #1d2129;
+  line-height: 1.6;
+}
+
+/* 下拉刷新样式 */
+.arco-pull-to-refresh {
+  height: calc(100vh - 56px);
+  overflow-y: auto;
+}
+
+/* 企业微信登录页面 */
+.wechat-login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+
+.wechat-login-page .login-content {
+  text-align: center;
+  background: #fff;
+  padding: 40px 30px;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  width: 100%;
+}
+
+.wechat-login-page .login-icon {
+  margin-bottom: 20px;
+}
+
+.wechat-login-page h2 {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #1d2129;
+}
+
+.wechat-login-page .login-subtitle {
+  margin: 0 0 32px 0;
+  font-size: 14px;
+  color: #86909c;
+}
+
+.wechat-login-page .login-button {
+  width: 100%;
+  height: 44px;
+  font-size: 16px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+.wechat-login-page .login-footer {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid #f2f3f5;
+}
+
+.wechat-login-page .login-footer p {
+  margin: 8px 0;
+  font-size: 13px;
+  color: #86909c;
+}
+
+.wechat-login-page .login-tip {
+  font-size: 12px;
+  color: #c9cdd4;
+}
+
+.wechat-login-page .login-tips {
+  text-align: left;
+  margin-top: 20px;
+  padding: 16px;
+  background: #f7f8fa;
+  border-radius: 8px;
+}
+
+.wechat-login-page .login-tips p {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1d2129;
+}
+
+.wechat-login-page .login-tips ol {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.wechat-login-page .login-tips li {
+  margin: 8px 0;
+  font-size: 14px;
+  color: #4e5969;
+  line-height: 1.6;
+}
+
+/* 响应式调整 */
+@media (max-width: 375px) {
+  .mobile-header {
+    padding: 10px 12px;
+  }
+
+  .mobile-content {
+    padding: 8px;
+  }
+
+  .mobile-plan-card .arco-card-body,
+  .detail-card .arco-card-body {
+    padding: 12px;
+  }
+
+  .plan-card-header .plan-name {
+    font-size: 15px;
+  }
+
+  .progress-summary .progress-item .value.large {
+    font-size: 20px;
+  }
+
+  .wechat-login-page .login-content {
+    padding: 30px 20px;
+  }
+
+  .wechat-login-page h2 {
+    font-size: 20px;
+  }
+}
+
+/* ========== 新增移动端样式 ========== */
+
+/* 布局 */
+.mobile-layout {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-layout .mobile-header {
+  border-bottom: 1px solid #E5E6EB;
+  padding: 0 16px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+}
+
+.mobile-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.mobile-header-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.mobile-header-user {
+  font-size: 14px;
+  color: #86909C;
+}
+
+.mobile-layout .mobile-content {
+  flex: 1;
+  overflow-y: auto;
+  background: #F7F8FA;
+  -webkit-overflow-scrolling: touch;
+  max-height: none;
+}
+
+.mobile-footer {
+  background: #fff;
+  border-top: 1px solid #E5E6EB;
+}
+
+/* 首页 */
+.mobile-home {
+  padding: 12px;
+}
+
+.mobile-shortcuts-card,
+.mobile-todos-card {
+  margin-bottom: 12px;
+}
+
+.mobile-shortcut-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.mobile-shortcut-item:active {
+  transform: scale(0.95);
+  opacity: 0.8;
+}
+
+.mobile-shortcut-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.mobile-shortcut-title {
+  font-size: 12px;
+  color: #1D2129;
+  text-align: center;
+}
+
+.mobile-todo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mobile-todo-card {
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.mobile-todo-card:active {
+  transform: scale(0.98);
+}
+
+.mobile-todo-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mobile-todo-info {
+  flex: 1;
+}
+
+.mobile-todo-title {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.mobile-todo-desc {
+  font-size: 14px;
+  color: #86909C;
+}
+
+.mobile-todo-badge {
+  display: flex;
+  align-items: center;
+}
+
+/* 工作台 */
+.mobile-workbench {
+  padding: 12px;
+}
+
+.mobile-work-card {
+  margin-bottom: 12px;
+}
+
+.mobile-work-menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mobile-work-menu-item {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  background: #F7F8FA;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.mobile-work-menu-item:active {
+  transform: scale(0.98);
+  background: #E5E6EB;
+}
+
+.mobile-work-menu-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.mobile-work-menu-content {
+  flex: 1;
+}
+
+.mobile-work-menu-title {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.mobile-work-menu-desc {
+  font-size: 12px;
+  color: #86909C;
+}
+
+/* 搜索栏 */
+.mobile-search-bar {
+  padding: 12px;
+  background: #fff;
+  border-bottom: 1px solid #E5E6EB;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 缓存提示 */
+.mobile-cache-notice {
+  background: #FFF7E8;
+  color: #F77234;
+  padding: 8px 16px;
+  font-size: 12px;
+  text-align: center;
+  border-bottom: 1px solid #FFCF8B;
+}
+
+/* 候选点位 */
+.mobile-location-list {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-location-content {
+  flex: 1;
+  padding: 12px;
+  overflow-y: auto;
+}
+
+.mobile-location-card {
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.mobile-location-card:active {
+  transform: scale(0.98);
+}
+
+.mobile-location-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.mobile-location-name {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.mobile-location-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mobile-location-info-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  color: #4E5969;
+}
+
+.mobile-location-footer {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #E5E6EB;
+}
+
+/* 跟进单 */
+.mobile-followup-list {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-followup-content {
+  flex: 1;
+  padding: 12px;
+  overflow-y: auto;
+}
+
+.mobile-followup-card {
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.mobile-followup-card:active {
+  transform: scale(0.98);
+}
+
+.mobile-followup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.mobile-followup-title {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mobile-followup-name {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.mobile-followup-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.mobile-followup-info-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  color: #4E5969;
+}
+
+.mobile-followup-info-item .label {
+  color: #86909C;
+}
+
+.mobile-followup-info-item .highlight {
+  color: #165DFF;
+  font-weight: 500;
+}
+
+.mobile-followup-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid #E5E6EB;
+  font-size: 12px;
+  color: #86909C;
+}
+
+.mobile-followup-creator,
+.mobile-followup-time {
+  font-size: 12px;
+  color: #86909C;
+}
+
+/* 详情页 */
+.mobile-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #fff;
+  border-bottom: 1px solid #E5E6EB;
+}
+
+.mobile-detail-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  flex: 1;
+  text-align: center;
+}
+
+.mobile-detail-card {
+  margin: 12px;
+}
+
+.mobile-detail-actions {
+  padding: 12px;
+  background: #fff;
+  border-top: 1px solid #E5E6EB;
+}
+
+/* 跟进单详情 */
+.mobile-followup-detail {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-profit-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.mobile-profit-card {
+  background: #F7F8FA;
+  border-radius: 8px;
+  padding: 16px 12px;
+  text-align: center;
+}
+
+.mobile-profit-label {
+  font-size: 12px;
+  color: #86909C;
+  margin-bottom: 8px;
+}
+
+.mobile-profit-value {
+  font-size: 20px;
+  font-weight: 600;
+  color: #165DFF;
+}
+
+.mobile-image-preview {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.mobile-image-preview img {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+/* 工程验收 */
+.mobile-acceptance {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-construction-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mobile-construction-info .info-item {
+  display: flex;
+  font-size: 14px;
+}
+
+.mobile-construction-info .label {
+  color: #86909C;
+  min-width: 80px;
+}
+
+.mobile-signature-pad {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 审批 */
+.mobile-approval-list {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-approval-content {
+  flex: 1;
+  padding: 12px;
+  overflow-y: auto;
+}
+
+.mobile-approval-card {
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.mobile-approval-card:active {
+  transform: scale(0.98);
+}
+
+.mobile-approval-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.mobile-approval-title {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mobile-approval-name {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.mobile-approval-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.mobile-approval-info-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  color: #4E5969;
+}
+
+.mobile-approval-info-item .label {
+  color: #86909C;
+}
+
+.mobile-approval-current-node {
+  padding-top: 12px;
+  border-top: 1px solid #E5E6EB;
+}
+
+.mobile-approval-detail {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-timeline-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mobile-timeline-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.mobile-timeline-info {
+  font-size: 12px;
+  color: #86909C;
+}
+
+.mobile-timeline-comment {
+  font-size: 14px;
+  color: #4E5969;
+  padding: 8px;
+  background: #F7F8FA;
+  border-radius: 4px;
+  margin-top: 4px;
+}
+
+/* 消息 */
+.mobile-messages {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-messages-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: #fff;
+  border-bottom: 1px solid #E5E6EB;
+}
+
+.mobile-messages-content {
+  flex: 1;
+  padding: 12px;
+  overflow-y: auto;
+}
+
+.mobile-message-card {
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.mobile-message-card.unread {
+  background: #F2F3F5;
+}
+
+.mobile-message-card:active {
+  transform: scale(0.98);
+}
+
+.mobile-message-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.mobile-message-title {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.mobile-message-content {
+  font-size: 14px;
+  color: #4E5969;
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.mobile-message-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 8px;
+  border-top: 1px solid #E5E6EB;
+}
+
+.mobile-message-time {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #86909C;
+}
+
+/* 个人中心 */
+.mobile-profile {
+  padding: 12px;
+}
+
+.mobile-profile-card {
+  margin-bottom: 12px;
+}
+
+.mobile-profile-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.mobile-profile-info {
+  flex: 1;
+}
+
+.mobile-profile-name {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.mobile-profile-role {
+  font-size: 14px;
+  color: #86909C;
+}
+
+.mobile-profile-section {
+  margin-bottom: 12px;
+}
+
+.mobile-profile-logout {
+  margin-top: 24px;
+}
+
+/* 触摸优化 */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button, a, .mobile-todo-card, .mobile-location-card, 
+.mobile-followup-card, .mobile-approval-card, .mobile-message-card {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}

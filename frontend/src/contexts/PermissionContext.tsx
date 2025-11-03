@@ -66,6 +66,7 @@ export const PermissionProvider: React.FC<PermissionProviderProps> = ({ children
       // 这里应该调用实际的API获取用户权限
       // 暂时使用模拟数据 - 模拟系统管理员权限
       const mockPermissions: Permission[] = [
+        // 系统管理权限
         { id: 1, code: 'system.department.view', name: '查看部门', module: '系统管理' },
         { id: 2, code: 'system.department.sync', name: '同步部门', module: '系统管理' },
         { id: 3, code: 'system.user.view', name: '查看用户', module: '系统管理' },
@@ -74,6 +75,16 @@ export const PermissionProvider: React.FC<PermissionProviderProps> = ({ children
         { id: 6, code: 'system.role.view', name: '查看角色', module: '系统管理' },
         { id: 7, code: 'system.role.manage', name: '管理角色', module: '系统管理' },
         { id: 8, code: 'system.audit.view', name: '查看审计日志', module: '系统管理' },
+        
+        // 开店计划管理权限
+        { id: 10, code: 'store_planning.plan.view', name: '查看计划', module: '开店计划管理' },
+        { id: 11, code: 'store_planning.plan.create', name: '创建计划', module: '开店计划管理' },
+        { id: 12, code: 'store_planning.plan.edit', name: '编辑计划', module: '开店计划管理' },
+        { id: 13, code: 'store_planning.plan.delete', name: '删除计划', module: '开店计划管理' },
+        { id: 14, code: 'store_planning.plan.publish', name: '发布计划', module: '开店计划管理' },
+        { id: 15, code: 'store_planning.plan.cancel', name: '取消计划', module: '开店计划管理' },
+        { id: 16, code: 'store_planning.plan.import', name: '导入计划', module: '开店计划管理' },
+        { id: 17, code: 'store_planning.plan.export', name: '导出计划', module: '开店计划管理' },
       ];
       
       // 模拟API延迟

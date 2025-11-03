@@ -14,3 +14,7 @@ export { ProtectedRoute } from './ProtectedRoute'
 // 导航组件
 export { SystemNavigation } from './SystemNavigation'
 export { MainNavigation } from './MainNavigation'
+
+// 开店计划管理组件
+export { PlanPublishModal } from './PlanPublishModal'
+export { PlanCancelModal } from './PlanCancelModal'

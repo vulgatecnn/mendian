@@ -1,0 +1,17 @@
+/* 数据导出页面样式 */
+
+.container {
+  padding: 24px;
+}
+
+.exportForm {
+  max-width: 600px;
+}
+
+.exportProgress {
+  margin-top: 24px;
+  padding: 40px;
+  text-align: center;
+  background-color: #f7f8fa;
+  border-radius: 4px;
+}

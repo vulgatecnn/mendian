@@ -1,0 +1,49 @@
+/* 基础数据管理页面样式 */
+
+.container {
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.header .title {
+  margin: 0;
+}
+
+.searchForm {
+  margin-bottom: 20px;
+  padding: 16px;
+  background-color: var(--color-fill-2);
+  border-radius: 4px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: var(--color-text-3);
+}
+
+.emptyIcon {
+  font-size: 64px;
+  margin-bottom: 16px;
+  color: var(--color-text-4);
+}
+
+.emptyText {
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--color-text-4);
+}

@@ -1,0 +1,67 @@
+/* 懒加载组件样式 */
+
+.lazy-load-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  padding: 40px 20px;
+}
+
+.loading-text {
+  margin-top: 16px;
+  color: var(--color-text-2);
+  font-size: 14px;
+}
+
+.lazy-load-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  padding: 40px 20px;
+}
+
+.error-content {
+  text-align: center;
+  max-width: 400px;
+}
+
+.error-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.error-message {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--color-text-1);
+  margin-bottom: 8px;
+}
+
+.error-detail {
+  font-size: 14px;
+  color: var(--color-text-3);
+  margin-bottom: 24px;
+  word-break: break-word;
+}
+
+.error-retry {
+  padding: 8px 24px;
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.error-retry:hover {
+  background-color: var(--color-primary-light-1);
+}
+
+.error-retry:active {
+  background-color: var(--color-primary-dark-1);
+}

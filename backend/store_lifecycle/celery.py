@@ -25,6 +25,16 @@ app.conf.beat_schedule = {
         'task': 'system_management.tasks.cleanup_expired_audit_logs',
         'schedule': crontab(hour=2, minute=0),  # 每天凌晨2点执行
     },
+    # 每天早上9点检查里程碑提醒
+    'check-milestone-reminders': {
+        'task': 'store_preparation.check_milestone_reminders',
+        'schedule': crontab(hour=9, minute=0),  # 每天早上9点执行
+    },
+    # 每天凌晨1点检查逾期里程碑
+    'check-overdue-milestones': {
+        'task': 'store_preparation.check_overdue_milestones',
+        'schedule': crontab(hour=1, minute=0),  # 每天凌晨1点执行
+    },
 }
 
 # 时区设置

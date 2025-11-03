@@ -925,6 +925,475 @@ chmod +x /opt/store_lifecycle/scripts/maintenance.sh
 (crontab -l 2>/dev/null; echo "0 3 * * 0 /opt/store_lifecycle/scripts/maintenance.sh") | crontab -
 ```
 
+## 前端部署
+
+### 1. 前端环境准备
+
+```bash
+# 安装Node.js (推荐使用LTS版本)
+curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# 安装pnpm
+npm install -g pnpm
+
+# 验证安装
+node --version
+pnpm --version
+```
+
+### 2. 前端项目部署
+
+```bash
+# 进入前端目录
+cd /opt/store_lifecycle/frontend
+
+# 安装依赖
+pnpm install
+
+# 配置环境变量
+cp .env.example .env
+nano .env
+
+# .env 文件内容
+VITE_API_BASE_URL=https://your-domain.com/api
+VITE_APP_TITLE=门店生命周期管理系统
+```
+
+### 3. 构建前端项目
+
+```bash
+# 构建生产版本
+pnpm build
+
+# 验证构建结果
+ls -la dist/
+```
+
+### 4. 配置Nginx服务前端
+
+前端文件已经在Nginx配置中设置，构建后的文件会自动通过Nginx提供服务。
+
+## 容器化部署（Docker）
+
+### 1. 创建Dockerfile
+
+```dockerfile
+# backend/Dockerfile
+FROM python:3.9-slim
+
+# 设置工作目录
+WORKDIR /app
+
+# 安装系统依赖
+RUN apt-get update && apt-get install -y \
+    postgresql-client \
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# 复制依赖文件
+COPY requirements.txt .
+
+# 安装Python依赖
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 复制项目文件
+COPY . .
+
+# 创建非root用户
+RUN useradd --create-home --shell /bin/bash app \
+    && chown -R app:app /app
+USER app
+
+# 暴露端口
+EXPOSE 8000
+
+# 启动命令
+CMD ["gunicorn", "store_lifecycle.wsgi:application", "--bind", "0.0.0.0:8000"]
+```
+
+### 2. 创建docker-compose.yml
+
+```yaml
+# docker-compose.yml
+version: '3.8'
+
+services:
+  db:
+    image: postgres:14
+    environment:
+      POSTGRES_DB: store_lifecycle
+      POSTGRES_USER: store_user
+      POSTGRES_PASSWORD: your_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:6-alpine
+    ports:
+      - "6379:6379"
+
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_HOST=db
+      - DB_NAME=store_lifecycle
+      - DB_USER=store_user
+      - DB_PASSWORD=your_password
+      - CELERY_BROKER_URL=redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./backend:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+
+  celery:
+    build: ./backend
+    command: celery -A store_lifecycle worker --loglevel=info
+    environment:
+      - DB_HOST=db
+      - CELERY_BROKER_URL=redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./backend:/app
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - static_volume:/var/www/static
+      - media_volume:/var/www/media
+      - ./ssl:/etc/nginx/ssl
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:
+```
+
+### 3. 启动容器
+
+```bash
+# 构建并启动服务
+docker-compose up -d
+
+# 执行数据库迁移
+docker-compose exec backend python manage.py migrate
+
+# 创建超级用户
+docker-compose exec backend python manage.py createsuperuser
+
+# 初始化数据
+docker-compose exec backend python manage.py init_permissions
+docker-compose exec backend python manage.py init_roles
+```
+
+## 高可用部署
+
+### 1. 负载均衡配置
+
+```nginx
+# /etc/nginx/conf.d/upstream.conf
+upstream backend_servers {
+    server 127.0.0.1:8000 weight=1 max_fails=3 fail_timeout=30s;
+    server 127.0.0.1:8001 weight=1 max_fails=3 fail_timeout=30s;
+    server 127.0.0.1:8002 weight=1 max_fails=3 fail_timeout=30s;
+}
+
+server {
+    listen 80;
+    server_name your-domain.com;
+    
+    location /api/ {
+        proxy_pass http://backend_servers;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        
+        # 健康检查
+        proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
+        proxy_connect_timeout 5s;
+        proxy_send_timeout 10s;
+        proxy_read_timeout 10s;
+    }
+}
+```
+
+### 2. 数据库主从复制
+
+```bash
+# 主数据库配置 (postgresql.conf)
+wal_level = replica
+max_wal_senders = 3
+wal_keep_segments = 64
+archive_mode = on
+archive_command = 'cp %p /var/lib/postgresql/archive/%f'
+
+# 从数据库配置
+standby_mode = 'on'
+primary_conninfo = 'host=master_ip port=5432 user=replicator'
+```
+
+## 监控和告警
+
+### 1. 系统监控
+
+安装和配置Prometheus + Grafana：
+
+```bash
+# 安装Prometheus
+wget https://github.com/prometheus/prometheus/releases/download/v2.40.0/prometheus-2.40.0.linux-amd64.tar.gz
+tar xvfz prometheus-*.tar.gz
+sudo mv prometheus-2.40.0.linux-amd64 /opt/prometheus
+
+# 配置Prometheus
+cat > /opt/prometheus/prometheus.yml << 'EOF'
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'store-lifecycle'
+    static_configs:
+      - targets: ['localhost:8000']
+    metrics_path: '/metrics'
+    
+  - job_name: 'node'
+    static_configs:
+      - targets: ['localhost:9100']
+EOF
+```
+
+### 2. 应用监控
+
+添加Django监控中间件：
+
+```python
+# settings.py
+INSTALLED_APPS = [
+    # ...
+    'django_prometheus',
+]
+
+MIDDLEWARE = [
+    'django_prometheus.middleware.PrometheusBeforeMiddleware',
+    # ... 其他中间件
+    'django_prometheus.middleware.PrometheusAfterMiddleware',
+]
+
+# 添加监控URL
+# urls.py
+urlpatterns = [
+    # ...
+    path('metrics/', include('django_prometheus.urls')),
+]
+```
+
+### 3. 告警配置
+
+```yaml
+# alertmanager.yml
+global:
+  smtp_smarthost: 'smtp.example.com:587'
+  smtp_from: 'alerts@example.com'
+
+route:
+  group_by: ['alertname']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 1h
+  receiver: 'web.hook'
+
+receivers:
+- name: 'web.hook'
+  email_configs:
+  - to: 'admin@example.com'
+    subject: '系统告警: {{ .GroupLabels.alertname }}'
+    body: |
+      {{ range .Alerts }}
+      告警: {{ .Annotations.summary }}
+      详情: {{ .Annotations.description }}
+      {{ end }}
+```
+
+## 性能调优
+
+### 1. Django性能优化
+
+```python
+# settings.py
+
+# 数据库连接池
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'store_lifecycle',
+        'USER': 'store_user',
+        'PASSWORD': 'password',
+        'HOST': 'localhost',
+        'PORT': '5432',
+        'OPTIONS': {
+            'MAX_CONNS': 20,
+            'MIN_CONNS': 5,
+        }
+    }
+}
+
+# 缓存配置
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/1',
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            'CONNECTION_POOL_KWARGS': {
+                'max_connections': 50,
+                'retry_on_timeout': True,
+            }
+        }
+    }
+}
+
+# 会话缓存
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_CACHE_ALIAS = 'default'
+```
+
+### 2. PostgreSQL性能优化
+
+```sql
+-- postgresql.conf 优化配置
+shared_buffers = 256MB
+effective_cache_size = 1GB
+maintenance_work_mem = 64MB
+checkpoint_completion_target = 0.9
+wal_buffers = 16MB
+default_statistics_target = 100
+random_page_cost = 1.1
+effective_io_concurrency = 200
+```
+
+### 3. Nginx性能优化
+
+```nginx
+# nginx.conf 性能优化
+worker_processes auto;
+worker_connections 1024;
+
+# 启用gzip压缩
+gzip on;
+gzip_vary on;
+gzip_min_length 1024;
+gzip_types text/plain text/css text/xml text/javascript application/javascript application/xml+rss application/json;
+
+# 缓存配置
+location ~* \.(jpg|jpeg|png|gif|ico|css|js)$ {
+    expires 1y;
+    add_header Cache-Control "public, immutable";
+}
+
+# 连接优化
+keepalive_timeout 65;
+keepalive_requests 100;
+```
+
+## 灾难恢复
+
+### 1. 备份策略
+
+```bash
+# 创建完整备份脚本
+cat > /opt/store_lifecycle/scripts/full_backup.sh << 'EOF'
+#!/bin/bash
+
+BACKUP_DIR="/opt/store_lifecycle/backups"
+DATE=$(date +%Y%m%d_%H%M%S)
+
+# 创建备份目录
+mkdir -p $BACKUP_DIR/{db,files,config}
+
+# 数据库备份
+pg_dump -U store_user -h localhost store_lifecycle > $BACKUP_DIR/db/backup_$DATE.sql
+
+# 文件备份
+tar -czf $BACKUP_DIR/files/media_$DATE.tar.gz /opt/store_lifecycle/backend/media/
+tar -czf $BACKUP_DIR/files/static_$DATE.tar.gz /opt/store_lifecycle/backend/staticfiles/
+
+# 配置文件备份
+cp /opt/store_lifecycle/backend/.env $BACKUP_DIR/config/env_$DATE
+cp -r /etc/nginx/sites-available/store-lifecycle $BACKUP_DIR/config/nginx_$DATE
+
+# 压缩整个备份
+tar -czf $BACKUP_DIR/full_backup_$DATE.tar.gz $BACKUP_DIR/{db,files,config}
+
+# 清理临时文件
+rm -rf $BACKUP_DIR/{db,files,config}
+
+# 上传到远程存储（可选）
+# aws s3 cp $BACKUP_DIR/full_backup_$DATE.tar.gz s3://your-backup-bucket/
+
+echo "完整备份完成: full_backup_$DATE.tar.gz"
+EOF
+```
+
+### 2. 恢复流程
+
+```bash
+# 恢复脚本
+cat > /opt/store_lifecycle/scripts/restore.sh << 'EOF'
+#!/bin/bash
+
+BACKUP_FILE=$1
+RESTORE_DIR="/tmp/restore_$(date +%s)"
+
+if [ -z "$BACKUP_FILE" ]; then
+    echo "使用方法: $0 <backup_file>"
+    exit 1
+fi
+
+# 解压备份文件
+mkdir -p $RESTORE_DIR
+tar -xzf $BACKUP_FILE -C $RESTORE_DIR
+
+# 停止服务
+sudo systemctl stop store-lifecycle celery celerybeat
+
+# 恢复数据库
+sudo -u postgres dropdb store_lifecycle
+sudo -u postgres createdb -O store_user store_lifecycle
+psql -U store_user -h localhost store_lifecycle < $RESTORE_DIR/db/backup_*.sql
+
+# 恢复文件
+tar -xzf $RESTORE_DIR/files/media_*.tar.gz -C /
+tar -xzf $RESTORE_DIR/files/static_*.tar.gz -C /
+
+# 恢复配置
+cp $RESTORE_DIR/config/env_* /opt/store_lifecycle/backend/.env
+
+# 重启服务
+sudo systemctl start store-lifecycle celery celerybeat
+
+# 清理临时文件
+rm -rf $RESTORE_DIR
+
+echo "系统恢复完成"
+EOF
+```
+
 ## 总结
 
 本部署指南涵盖了系统管理模块的完整部署流程，包括：
@@ -933,12 +1402,33 @@ chmod +x /opt/store_lifecycle/scripts/maintenance.sh
 2. **项目部署**: 代码部署、依赖安装、配置文件设置
 3. **企业微信集成**: 详细的配置步骤和测试方法
 4. **生产环境**: Gunicorn、Nginx、SSL证书配置
-5. **数据库维护**: 备份、恢复、优化策略
-6. **监控日志**: 健康检查、日志轮转、性能监控
-7. **安全配置**: 防火墙、SSL、数据库安全
-8. **故障排除**: 常见问题的诊断和解决方法
-9. **更新维护**: 应用更新流程和定期维护任务
+5. **前端部署**: Node.js环境和前端项目构建
+6. **容器化部署**: Docker和docker-compose配置
+7. **高可用部署**: 负载均衡和数据库主从复制
+8. **监控告警**: Prometheus、Grafana监控配置
+9. **性能调优**: Django、PostgreSQL、Nginx优化
+10. **数据库维护**: 备份、恢复、优化策略
+11. **安全配置**: 防火墙、SSL、数据库安全
+12. **灾难恢复**: 完整的备份和恢复策略
+13. **故障排除**: 常见问题的诊断和解决方法
+14. **更新维护**: 应用更新流程和定期维护任务
 
 按照本指南操作，可以成功部署一个稳定、安全、高性能的系统管理模块。
+
+### 部署检查清单
+
+部署完成后，请确认以下项目：
+
+- [ ] 所有服务正常启动（Django、PostgreSQL、Redis、Nginx）
+- [ ] 数据库连接正常，迁移已执行
+- [ ] 静态文件正确收集和提供
+- [ ] API接口可以正常访问
+- [ ] 企业微信集成配置正确，同步功能正常
+- [ ] SSL证书配置正确，HTTPS访问正常
+- [ ] 日志文件正常写入，权限设置正确
+- [ ] 备份脚本配置并测试成功
+- [ ] 监控和告警系统正常工作
+- [ ] 防火墙和安全配置已应用
+- [ ] 性能优化配置已生效
 
 如有问题，请查看相关日志文件或联系技术支持团队。

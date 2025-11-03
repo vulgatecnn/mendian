@@ -1,0 +1,54 @@
+/**
+ * 消息中心样式
+ */
+
+.container {
+  padding: 24px;
+  background-color: #f7f8fa;
+  min-height: calc(100vh - 64px);
+}
+
+.header {
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.filterBar {
+  margin-bottom: 16px;
+  padding: 16px;
+  background-color: #f7f8fa;
+  border-radius: 4px;
+}
+
+.batchActions {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background-color: #f2f3f5;
+  border-radius: 4px;
+}
+
+.messageTitle {
+  color: #1d2129;
+  transition: color 0.2s;
+}
+
+.messageTitle:hover {
+  color: #165dff;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .container {
+    padding: 12px;
+  }
+
+  .filterBar {
+    padding: 12px;
+  }
+
+  .batchActions {
+    padding: 8px 12px;
+  }
+}

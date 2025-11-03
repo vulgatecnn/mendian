@@ -7,12 +7,19 @@
   color: white;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 0 24px;
 }
 
 .logo {
   font-size: 20px;
   font-weight: bold;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
 .sider {

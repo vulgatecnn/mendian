@@ -185,6 +185,47 @@ paths:
                 description: Unspecified response body
           description: ''
   /api/departments/{id}/:
+    delete:
+      operationId: departments_destroy
+      description: 删除部门。需要 system.department.delete 权限。
+      summary: 删除部门
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+          title: 部门ID
+        description: A unique integer value identifying this 部门.
+        required: true
+      tags:
+      - 部门管理
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
     get:
       operationId: departments_retrieve
       description: 根据部门ID获取部门详细信息，包含子部门。需要 system.department.view 权限。
@@ -224,10 +265,10 @@ paths:
                 additionalProperties: {}
                 description: Unspecified response body
           description: ''
-    delete:
-      operationId: departments_destroy
-      description: 删除部门。需要 system.department.delete 权限。
-      summary: 删除部门
+    patch:
+      operationId: departments_partial_update
+      description: 部分更新部门信息。需要 system.department.update 权限。
+      summary: 部分更新部门
       parameters:
       - in: path
         name: id
@@ -238,10 +279,27 @@ paths:
         required: true
       tags:
       - 部门管理
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDepartmentRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDepartmentRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDepartmentRequest'
       security:
       - cookieAuth: []
       responses:
-        '204':
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Department'
+          description: ''
+        '400':
           content:
             application/json:
               schema:
@@ -291,64 +349,6 @@ paths:
             schema:
               $ref: '#/components/schemas/DepartmentRequest'
         required: true
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Department'
-          description: ''
-        '400':
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties: {}
-                description: Unspecified response body
-          description: ''
-        '404':
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties: {}
-                description: Unspecified response body
-          description: ''
-        '403':
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties: {}
-                description: Unspecified response body
-          description: ''
-    patch:
-      operationId: departments_partial_update
-      description: 部分更新部门信息。需要 system.department.update 权限。
-      summary: 部分更新部门
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          title: 部门ID
-        description: A unique integer value identifying this 部门.
-        required: true
-      tags:
-      - 部门管理
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PatchedDepartmentRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/PatchedDepartmentRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/PatchedDepartmentRequest'
       security:
       - cookieAuth: []
       responses:
@@ -527,6 +527,46 @@ paths:
                 description: Unspecified response body
           description: ''
   /api/users/{id}/:
+    delete:
+      operationId: users_destroy
+      description: 删除用户。需要 system.user.delete 权限。
+      summary: 删除用户
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this 用户.
+        required: true
+      tags:
+      - 用户管理
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
     get:
       operationId: users_retrieve
       description: 根据用户ID获取用户详细信息，包含部门和角色信息。需要 system.user.view 权限。
@@ -565,10 +605,10 @@ paths:
                 additionalProperties: {}
                 description: Unspecified response body
           description: ''
-    delete:
-      operationId: users_destroy
-      description: 删除用户。需要 system.user.delete 权限。
-      summary: 删除用户
+    patch:
+      operationId: users_partial_update
+      description: 部分更新用户信息。需要 system.user.update 权限。
+      summary: 部分更新用户
       parameters:
       - in: path
         name: id
@@ -578,10 +618,27 @@ paths:
         required: true
       tags:
       - 用户管理
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserRequest'
       security:
       - cookieAuth: []
       responses:
-        '204':
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+        '400':
           content:
             application/json:
               schema:
@@ -630,63 +687,6 @@ paths:
             schema:
               $ref: '#/components/schemas/UserRequest'
         required: true
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-          description: ''
-        '400':
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties: {}
-                description: Unspecified response body
-          description: ''
-        '404':
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties: {}
-                description: Unspecified response body
-          description: ''
-        '403':
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties: {}
-                description: Unspecified response body
-          description: ''
-    patch:
-      operationId: users_partial_update
-      description: 部分更新用户信息。需要 system.user.update 权限。
-      summary: 部分更新用户
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this 用户.
-        required: true
-      tags:
-      - 用户管理
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PatchedUserRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/PatchedUserRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/PatchedUserRequest'
       security:
       - cookieAuth: []
       responses:
@@ -950,6 +950,55 @@ paths:
                 description: Unspecified response body
           description: ''
   /api/roles/{id}/:
+    delete:
+      operationId: roles_destroy
+      description: 删除角色。如果角色已被用户使用，则无法删除。需要 system.role.manage 权限。
+      summary: 删除角色
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+          title: 角色ID
+        description: A unique integer value identifying this 角色.
+        required: true
+      tags:
+      - 角色管理
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+          description: ''
     get:
       operationId: roles_retrieve
       description: 根据角色ID获取角色详细信息，包含权限和成员信息。需要 system.role.view 权限。
@@ -989,10 +1038,10 @@ paths:
                 additionalProperties: {}
                 description: Unspecified response body
           description: ''
-    delete:
-      operationId: roles_destroy
-      description: 删除角色。如果角色已被用户使用，则无法删除。需要 system.role.manage 权限。
-      summary: 删除角色
+    patch:
+      operationId: roles_partial_update
+      description: 部分更新角色信息。需要 system.role.manage 权限。
+      summary: 部分更新角色
       parameters:
       - in: path
         name: id
@@ -1003,16 +1052,25 @@ paths:
         required: true
       tags:
       - 角色管理
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedRoleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedRoleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedRoleRequest'
       security:
       - cookieAuth: []
       responses:
-        '204':
+        '200':
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: {}
-                description: Unspecified response body
+                $ref: '#/components/schemas/Role'
           description: ''
         '400':
           content:
@@ -1064,64 +1122,6 @@ paths:
             schema:
               $ref: '#/components/schemas/RoleRequest'
         required: true
-      security:
-      - cookieAuth: []
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Role'
-          description: ''
-        '400':
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties: {}
-                description: Unspecified response body
-          description: ''
-        '404':
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties: {}
-                description: Unspecified response body
-          description: ''
-        '403':
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties: {}
-                description: Unspecified response body
-          description: ''
-    patch:
-      operationId: roles_partial_update
-      description: 部分更新角色信息。需要 system.role.manage 权限。
-      summary: 部分更新角色
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-          title: 角色ID
-        description: A unique integer value identifying this 角色.
-        required: true
-      tags:
-      - 角色管理
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PatchedRoleRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/PatchedRoleRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/PatchedRoleRequest'
       security:
       - cookieAuth: []
       responses:
