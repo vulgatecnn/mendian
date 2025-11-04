@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'approval',
     'notification',
     'wechat_integration',
+    'data_analytics',  # 数据分析模块
 ]
 
 MIDDLEWARE = [
@@ -64,6 +65,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'system_management.permissions.PermissionMiddleware',  # 权限验证中间件
+    'data_analytics.middleware.AnalyticsLoggingMiddleware',  # 数据分析日志中间件
+    'data_analytics.middleware.DataCacheMiddleware',  # 数据缓存中间件
+    'data_analytics.middleware.AnalyticsSecurityMiddleware',  # 数据分析安全中间件
 ]
 
 ROOT_URLCONF = 'store_lifecycle.urls'
@@ -249,6 +253,10 @@ SPECTACULAR_SETTINGS = {
         {
             'name': '审计日志',
             'description': '系统操作日志查询'
+        },
+        {
+            'name': '数据分析',
+            'description': '经营大屏、数据报表和可视化分析'
         },
     ],
     'SERVERS': [

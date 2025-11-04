@@ -44,6 +44,9 @@ export { default as HomeService } from './homeService'
 // 消息通知服务
 export { default as MessageService } from './messageService'
 
+// 门店运营管理服务
+export { default as OperationService } from './operationService'
+
 // 文件上传服务
 export { default as UploadService } from './uploadService'
 

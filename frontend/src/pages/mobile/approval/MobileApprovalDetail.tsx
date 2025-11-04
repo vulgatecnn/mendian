@@ -54,8 +54,8 @@ export const MobileApprovalDetail: React.FC = () => {
     storeName: CACHE_STORES.PLANS,
     cacheKey: `approval_detail_${id}`,
     fetchFn: async () => {
-      const response = await ApprovalService.getApprovalDetail(Number(id));
-      return response.data;
+      const response = await ApprovalService.getInstance(Number(id));
+      return response;
     },
     expiresIn: CACHE_EXPIRY.SHORT
   });
@@ -74,15 +74,15 @@ export const MobileApprovalDetail: React.FC = () => {
 
       switch (currentAction) {
         case 'approve':
-          await ApprovalService.approveApproval(Number(id), values);
+          await ApprovalService.processApproval(Number(id), { action: 'approve', ...values });
           Message.success('审批通过');
           break;
         case 'reject':
-          await ApprovalService.rejectApproval(Number(id), values);
+          await ApprovalService.processApproval(Number(id), { action: 'reject', ...values });
           Message.success('审批拒绝');
           break;
         case 'transfer':
-          await ApprovalService.transferApproval(Number(id), values);
+          await ApprovalService.processApproval(Number(id), { action: 'transfer', ...values });
           Message.success('审批转交');
           break;
       }

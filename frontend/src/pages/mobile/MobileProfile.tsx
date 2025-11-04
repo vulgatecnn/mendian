@@ -52,7 +52,8 @@ export const MobileProfile: React.FC = () => {
 
       await ProfileService.changePassword({
         old_password: values.old_password,
-        new_password: values.new_password
+        new_password: values.new_password,
+        confirm_password: values.new_password
       });
 
       Message.success('密码修改成功');
@@ -83,7 +84,7 @@ export const MobileProfile: React.FC = () => {
       key: 'name',
       icon: <IconUser />,
       label: '姓名',
-      value: user?.real_name || user?.username,
+      value: user?.username,
       onClick: () => navigate('/mobile/profile/edit')
     },
     {
@@ -104,7 +105,7 @@ export const MobileProfile: React.FC = () => {
       key: 'department',
       icon: <IconSettings />,
       label: '部门',
-      value: user?.department?.dept_name || '未设置'
+      value: user?.department?.name || '未设置'
     }
   ];
 
@@ -142,11 +143,11 @@ export const MobileProfile: React.FC = () => {
       <Card className="mobile-profile-card">
         <div className="mobile-profile-header">
           <Avatar size={64}>
-            {user?.real_name?.charAt(0) || user?.username?.charAt(0)}
+            {user?.username?.charAt(0)}
           </Avatar>
           <div className="mobile-profile-info">
             <div className="mobile-profile-name">
-              {user?.real_name || user?.username}
+              {user?.username}
             </div>
             <div className="mobile-profile-role">
               {user?.roles?.map((r: any) => r.role_name).join('、') || '普通用户'}

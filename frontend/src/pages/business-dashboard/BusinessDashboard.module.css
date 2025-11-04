@@ -1,0 +1,332 @@
+/**
+ * 经营大屏样式
+ */
+
+.dashboard {
+  padding: 24px;
+  background: #f5f5f5;
+  min-height: 100vh;
+}
+
+.fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  background: #000;
+  color: #fff;
+}
+
+.fullscreen .header {
+  background: rgba(0, 0, 0, 0.8);
+  border-bottom: 1px solid #333;
+}
+
+.fullscreen .title {
+  color: #fff !important;
+}
+
+.fullscreen .subtitle {
+  color: #ccc !important;
+}
+
+/* 头部工具栏 */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 16px 24px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.headerLeft {
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  margin: 0 !important;
+  color: #1890ff;
+}
+
+.subtitle {
+  margin-top: 4px;
+  color: #666;
+  font-size: 14px;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+}
+
+/* 内容区域 */
+.content {
+  width: 100%;
+}
+
+.dashboardContent {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* 概览统计卡片 */
+.summaryCards {
+  margin-bottom: 0;
+}
+
+.summaryCard {
+  text-align: center;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.summaryCard:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.progressCard {
+  padding: 8px 0;
+}
+
+.progressTitle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.progressValue {
+  font-weight: 600;
+  color: #1890ff;
+}
+
+.progress {
+  margin-bottom: 8px;
+}
+
+.progressPercent {
+  font-size: 18px;
+  font-weight: 600;
+  color: #52c41a;
+}
+
+/* 图表行 */
+.chartsRow {
+  margin-bottom: 0;
+}
+
+/* 绩效卡片 */
+.performanceCard {
+  height: 400px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.performanceTable {
+  height: 300px;
+}
+
+.progressCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.progressText {
+  min-width: 45px;
+  text-align: right;
+  font-weight: 500;
+}
+
+/* 最近计划卡片 */
+.recentPlansCard {
+  height: 400px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 预警信息 */
+.alertsRow {
+  margin-bottom: 0;
+}
+
+.alertsCard {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.alertsList {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.alertItem {
+  margin-bottom: 12px;
+}
+
+.alertItem:last-child {
+  margin-bottom: 0;
+}
+
+/* 错误状态 */
+.errorContainer {
+  padding: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+/* 全屏模式下的样式调整 */
+.fullscreen .summaryCard {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid #333;
+}
+
+.fullscreen .performanceCard,
+.fullscreen .recentPlansCard,
+.fullscreen .alertsCard {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid #333;
+}
+
+.fullscreen .performanceCard .arco-card-header,
+.fullscreen .recentPlansCard .arco-card-header,
+.fullscreen .alertsCard .arco-card-header {
+  color: #fff;
+  border-bottom-color: #333;
+}
+
+.fullscreen .performanceTable .arco-table-th,
+.fullscreen .performanceTable .arco-table-td {
+  background: transparent;
+  color: #fff;
+  border-color: #333;
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+  .summaryCards .arco-col {
+    margin-bottom: 16px;
+  }
+  
+  .chartsRow .arco-col {
+    margin-bottom: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard {
+    padding: 16px;
+  }
+  
+  .header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+  
+  .headerRight {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .summaryCards .arco-col {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+  
+  .chartsRow .arco-col {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.summaryCard,
+.performanceCard,
+.recentPlansCard,
+.alertsCard {
+  animation: fadeIn 0.6s ease-out;
+}
+
+/* 加载状态 */
+.content .arco-spin {
+  min-height: 400px;
+}
+
+/* 表格优化 */
+.performanceTable .arco-table-tbody .arco-table-tr:hover {
+  background-color: rgba(24, 144, 255, 0.05);
+}
+
+.performanceTable .arco-table-thead .arco-table-th {
+  background-color: #fafafa;
+  font-weight: 600;
+}
+
+/* 进度条样式优化 */
+.progress .arco-progress-line-outer {
+  background-color: #f0f0f0;
+}
+
+.progressCell .arco-progress {
+  flex: 1;
+}
+
+.progressCell .arco-progress-line-outer {
+  height: 8px;
+  border-radius: 4px;
+}
+
+/* 统计数字动画 */
+.summaryCard .arco-statistic-value {
+  font-weight: 600;
+}
+
+/* 工具提示样式 */
+.arco-tooltip {
+  max-width: 300px;
+}
+
+/* 选择器样式 */
+.headerRight .arco-select,
+.headerRight .arco-picker {
+  border-radius: 6px;
+}
+
+/* 按钮样式 */
+.headerRight .arco-btn {
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.headerRight .arco-btn-primary {
+  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  border: none;
+}
+
+.headerRight .arco-btn-primary:hover {
+  background: linear-gradient(135deg, #40a9ff 0%, #1890ff 100%);
+}

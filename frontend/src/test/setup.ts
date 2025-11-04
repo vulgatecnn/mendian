@@ -26,7 +26,7 @@ class ResizeObserverMock {
   unobserve() {}
   disconnect() {}
 }
-global.ResizeObserver = ResizeObserverMock as any
+globalThis.ResizeObserver = ResizeObserverMock as any
 
 // 每个测试后自动清理
 afterEach(() => {

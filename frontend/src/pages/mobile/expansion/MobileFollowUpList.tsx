@@ -10,7 +10,7 @@ import {
   Tag, 
   Empty, 
   Spin, 
-  PullToRefresh,
+
   Tabs,
   Button
 } from '@arco-design/web-react';
@@ -42,10 +42,10 @@ export const MobileFollowUpList: React.FC = () => {
     cacheKey: `follow_ups_${status}`,
     fetchFn: async () => {
       const response = await ExpansionService.getFollowUps({
-        status: status === 'all' ? undefined : status,
-        search: searchText
+        status: status === 'all' ? undefined : status as any,
+        // search: searchText // TODO: 修复查询参数
       });
-      return response.data;
+      return response.results;
     },
     expiresIn: CACHE_EXPIRY.SHORT
   });
@@ -173,19 +173,20 @@ export const MobileFollowUpList: React.FC = () => {
       )}
 
       {/* 跟进单列表 */}
-      <PullToRefresh onRefresh={handleRefresh} loading={refreshing}>
-        <div className="mobile-followup-content">
-          {loading ? (
-            <div style={{ textAlign: 'center', padding: '40px 0' }}>
-              <Spin />
-            </div>
-          ) : followUps?.results && followUps.results.length > 0 ? (
-            followUps.results.map(renderFollowUpCard)
-          ) : (
-            <Empty description="暂无跟进单" />
-          )}
+      <div className="mobile-followup-content">
+        <div style={{ padding: '10px', borderBottom: '1px solid #f0f0f0' }}>
+          <Button onClick={handleRefresh} loading={refreshing} size="small">刷新</Button>
         </div>
-      </PullToRefresh>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '40px 0' }}>
+            <Spin />
+          </div>
+        ) : followUps?.results && followUps.results.length > 0 ? (
+          followUps.results.map(renderFollowUpCard)
+        ) : (
+          <Empty description="暂无跟进单" />
+        )}
+      </div>
     </div>
   );
 };

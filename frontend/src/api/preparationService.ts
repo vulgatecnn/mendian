@@ -174,6 +174,15 @@ export class PreparationService {
     })
   }
 
+  /**
+   * 更新交付项列表
+   */
+  static async updateDeliveryItems(id: number, items: any[]): Promise<DeliveryChecklist> {
+    return request.put(`/preparation/delivery/${id}/items/`, {
+      delivery_items: items
+    })
+  }
+
   // 基础数据接口
 
   /**

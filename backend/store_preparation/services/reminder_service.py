@@ -25,7 +25,7 @@ class MilestoneReminderService:
         
         # 查询即将到期的里程碑（提前3天提醒）
         upcoming_milestones = Milestone.objects.filter(
-            Q(status=Milestone.STATUS_PENDING) | Q(status=Milestone.STATUS_IN_PROGRESS),
+            Q(status='pending') | Q(status='in_progress'),
             planned_date__lte=reminder_date,
             planned_date__gte=today,
             reminder_sent=False
@@ -86,21 +86,21 @@ class MilestoneReminderService:
             content += f'（还有 {days_left} 天）'
         
         # 创建消息通知
-        # 注意：这里需要导入 notification 模块的服务
-        # 如果 notification 模块还未实现，可以先使用简单的实现
         try:
-            from system_management.services.notification_service import NotificationService
-            NotificationService.send_notification(
-                recipients=recipients,
-                title=title,
-                content=content,
-                link=f'/preparation/construction/{milestone.construction_order.id}/',
-                notification_type='milestone_reminder'
-            )
-        except ImportError:
-            # 如果 NotificationService 还未实现，使用备用方案
-            # 这里可以直接创建 Message 对象（如果 Message 模型已存在）
-            pass
+            from notification.models import Message
+            for recipient in recipients:
+                Message.objects.create(
+                    recipient=recipient,
+                    title=title,
+                    content=content,
+                    message_type='milestone_reminder',
+                    link=f'/preparation/construction/{milestone.construction_order.id}/'
+                )
+        except Exception as e:
+            # 记录错误但不影响主流程
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f'创建里程碑提醒消息失败: {str(e)}')
     
     def _get_reminder_recipients(self, milestone):
         """

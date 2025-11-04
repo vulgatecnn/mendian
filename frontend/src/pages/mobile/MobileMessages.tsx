@@ -10,7 +10,7 @@ import {
   Tag, 
   Empty, 
   Spin, 
-  PullToRefresh,
+
   Badge,
   Button,
   Message as ArcoMessage
@@ -44,7 +44,7 @@ export const MobileMessages: React.FC = () => {
       const response = await MessageService.getMessages({
         is_read: activeTab === 'unread' ? false : activeTab === 'read' ? true : undefined
       });
-      return response.data;
+      return response.results;
     },
     expiresIn: CACHE_EXPIRY.SHORT
   });
@@ -134,7 +134,7 @@ export const MobileMessages: React.FC = () => {
             type="text"
             size="small"
             icon={<IconCheckCircle />}
-            onClick={(e) => handleMarkRead(message.id, e)}
+            onClick={(e: any) => handleMarkRead(message.id, e)}
           >
             标记已读
           </Button>
@@ -172,19 +172,20 @@ export const MobileMessages: React.FC = () => {
       )}
 
       {/* 消息列表 */}
-      <PullToRefresh onRefresh={handleRefresh} loading={refreshing}>
-        <div className="mobile-messages-content">
-          {loading ? (
-            <div style={{ textAlign: 'center', padding: '40px 0' }}>
-              <Spin />
-            </div>
-          ) : messages?.results && messages.results.length > 0 ? (
-            messages.results.map(renderMessageCard)
-          ) : (
-            <Empty description="暂无消息" />
-          )}
+      <div className="mobile-messages-content">
+        <div style={{ padding: '10px', borderBottom: '1px solid #f0f0f0' }}>
+          <Button onClick={handleRefresh} loading={refreshing} size="small">刷新</Button>
         </div>
-      </PullToRefresh>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '40px 0' }}>
+            <Spin />
+          </div>
+        ) : messages?.results && messages.results.length > 0 ? (
+          messages.results.map(renderMessageCard)
+        ) : (
+          <Empty description="暂无消息" />
+        )}
+      </div>
     </div>
   );
 };

@@ -781,6 +781,7 @@ export interface ConstructionOrderQueryParams extends PaginationParams {
   start_date?: string
   end_date?: string
   created_by?: number
+  acceptance_result?: AcceptanceResult
   ordering?: string
 }
 
@@ -815,9 +816,12 @@ export type DeliveryStatus = 'preparing' | 'in_progress' | 'completed'
 export interface DeliveryItem {
   id?: number
   name: string
-  category: string
-  quantity: number
-  unit: string
+  category?: string
+  type?: string
+  quantity?: number
+  unit?: string
+  description?: string
+  is_required?: boolean
   is_completed: boolean
   completed_at?: string
   remarks?: string
@@ -1332,4 +1336,155 @@ export interface BudgetQueryParams extends PaginationParams {
   year?: number
   is_active?: boolean
   ordering?: string
+}
+
+// 门店运营管理相关类型
+
+// 付款状态
+export type PaymentStatus = 'pending' | 'processing' | 'paid' | 'overdue' | 'cancelled'
+
+// 付款类型
+export type PaymentType = 'rent' | 'decoration' | 'equipment' | 'deposit' | 'other'
+
+// 付款记录
+export interface PaymentRecord {
+  id: number
+  payment_no: string
+  store_name: string
+  store_code: string
+  payment_type: PaymentType
+  amount: number
+  due_date: string
+  payment_date?: string
+  status: PaymentStatus
+  supplier_name?: string
+  contract_no?: string
+  description?: string
+  attachments?: string[]
+  created_by: string
+  created_at: string
+  updated_at: string
+}
+
+// 付款记录表单数据
+export interface PaymentRecordFormData {
+  store_name: string
+  store_code: string
+  payment_type: PaymentType
+  amount: number
+  due_date: string
+  payment_date?: string
+  supplier_name?: string
+  contract_no?: string
+  description?: string
+}
+
+// 付款记录查询参数
+export interface PaymentQueryParams extends PaginationParams {
+  store_name?: string
+  store_code?: string
+  payment_type?: PaymentType
+  status?: PaymentStatus
+  supplier_name?: string
+  contract_no?: string
+  due_date_start?: string
+  due_date_end?: string
+  amount_min?: number
+  amount_max?: number
+  ordering?: string
+}
+
+// 资产状态
+export type AssetStatus = 'normal' | 'maintenance' | 'repair' | 'scrapped' | 'lost'
+
+// 资产类型
+export type AssetType = 'equipment' | 'furniture' | 'decoration' | 'electronics' | 'other'
+
+// 维护类型
+export type MaintenanceType = 'routine' | 'repair' | 'upgrade'
+
+// 资产记录
+export interface AssetRecord {
+  id: number
+  asset_no: string
+  asset_name: string
+  asset_type: AssetType
+  store_name: string
+  store_code: string
+  brand?: string
+  model?: string
+  purchase_date: string
+  purchase_price: number
+  current_value: number
+  depreciation_rate: number
+  status: AssetStatus
+  location: string
+  responsible_person: string
+  supplier_name?: string
+  warranty_period?: number
+  warranty_end_date?: string
+  description?: string
+  images?: string[]
+  qr_code?: string
+  created_by: string
+  created_at: string
+  updated_at: string
+}
+
+// 资产记录表单数据
+export interface AssetRecordFormData {
+  asset_name: string
+  asset_type: AssetType
+  store_name: string
+  store_code: string
+  brand?: string
+  model?: string
+  purchase_date: string
+  purchase_price: number
+  current_value: number
+  depreciation_rate?: number
+  status: AssetStatus
+  location: string
+  responsible_person: string
+  supplier_name?: string
+  warranty_period?: number
+  warranty_end_date?: string
+  description?: string
+}
+
+// 资产查询参数
+export interface AssetQueryParams extends PaginationParams {
+  asset_name?: string
+  asset_no?: string
+  asset_type?: AssetType
+  status?: AssetStatus
+  store_name?: string
+  store_code?: string
+  responsible_person?: string
+  brand?: string
+  ordering?: string
+}
+
+// 维护记录
+export interface MaintenanceRecord {
+  id: number
+  asset_id: number
+  maintenance_type: MaintenanceType
+  maintenance_date: string
+  cost: number
+  description: string
+  technician: string
+  next_maintenance_date?: string
+  created_at: string
+}
+
+// 维护记录表单数据
+export interface MaintenanceRecordFormData {
+  asset_id: number
+  maintenance_type: MaintenanceType
+  maintenance_date: string
+  cost: number
+  description: string
+  technician: string
+  next_maintenance_date?: string
 }

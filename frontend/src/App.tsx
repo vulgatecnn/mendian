@@ -4,8 +4,9 @@ import { Layout, Dropdown, Menu, Avatar, Space, Badge } from '@arco-design/web-r
 import { IconUser, IconPoweroff, IconSettings, IconNotification } from '@arco-design/web-react/icon'
 import { AuthProvider, PermissionProvider, StorePlanProvider, useAuth } from './contexts'
 import { MainNavigation } from './components'
-import { AppRoutes } from './routes'
+import { PCRoutes, MobileRoutes } from './routes'
 import messageService from './api/messageService'
+import { isMobileEnvironment, convertPCRouteToMobile } from './routes/utils'
 import './App.css'
 
 const { Header, Content, Sider } = Layout
@@ -14,8 +15,17 @@ const AppLayout: React.FC = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const { user, logout, isAuthenticated } = useAuth()
-  const isLoginPage = location.pathname === '/login'
+  const isLoginPage = location.pathname === '/login' || location.pathname === '/mobile/login'
+  const isMobile = isMobileEnvironment()
   const [unreadCount, setUnreadCount] = useState(0)
+
+  // 如果是移动端环境但访问PC端路由，重定向到移动端
+  useEffect(() => {
+    if (isMobile && !location.pathname.startsWith('/mobile') && isAuthenticated) {
+      const mobilePath = convertPCRouteToMobile(location.pathname)
+      navigate(mobilePath, { replace: true })
+    }
+  }, [isMobile, location.pathname, isAuthenticated, navigate])
 
   // 加载未读消息数量
   const loadUnreadCount = async () => {
@@ -70,10 +80,17 @@ const AppLayout: React.FC = () => {
     </Menu>
   )
 
-  if (isLoginPage || !isAuthenticated) {
-    return <AppRoutes />
+  // 如果是移动端环境，直接返回移动端路由
+  if (isMobile) {
+    return <MobileRoutes />
   }
 
+  // PC端登录页面或未认证状态
+  if (isLoginPage || !isAuthenticated) {
+    return <PCRoutes />
+  }
+
+  // PC端主布局
   return (
     <Layout className="layout">
       <Header className="header">
@@ -117,7 +134,7 @@ const AppLayout: React.FC = () => {
           <MainNavigation mode="vertical" />
         </Sider>
         <Content className="content">
-          <AppRoutes />
+          <PCRoutes />
         </Content>
       </Layout>
     </Layout>

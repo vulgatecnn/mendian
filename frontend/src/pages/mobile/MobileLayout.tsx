@@ -4,7 +4,7 @@
  */
 import React from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Layout, TabBar, Badge } from '@arco-design/web-react';
+import { Layout, Badge } from '@arco-design/web-react';
 import { 
   IconHome, 
   IconFile, 
@@ -34,7 +34,7 @@ export const MobileLayout: React.FC = () => {
     cacheKey: 'unread_message_count',
     fetchFn: async () => {
       const response = await MessageService.getUnreadCount();
-      return response.data || 0;
+      return (response as any).count || 0;
     },
     expiresIn: CACHE_EXPIRY.SHORT,
     autoFetch: true
@@ -89,7 +89,7 @@ export const MobileLayout: React.FC = () => {
           <h1 className="mobile-header-title">好饭碗门店管理</h1>
           {user && (
             <div className="mobile-header-user">
-              {user.real_name || user.username}
+              {user.username}
             </div>
           )}
         </div>
@@ -100,18 +100,27 @@ export const MobileLayout: React.FC = () => {
       </Content>
 
       <Footer className="mobile-footer">
-        <TabBar
-          activeTab={getActiveTab()}
-          onChange={handleTabChange}
-        >
+        <div style={{ display: 'flex', justifyContent: 'space-around', padding: '10px 0', borderTop: '1px solid #f0f0f0' }}>
           {tabs.map(tab => (
-            <TabBar.Item key={tab.key} title={tab.title} icon={tab.icon}>
-              {tab.badge && (
-                <Badge count={tab.badge} dot={tab.badge > 99} />
-              )}
-            </TabBar.Item>
+            <div 
+              key={tab.key} 
+              style={{ 
+                textAlign: 'center', 
+                cursor: 'pointer',
+                color: getActiveTab() === tab.key ? '#1890ff' : '#666'
+              }}
+              onClick={() => handleTabChange(tab.key)}
+            >
+              <div style={{ fontSize: '20px', marginBottom: '4px' }}>
+                {tab.icon}
+                {tab.badge && (
+                  <Badge count={tab.badge} dot={tab.badge > 99} style={{ marginLeft: '4px' }} />
+                )}
+              </div>
+              <div style={{ fontSize: '12px' }}>{tab.title}</div>
+            </div>
           ))}
-        </TabBar>
+        </div>
       </Footer>
     </Layout>
   );

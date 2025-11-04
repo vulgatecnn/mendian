@@ -4,7 +4,7 @@
  */
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, Grid, Badge, Empty, Spin, PullToRefresh } from '@arco-design/web-react';
+import { Card, Grid, Badge, Empty, Spin, Button } from '@arco-design/web-react';
 import { 
   IconFile, 
   IconCalendar, 
@@ -38,7 +38,7 @@ export const MobileHome: React.FC = () => {
     cacheKey: 'home_todos',
     fetchFn: async () => {
       const response = await HomeService.getTodos();
-      return response.data || [];
+      return response.results || [];
     },
     expiresIn: CACHE_EXPIRY.SHORT
   });
@@ -141,36 +141,38 @@ export const MobileHome: React.FC = () => {
   };
 
   return (
-    <PullToRefresh onRefresh={handleRefresh} loading={refreshing}>
-      <div className="mobile-home">
-        {/* 快捷入口 */}
-        <Card className="mobile-shortcuts-card" title="快捷入口" bordered={false}>
-          <Row gutter={[16, 16]}>
-            {shortcuts.map(shortcut => (
-              <Col key={shortcut.key} span={8}>
-                <div
-                  className="mobile-shortcut-item"
-                  onClick={() => navigate(shortcut.path)}
-                >
-                  <div 
-                    className="mobile-shortcut-icon"
-                    style={{ backgroundColor: `${shortcut.color}15`, color: shortcut.color }}
-                  >
-                    {shortcut.icon}
-                  </div>
-                  <div className="mobile-shortcut-title">{shortcut.title}</div>
-                </div>
-              </Col>
-            ))}
-          </Row>
-        </Card>
-
-        {/* 待办事项 */}
-        <Card className="mobile-todos-card" title="待办事项" bordered={false}>
-          {renderTodos()}
-        </Card>
+    <div className="mobile-home">
+      <div style={{ padding: '10px', borderBottom: '1px solid #f0f0f0' }}>
+        <Button onClick={handleRefresh} loading={refreshing} size="small">刷新</Button>
       </div>
-    </PullToRefresh>
+      
+      {/* 快捷入口 */}
+      <Card className="mobile-shortcuts-card" title="快捷入口" bordered={false}>
+        <Row gutter={[16, 16]}>
+          {shortcuts.map(shortcut => (
+            <Col key={shortcut.key} span={8}>
+              <div
+                className="mobile-shortcut-item"
+                onClick={() => navigate(shortcut.path)}
+              >
+                <div 
+                  className="mobile-shortcut-icon"
+                  style={{ backgroundColor: `${shortcut.color}15`, color: shortcut.color }}
+                >
+                  {shortcut.icon}
+                </div>
+                <div className="mobile-shortcut-title">{shortcut.title}</div>
+              </div>
+            </Col>
+          ))}
+        </Row>
+      </Card>
+
+      {/* 待办事项 */}
+      <Card className="mobile-todos-card" title="待办事项" bordered={false}>
+        {renderTodos()}
+      </Card>
+    </div>
   );
 };
 

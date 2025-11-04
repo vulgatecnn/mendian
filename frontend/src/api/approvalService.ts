@@ -101,6 +101,13 @@ class ApprovalService {
   }
 
   /**
+   * 获取我发起的审批列表
+   */
+  async getInitiatedInstances(params?: ApprovalInstanceQueryParams): Promise<PaginatedResponse<ApprovalInstance>> {
+    return request.get('/approval/instances/my-initiated/', { params })
+  }
+
+  /**
    * 获取全部审批列表
    */
   async getAllInstances(params?: ApprovalInstanceQueryParams): Promise<PaginatedResponse<ApprovalInstance>> {

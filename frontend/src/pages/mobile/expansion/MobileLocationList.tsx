@@ -9,11 +9,10 @@ import {
   Input, 
   Tag, 
   Empty, 
-  Spin, 
-  PullToRefresh,
-  InfiniteScroll 
+  Spin,
+  Button
 } from '@arco-design/web-react';
-import { IconSearch, IconEnvironment } from '@arco-design/web-react/icon';
+import { IconSearch, IconLocation } from '@arco-design/web-react/icon';
 import { useOfflineData } from '../../../hooks/useOfflineData';
 import { CACHE_STORES, CACHE_EXPIRY } from '../../../utils/offlineCache';
 import ExpansionService from '../../../api/expansionService';
@@ -42,9 +41,9 @@ export const MobileLocationList: React.FC = () => {
       const response = await ExpansionService.getLocations({
         page,
         page_size: 20,
-        search: searchText
+        name: searchText
       });
-      return response.data;
+      return response.results;
     },
     expiresIn: CACHE_EXPIRY.MEDIUM
   });
@@ -98,7 +97,7 @@ export const MobileLocationList: React.FC = () => {
       
       <div className="mobile-location-info">
         <div className="mobile-location-info-item">
-          <IconEnvironment />
+          <IconLocation />
           <span>{location.province} {location.city} {location.district}</span>
         </div>
         <div className="mobile-location-info-item">
@@ -138,25 +137,27 @@ export const MobileLocationList: React.FC = () => {
       )}
 
       {/* 点位列表 */}
-      <PullToRefresh onRefresh={handleRefresh} loading={refreshing}>
-        <div className="mobile-location-content">
-          {loading && page === 1 ? (
-            <div style={{ textAlign: 'center', padding: '40px 0' }}>
-              <Spin />
-            </div>
-          ) : locations?.results && locations.results.length > 0 ? (
-            <InfiniteScroll
-              onReachBottom={handleLoadMore}
-              hasMore={hasMore}
-              loader={<Spin style={{ display: 'block', margin: '20px auto' }} />}
-            >
-              {locations.results.map(renderLocationCard)}
-            </InfiniteScroll>
-          ) : (
-            <Empty description="暂无候选点位" />
-          )}
+      <div className="mobile-location-content">
+        <div style={{ padding: '10px', borderBottom: '1px solid #f0f0f0' }}>
+          <Button onClick={handleRefresh} loading={refreshing} size="small">刷新</Button>
         </div>
-      </PullToRefresh>
+        {loading && page === 1 ? (
+          <div style={{ textAlign: 'center', padding: '40px 0' }}>
+            <Spin />
+          </div>
+        ) : locations?.results && locations.results.length > 0 ? (
+          <div>
+            {locations.results.map(renderLocationCard)}
+            {hasMore && (
+              <div style={{ textAlign: 'center', padding: '20px' }}>
+                <Button onClick={handleLoadMore} loading={loading}>加载更多</Button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <Empty description="暂无候选点位" />
+        )}
+      </div>
     </div>
   );
 };

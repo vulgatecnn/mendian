@@ -12,7 +12,7 @@ import {
   IconCheckCircle,
   IconHome,
   IconCalendar,
-  IconBarChart,
+  IconDashboard,
   IconSettings
 } from '@arco-design/web-react/icon';
 import './mobile.css';

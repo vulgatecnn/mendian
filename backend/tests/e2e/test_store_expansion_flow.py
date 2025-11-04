@@ -39,8 +39,8 @@ class TestStoreExpansionFlow:
         
         # 创建报店审批模板
         self.approval_template = ApprovalTemplate.objects.create(
-            code='STORE_REPORT',
-            name='报店审批',
+            template_code='STORE_REPORT',
+            template_name='报店审批',
             description='门店报店审批流程',
             form_schema={
                 'fields': [
@@ -62,7 +62,7 @@ class TestStoreExpansionFlow:
                     }
                 ]
             },
-            is_active=True,
+            status='active',
             created_by=test_user
         )
         
@@ -95,7 +95,7 @@ class TestStoreExpansionFlow:
         # 验证候选点位已创建
         location = CandidateLocation.objects.get(id=location_id)
         assert location.name == '测试候选点位'
-        assert location.status == 'active'
+        assert location.status == 'available'
         
         # 步骤2：创建跟进单
         follow_up_data = {

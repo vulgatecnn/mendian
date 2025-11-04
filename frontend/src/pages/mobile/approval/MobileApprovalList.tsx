@@ -10,8 +10,8 @@ import {
   Tag, 
   Empty, 
   Spin, 
-  PullToRefresh,
-  Badge
+  Badge,
+  Button
 } from '@arco-design/web-react';
 import { IconCalendar, IconUser } from '@arco-design/web-react/icon';
 import { useOfflineData } from '../../../hooks/useOfflineData';
@@ -42,18 +42,18 @@ export const MobileApprovalList: React.FC = () => {
       let response;
       switch (activeTab) {
         case 'pending':
-          response = await ApprovalService.getPendingApprovals();
+          response = await ApprovalService.getPendingInstances();
           break;
         case 'processed':
-          response = await ApprovalService.getProcessedApprovals();
+          response = await ApprovalService.getProcessedInstances();
           break;
         case 'cc':
-          response = await ApprovalService.getCCApprovals();
+          response = await ApprovalService.getCCInstances();
           break;
         default:
-          response = await ApprovalService.getAllApprovals();
+          response = await ApprovalService.getAllInstances();
       }
-      return response.data;
+      return response;
     },
     expiresIn: CACHE_EXPIRY.SHORT
   });
@@ -145,19 +145,20 @@ export const MobileApprovalList: React.FC = () => {
       )}
 
       {/* 审批列表 */}
-      <PullToRefresh onRefresh={handleRefresh} loading={refreshing}>
-        <div className="mobile-approval-content">
-          {loading ? (
-            <div style={{ textAlign: 'center', padding: '40px 0' }}>
-              <Spin />
-            </div>
-          ) : approvals?.results && approvals.results.length > 0 ? (
-            approvals.results.map(renderApprovalCard)
-          ) : (
-            <Empty description="暂无审批" />
-          )}
+      <div className="mobile-approval-content">
+        <div style={{ padding: '10px', borderBottom: '1px solid #f0f0f0' }}>
+          <Button onClick={handleRefresh} loading={refreshing} size="small">刷新</Button>
         </div>
-      </PullToRefresh>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '40px 0' }}>
+            <Spin />
+          </div>
+        ) : approvals?.results && approvals.results.length > 0 ? (
+          approvals.results.map(renderApprovalCard)
+        ) : (
+          <Empty description="暂无审批" />
+        )}
+      </div>
     </div>
   );
 };

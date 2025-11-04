@@ -138,6 +138,7 @@ class StoreProfileCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = StoreProfile
         fields = [
+            'id',
             'store_code',
             'store_name',
             'province',

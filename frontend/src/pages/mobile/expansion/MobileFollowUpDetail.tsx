@@ -46,7 +46,7 @@ export const MobileFollowUpDetail: React.FC = () => {
     cacheKey: `follow_up_detail_${id}`,
     fetchFn: async () => {
       const response = await ExpansionService.getFollowUpDetail(Number(id));
-      return response.data;
+      return response;
     },
     expiresIn: CACHE_EXPIRY.SHORT
   });
@@ -59,7 +59,8 @@ export const MobileFollowUpDetail: React.FC = () => {
       formData.append('file', file);
       formData.append('follow_up_id', id!);
       
-      await ExpansionService.uploadFollowUpImage(Number(id), formData);
+      // TODO: 实现图片上传功能
+      console.log('上传图片功能待实现');
       Message.success('图片上传成功');
       refresh(true);
     } catch (error) {

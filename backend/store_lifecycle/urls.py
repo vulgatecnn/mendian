@@ -40,4 +40,7 @@ urlpatterns = [
     
     # 企业微信集成模块 API
     path('api/', include('wechat_integration.urls')),
+    
+    # 数据分析模块 API
+    path('api/analytics/', include('data_analytics.urls')),
 ]

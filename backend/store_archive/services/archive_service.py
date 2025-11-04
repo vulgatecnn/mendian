@@ -66,8 +66,8 @@ class StoreArchiveService:
             'address': store.address,
             'business_region': {
                 'id': store.business_region.id,
-                'region_code': store.business_region.region_code,
-                'region_name': store.business_region.region_name,
+                'region_code': store.business_region.code,
+                'region_name': store.business_region.name,
             } if store.business_region else None,
             'store_type': store.store_type,
             'store_type_display': store.get_store_type_display(),
@@ -79,18 +79,18 @@ class StoreArchiveService:
             'closing_date': store.closing_date.isoformat() if store.closing_date else None,
             'store_manager': {
                 'id': store.store_manager.id,
-                'real_name': store.store_manager.real_name,
+                'real_name': store.store_manager.get_full_name(),
                 'phone': store.store_manager.phone,
             } if store.store_manager else None,
             'business_manager': {
                 'id': store.business_manager.id,
-                'real_name': store.business_manager.real_name,
+                'real_name': store.business_manager.get_full_name(),
                 'phone': store.business_manager.phone,
             } if store.business_manager else None,
             'remarks': store.remarks,
             'created_by': {
                 'id': store.created_by.id,
-                'real_name': store.created_by.real_name,
+                'real_name': store.created_by.get_full_name(),
             } if store.created_by else None,
             'created_at': store.created_at.isoformat(),
             'updated_at': store.updated_at.isoformat(),
@@ -145,9 +145,10 @@ class StoreArchiveService:
             # 法人主体
             'legal_entity': {
                 'id': follow_up_record.legal_entity.id,
-                'entity_code': follow_up_record.legal_entity.entity_code,
-                'entity_name': follow_up_record.legal_entity.entity_name,
-                'unified_social_credit_code': follow_up_record.legal_entity.unified_social_credit_code,
+                'entity_code': follow_up_record.legal_entity.code,
+                'name': follow_up_record.legal_entity.name,
+                'entity_name': follow_up_record.legal_entity.name,
+                'unified_social_credit_code': follow_up_record.legal_entity.credit_code,
             } if follow_up_record.legal_entity else None,
             
             'created_at': follow_up_record.created_at.isoformat(),
@@ -177,8 +178,8 @@ class StoreArchiveService:
         
         # 获取交付清单
         delivery_checklist = None
-        if hasattr(construction_order, 'deliverychecklist'):
-            dc = construction_order.deliverychecklist
+        if hasattr(construction_order, 'delivery_checklist'):
+            dc = construction_order.delivery_checklist
             delivery_checklist = {
                 'id': dc.id,
                 'checklist_no': dc.checklist_no,
@@ -210,8 +211,8 @@ class StoreArchiveService:
             # 供应商
             'supplier': {
                 'id': construction_order.supplier.id,
-                'supplier_code': construction_order.supplier.supplier_code,
-                'supplier_name': construction_order.supplier.supplier_name,
+                'supplier_code': construction_order.supplier.code,
+                'supplier_name': construction_order.supplier.name,
                 'contact_person': construction_order.supplier.contact_person,
                 'contact_phone': construction_order.supplier.contact_phone,
             } if construction_order.supplier else None,

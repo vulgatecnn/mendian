@@ -96,15 +96,18 @@ def api_client():
 
 
 @pytest.fixture
-def authenticated_client(api_client, test_user):
+def authenticated_client(test_user):
     """创建已认证的API客户端"""
+    from django.test import Client
+    client = Client()
+    
     # 登录用户
     login_data = {
         "login_type": "username_password",
         "username": "testuser",
         "password": "testpass123"
     }
-    response = api_client.post(
+    response = client.post(
         '/api/auth/login/',
         data=login_data,
         content_type='application/json'
@@ -112,21 +115,24 @@ def authenticated_client(api_client, test_user):
     
     if response.status_code == 200:
         token = response.json()['data']['access_token']
-        api_client.defaults = {'HTTP_AUTHORIZATION': f'Bearer {token}'}
+        client.defaults = {'HTTP_AUTHORIZATION': f'Bearer {token}'}
     
-    return api_client
+    return client
 
 
 @pytest.fixture
-def admin_client(api_client, admin_user):
+def admin_client(admin_user):
     """创建管理员已认证的API客户端"""
+    from django.test import Client
+    client = Client()
+    
     # 登录管理员
     login_data = {
         "login_type": "username_password",
         "username": "adminuser",
         "password": "adminpass123"
     }
-    response = api_client.post(
+    response = client.post(
         '/api/auth/login/',
         data=login_data,
         content_type='application/json'
@@ -134,9 +140,9 @@ def admin_client(api_client, admin_user):
     
     if response.status_code == 200:
         token = response.json()['data']['access_token']
-        api_client.defaults = {'HTTP_AUTHORIZATION': f'Bearer {token}'}
+        client.defaults = {'HTTP_AUTHORIZATION': f'Bearer {token}'}
     
-    return api_client
+    return client
 
 
 # Pytest标记

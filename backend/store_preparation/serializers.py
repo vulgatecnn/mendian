@@ -82,7 +82,7 @@ class ConstructionOrderSerializer(serializers.ModelSerializer):
         if obj.supplier:
             return {
                 'id': obj.supplier.id,
-                'supplier_name': obj.supplier.supplier_name,
+                'supplier_name': obj.supplier.name,
                 'contact_person': obj.supplier.contact_person,
                 'contact_phone': obj.supplier.contact_phone
             }
@@ -128,7 +128,7 @@ class ConstructionOrderSerializer(serializers.ModelSerializer):
 class ConstructionOrderListSerializer(serializers.ModelSerializer):
     """工程单列表序列化器（简化版）"""
     
-    supplier_name = serializers.CharField(source='supplier.supplier_name', read_only=True)
+    supplier_name = serializers.CharField(source='supplier.name', read_only=True)
     created_by_name = serializers.SerializerMethodField()
     milestone_count = serializers.SerializerMethodField()
     

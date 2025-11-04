@@ -8,6 +8,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django.db import transaction
 
+from common.permissions import DataPermissionMixin, RegionPermissionMixin
 from .models import CandidateLocation, FollowUpRecord, ProfitCalculation
 from .serializers import (
     CandidateLocationSerializer,
@@ -23,7 +24,7 @@ from .services.profit_calculation_engine import ProfitCalculationEngine, Formula
 from .services.warning_service import LowContributionWarningService
 
 
-class CandidateLocationViewSet(viewsets.ModelViewSet):
+class CandidateLocationViewSet(DataPermissionMixin, RegionPermissionMixin, viewsets.ModelViewSet):
     """
     候选点位管理视图集
     
@@ -44,6 +45,18 @@ class CandidateLocationViewSet(viewsets.ModelViewSet):
         """创建时自动设置创建人"""
         serializer.save(created_by=self.request.user)
     
+    def create(self, request, *args, **kwargs):
+        """重写创建方法，返回统一格式"""
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        
+        return Response({
+            'success': True,
+            'message': '创建成功',
+            'data': serializer.data
+        }, status=status.HTTP_201_CREATED)
+    
     def destroy(self, request, *args, **kwargs):
         """删除前检查是否已关联跟进单"""
         instance = self.get_object()
@@ -62,7 +75,7 @@ class CandidateLocationViewSet(viewsets.ModelViewSet):
         return super().destroy(request, *args, **kwargs)
 
 
-class FollowUpRecordViewSet(viewsets.ModelViewSet):
+class FollowUpRecordViewSet(DataPermissionMixin, RegionPermissionMixin, viewsets.ModelViewSet):
     """
     铺位跟进单管理视图集
     
@@ -81,6 +94,9 @@ class FollowUpRecordViewSet(viewsets.ModelViewSet):
     ordering_fields = ['created_at', 'survey_date', 'contract_date']
     ordering = ['-created_at']
     
+    # 指定区域字段为 location__business_region
+    region_field = 'location__business_region'
+    
     def get_serializer_class(self):
         """根据操作返回不同的序列化器"""
         if self.action == 'list':
@@ -90,6 +106,18 @@ class FollowUpRecordViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         """创建时自动设置创建人"""
         serializer.save(created_by=self.request.user)
+    
+    def create(self, request, *args, **kwargs):
+        """重写创建方法，返回统一格式"""
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        
+        return Response({
+            'success': True,
+            'message': '创建成功',
+            'data': serializer.data
+        }, status=status.HTTP_201_CREATED)
     
     @action(detail=True, methods=['post'], url_path='survey')
     def record_survey(self, request, pk=None):
@@ -258,7 +286,7 @@ class FollowUpRecordViewSet(viewsets.ModelViewSet):
         follow_up.location.save()
         
         return Response({
-            'code': 0,
+            'success': True,
             'message': '已标记为放弃跟进',
             'data': FollowUpRecordSerializer(follow_up).data
         })

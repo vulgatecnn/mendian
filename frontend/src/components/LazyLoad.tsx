@@ -105,7 +105,7 @@ export function createLazyComponent<T extends ComponentType<any>>(
   const LazyComponent = React.lazy(importFunc);
 
   return (props: React.ComponentProps<T>) => (
-    <LazyLoad component={LazyComponent} fallback={fallback} {...props} />
+    <LazyLoad component={LazyComponent} fallback={fallback} />
   );
 }
 

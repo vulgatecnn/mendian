@@ -194,8 +194,8 @@ class TestStoreArchiveFlow:
             'district': '朝阳区',
             'address': '测试路100号',
             'business_region': self.region.id,
-            'store_type': '直营店',
-            'operation_mode': '自营',
+            'store_type': 'standard',
+            'operation_mode': 'direct',
             'follow_up_record': follow_up.id,
             'construction_order': construction.id,
             'status': 'preparing',
@@ -248,7 +248,7 @@ class TestStoreArchiveFlow:
             'opening_date': timezone.now().date().isoformat()
         }
         
-        response = authenticated_client.put(
+        response = authenticated_client.patch(
             f'/api/archive/stores/{store_id}/',
             data=json.dumps(update_data),
             content_type='application/json'
@@ -291,8 +291,8 @@ class TestStoreArchiveFlow:
             'district': '浦东新区',
             'address': '测试路200号',
             'business_region': self.region.id,
-            'store_type': '加盟店',
-            'operation_mode': '加盟',
+            'store_type': 'standard',
+            'operation_mode': 'franchise',
             'status': 'operating',
             'opening_date': timezone.now().date().isoformat()
         }
@@ -309,6 +309,8 @@ class TestStoreArchiveFlow:
         # 查看完整档案
         response = authenticated_client.get(f'/api/archive/stores/{store_id}/full/')
         
+        if response.status_code != 200:
+            print(f"Error response: {response.json()}")  # 调试信息
         assert response.status_code == 200
         full_info = response.json()['data']
         
@@ -350,8 +352,8 @@ class TestStoreArchiveFlow:
             district='南山区',
             address='测试路300号',
             business_region=self.region,
-            store_type='直营店',
-            operation_mode='自营',
+            store_type='standard',
+            operation_mode='direct',
             status='operating',
             created_by=other_user
         )
@@ -382,8 +384,8 @@ class TestStoreArchiveFlow:
             district='西湖区',
             address='测试路400号',
             business_region=self.region,
-            store_type='直营店',
-            operation_mode='自营',
+            store_type='standard',
+            operation_mode='direct',
             status='preparing',
             created_by=self.test_user
         )
@@ -394,7 +396,7 @@ class TestStoreArchiveFlow:
             'opening_date': timezone.now().date().isoformat()
         }
         
-        response = authenticated_client.put(
+        response = authenticated_client.patch(
             f'/api/archive/stores/{store.id}/',
             data=json.dumps(update_data),
             content_type='application/json'
@@ -411,7 +413,7 @@ class TestStoreArchiveFlow:
             'closing_date': timezone.now().date().isoformat()
         }
         
-        response = authenticated_client.put(
+        response = authenticated_client.patch(
             f'/api/archive/stores/{store.id}/',
             data=json.dumps(update_data),
             content_type='application/json'

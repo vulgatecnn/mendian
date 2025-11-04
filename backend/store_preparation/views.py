@@ -9,6 +9,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 from django.utils import timezone
 
+from common.permissions import DataPermissionMixin
 from .models import ConstructionOrder, Milestone, DeliveryChecklist
 from .serializers import (
     ConstructionOrderSerializer,
@@ -21,7 +22,7 @@ from .serializers import (
 )
 
 
-class ConstructionOrderViewSet(viewsets.ModelViewSet):
+class ConstructionOrderViewSet(DataPermissionMixin, viewsets.ModelViewSet):
     """工程单视图集"""
     
     queryset = ConstructionOrder.objects.all()
@@ -55,6 +56,18 @@ class ConstructionOrderViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         """创建工程单时设置创建人"""
         serializer.save(created_by=self.request.user)
+    
+    def create(self, request, *args, **kwargs):
+        """重写创建方法，返回统一格式"""
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        
+        return Response({
+            'success': True,
+            'message': '创建成功',
+            'data': serializer.data
+        }, status=status.HTTP_201_CREATED)
     
     @action(detail=True, methods=['post'], url_path='milestones')
     def add_milestone(self, request, pk=None):
@@ -232,7 +245,7 @@ class MilestoneViewSet(viewsets.ModelViewSet):
 
 
 
-class DeliveryChecklistViewSet(viewsets.ModelViewSet):
+class DeliveryChecklistViewSet(DataPermissionMixin, viewsets.ModelViewSet):
     """交付清单视图集"""
     
     queryset = DeliveryChecklist.objects.all()

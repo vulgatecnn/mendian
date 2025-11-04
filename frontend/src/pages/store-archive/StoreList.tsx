@@ -24,9 +24,11 @@ import type {
   StoreProfileQueryParams,
   StoreStatus,
   StoreTypeCode,
-  OperationMode
+  OperationMode,
+  BusinessRegion
 } from '../../types'
 import { getStoreProfiles, deleteStoreProfile } from '../../api/archiveService'
+import baseDataService from '../../api/baseDataService'
 
 const FormItem = Form.Item
 const Option = Select.Option
@@ -68,6 +70,10 @@ const StoreList: React.FC = () => {
 
   // 查询参数
   const [queryParams, setQueryParams] = useState<StoreProfileQueryParams>({})
+  
+  // 业务大区列表
+  const [businessRegions, setBusinessRegions] = useState<BusinessRegion[]>([])
+  const [regionsLoading, setRegionsLoading] = useState(false)
 
   // 加载数据
   const loadData = async (params?: StoreProfileQueryParams) => {
@@ -90,7 +96,24 @@ const StoreList: React.FC = () => {
 
   useEffect(() => {
     loadData()
+    loadBusinessRegions()
   }, [pagination.current, pagination.pageSize])
+
+  // 加载业务大区列表
+  const loadBusinessRegions = async () => {
+    setRegionsLoading(true)
+    try {
+      const response = await baseDataService.getBusinessRegions({ 
+        is_active: true,
+        page_size: 1000 
+      })
+      setBusinessRegions(response.results)
+    } catch (error: any) {
+      console.error('加载业务大区失败:', error)
+    } finally {
+      setRegionsLoading(false)
+    }
+  }
 
   // 搜索
   const handleSearch = () => {
@@ -325,6 +348,24 @@ const StoreList: React.FC = () => {
               {Object.entries(OPERATION_MODE_CONFIG).map(([value, text]) => (
                 <Option key={value} value={value}>
                   {text}
+                </Option>
+              ))}
+            </Select>
+          </FormItem>
+          <FormItem field="business_region_id" label="业务大区">
+            <Select
+              placeholder="请选择业务大区"
+              allowClear
+              loading={regionsLoading}
+              style={{ width: 150 }}
+              showSearch
+              filterOption={(inputValue, option) =>
+                option?.props?.children?.toString().toLowerCase().includes(inputValue.toLowerCase())
+              }
+            >
+              {businessRegions.map(region => (
+                <Option key={region.id} value={region.id}>
+                  {region.name}
                 </Option>
               ))}
             </Select>

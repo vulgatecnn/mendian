@@ -9,6 +9,12 @@ export { default as ConstructionForm } from './ConstructionForm'
 export { default as MilestoneManager } from './MilestoneManager'
 export { default as AcceptanceForm } from './AcceptanceForm'
 
+// 验收管理
+export { default as AcceptanceManagement } from './AcceptanceManagement'
+
+// 里程碑管理
+export { default as MilestoneManagement } from './MilestoneManagement'
+
 // 交付管理
 export { default as DeliveryList } from './DeliveryList'
 export { default as DeliveryDetail } from './DeliveryDetail'

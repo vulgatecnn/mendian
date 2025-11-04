@@ -8,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from django_filters import rest_framework as filters
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter
 
+from common.permissions import DataPermissionMixin, RegionPermissionMixin
 from store_archive.models import StoreProfile
 from store_archive.serializers import (
     StoreProfileListSerializer,
@@ -81,7 +82,7 @@ class StoreProfileFilter(filters.FilterSet):
         tags=["门店档案"]
     ),
 )
-class StoreProfileViewSet(viewsets.ModelViewSet):
+class StoreProfileViewSet(DataPermissionMixin, RegionPermissionMixin, viewsets.ModelViewSet):
     """门店档案视图集"""
     
     queryset = StoreProfile.objects.select_related(
@@ -153,11 +154,25 @@ class StoreProfileViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         """重写列表方法，返回统一格式"""
         response = super().list(request, *args, **kwargs)
-        return Response({
-            'success': True,
-            'message': '获取成功',
-            'data': response.data
-        })
+        
+        # 处理分页数据
+        if isinstance(response.data, dict) and 'results' in response.data:
+            # 分页数据
+            return Response({
+                'success': True,
+                'message': '获取成功',
+                'data': response.data['results'],
+                'count': response.data.get('count'),
+                'next': response.data.get('next'),
+                'previous': response.data.get('previous')
+            })
+        else:
+            # 非分页数据
+            return Response({
+                'success': True,
+                'message': '获取成功',
+                'data': response.data
+            })
     
     def retrieve(self, request, *args, **kwargs):
         """重写详情方法，返回统一格式"""

@@ -1,0 +1,396 @@
+/**
+ * 数据报表页面样式
+ */
+
+.reports {
+  padding: 24px;
+  background: #f5f5f5;
+  min-height: 100vh;
+}
+
+/* 页面头部 */
+.header {
+  margin-bottom: 24px;
+}
+
+.header h3 {
+  margin: 0 0 8px 0;
+  color: #1890ff;
+}
+
+.subtitle {
+  color: #666;
+  font-size: 14px;
+}
+
+/* 搜索表单 */
+.searchCard {
+  margin-bottom: 24px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.searchForm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: end;
+}
+
+.searchForm .arco-form-item {
+  margin-bottom: 0;
+}
+
+/* 报表内容 */
+.reportContent {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.reportTabs {
+  padding: 24px;
+}
+
+.reportTabs .arco-tabs-header {
+  margin-bottom: 24px;
+}
+
+.reportTabs .arco-tabs-tab {
+  font-weight: 500;
+}
+
+/* 概览统计 */
+.overviewSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.overviewCard {
+  text-align: center;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.overviewCard:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.progressCard {
+  padding: 8px 0;
+}
+
+.progressTitle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.progressValue {
+  font-weight: 600;
+  color: #1890ff;
+  font-size: 18px;
+}
+
+.budgetCard {
+  text-align: center;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* 分析卡片 */
+.analysisCard {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.analysisCard .arco-card-header {
+  border-bottom: 1px solid #f0f0f0;
+  font-weight: 600;
+}
+
+/* 进度条单元格 */
+.progressCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.progressText {
+  min-width: 45px;
+  text-align: right;
+  font-weight: 500;
+}
+
+.progressCell .arco-progress {
+  flex: 1;
+}
+
+.progressCell .arco-progress-line-outer {
+  height: 6px;
+  border-radius: 3px;
+}
+
+/* 绩效排行 */
+.rankingCard {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.rankingList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rankingItem {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  background: #fafafa;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.rankingItem:hover {
+  background: #f0f0f0;
+  transform: translateX(4px);
+}
+
+.rankingIndex {
+  margin-right: 12px;
+}
+
+.indexBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  color: #fff;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.rank1 {
+  background: linear-gradient(135deg, #ffd700 0%, #ffb300 100%);
+}
+
+.rank2 {
+  background: linear-gradient(135deg, #c0c0c0 0%, #a0a0a0 100%);
+}
+
+.rank3 {
+  background: linear-gradient(135deg, #cd7f32 0%, #b8860b 100%);
+}
+
+.indexBadge:not(.rank1):not(.rank2):not(.rank3):not(.underperform) {
+  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+}
+
+.underperform {
+  background: linear-gradient(135deg, #ff4d4f 0%, #cf1322 100%);
+}
+
+.rankingContent {
+  flex: 1;
+}
+
+.rankingStats {
+  display: flex;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.rankingStats .arco-typography {
+  font-size: 12px;
+  color: #666;
+}
+
+/* 错误状态 */
+.errorContainer {
+  padding: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+/* 表格样式优化 */
+.analysisCard .arco-table-tbody .arco-table-tr:hover {
+  background-color: rgba(24, 144, 255, 0.05);
+}
+
+.analysisCard .arco-table-thead .arco-table-th {
+  background-color: #fafafa;
+  font-weight: 600;
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+  .overviewSection .arco-col {
+    margin-bottom: 16px;
+  }
+  
+  .rankingCard {
+    margin-bottom: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .reports {
+    padding: 16px;
+  }
+  
+  .searchForm {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .searchForm .arco-form-item {
+    width: 100%;
+  }
+  
+  .overviewSection .arco-col {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+  
+  .rankingList .arco-col {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+  
+  .reportTabs {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .overviewSection .arco-col {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+  
+  .rankingStats {
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
+/* 动画效果 */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.overviewCard,
+.analysisCard,
+.rankingCard {
+  animation: slideIn 0.6s ease-out;
+}
+
+/* 加载状态 */
+.reports .arco-spin {
+  min-height: 400px;
+}
+
+/* 标签页样式 */
+.reportTabs .arco-tabs-tab-active {
+  color: #1890ff;
+}
+
+.reportTabs .arco-tabs-ink-bar {
+  background: #1890ff;
+}
+
+/* 统计数字样式 */
+.overviewCard .arco-statistic-value {
+  font-weight: 600;
+}
+
+.overviewCard .arco-statistic-title {
+  color: #666;
+  font-weight: 500;
+}
+
+/* 表格分页样式 */
+.analysisCard .arco-pagination {
+  margin-top: 16px;
+  text-align: right;
+}
+
+/* 空状态样式 */
+.reports .arco-empty {
+  padding: 60px 0;
+}
+
+/* 按钮样式 */
+.searchForm .arco-btn-primary {
+  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  border: none;
+}
+
+.searchForm .arco-btn-primary:hover {
+  background: linear-gradient(135deg, #40a9ff 0%, #1890ff 100%);
+}
+
+/* 选择器样式 */
+.searchForm .arco-select,
+.searchForm .arco-picker {
+  border-radius: 6px;
+}
+
+/* 卡片标题样式 */
+.analysisCard .arco-card-header-title,
+.rankingCard .arco-card-header-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #262626;
+}
+
+/* 进度条颜色 */
+.progressCell .arco-progress-line-inner {
+  transition: all 0.3s ease;
+}
+
+/* 排行榜项目悬停效果 */
+.rankingItem:hover .indexBadge {
+  transform: scale(1.1);
+}
+
+/* 表格行悬停效果 */
+.analysisCard .arco-table-tr:hover {
+  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.1);
+}
+
+/* 统计卡片渐变背景 */
+.overviewCard {
+  background: linear-gradient(135deg, #fff 0%, #fafafa 100%);
+}
+
+.budgetCard {
+  background: linear-gradient(135deg, #fff7e6 0%, #fff2e8 100%);
+}
+
+/* 工具提示样式 */
+.arco-tooltip {
+  max-width: 300px;
+}
+
+/* 表单项标签样式 */
+.searchForm .arco-form-item-label {
+  font-weight: 500;
+  color: #262626;
+}

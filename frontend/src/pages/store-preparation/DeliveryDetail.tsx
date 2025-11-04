@@ -11,25 +11,24 @@ import {
   Message,
   Typography,
   Tabs,
-  Table,
-  Checkbox,
+  List,
   Upload,
   Modal,
-  Input
+  Progress,
+  Checkbox
 } from '@arco-design/web-react'
 import {
   IconLeft,
   IconUpload,
   IconDownload,
-  IconPlus
+  IconEdit
 } from '@arco-design/web-react/icon'
 import { useNavigate, useParams } from 'react-router-dom'
 import { PreparationService } from '../../api'
 import {
   DeliveryChecklist,
   DeliveryStatus,
-  DeliveryItem,
-  DeliveryDocument
+  DeliveryItem
 } from '../../types'
 import { PermissionGuard } from '../../components/PermissionGuard'
 
@@ -48,39 +47,25 @@ const DeliveryDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const [checklist, setChecklist] = useState<DeliveryChecklist | null>(null)
   const [uploadVisible, setUploadVisible] = useState(false)
-  const [addItemVisible, setAddItemVisible] = useState(false)
-  const [newItemName, setNewItemName] = useState('')
-  const [newItemCategory, setNewItemCategory] = useState('')
-  const [newItemQuantity, setNewItemQuantity] = useState(1)
-  const [newItemUnit, setNewItemUnit] = useState('')
+  const [loading, setLoading] = useState(false)
 
   // 加载交付清单详情
   const loadChecklistDetail = async () => {
     if (!id) return
 
     try {
+      setLoading(true)
       const response = await PreparationService.getDeliveryChecklistDetail(Number(id))
       setChecklist(response)
     } catch (error: any) {
       Message.error(error?.response?.data?.message || '加载交付清单详情失败')
-    }
-  }
-
-  // 更新交付项状态
-  const handleToggleItemStatus = async (item: DeliveryItem) => {
-    if (!id || !item.id) return
-
-    try {
-      await PreparationService.updateDeliveryItemStatus(Number(id), item.id, !item.is_completed)
-      Message.success('更新交付项状态成功')
-      loadChecklistDetail()
-    } catch (error: any) {
-      Message.error(error?.response?.data?.message || '更新失败')
+    } finally {
+      setLoading(false)
     }
   }
 
   // 上传交付文档
-  const handleUploadDocuments = async (fileList: any[]) => {
+  const handleUploadDocument = async (fileList: any[]) => {
     if (!id) return
 
     try {
@@ -98,129 +83,49 @@ const DeliveryDetail: React.FC = () => {
     }
   }
 
-  // 添加交付项
-  const handleAddItem = () => {
-    // 这里应该调用 API 添加交付项
-    // 由于后端 API 可能需要支持，这里先显示提示
-    Message.info('添加交付项功能待后端 API 支持')
-    setAddItemVisible(false)
+  // 更新交付项状态
+  const handleUpdateDeliveryItem = async (itemIndex: number, isCompleted: boolean) => {
+    if (!id || !checklist) return
+
+    try {
+      const updatedItems = [...(checklist.delivery_items || [])]
+      updatedItems[itemIndex] = {
+        ...updatedItems[itemIndex],
+        is_completed: isCompleted,
+        completed_at: isCompleted ? new Date().toISOString() : undefined
+      }
+
+      await PreparationService.updateDeliveryItems(Number(id), updatedItems)
+      Message.success('更新成功')
+      loadChecklistDetail()
+    } catch (error: any) {
+      Message.error(error?.response?.data?.message || '更新失败')
+    }
+  }
+
+  // 计算完成进度
+  const calculateProgress = () => {
+    if (!checklist?.delivery_items || checklist.delivery_items.length === 0) {
+      return 0
+    }
+    const completed = checklist.delivery_items.filter(item => item.is_completed).length
+    return Math.round((completed / checklist.delivery_items.length) * 100)
   }
 
   useEffect(() => {
     loadChecklistDetail()
   }, [id])
 
-  if (!checklist) {
+  if (loading) {
     return <div style={{ padding: '20px' }}>加载中...</div>
   }
 
+  if (!checklist) {
+    return <div style={{ padding: '20px' }}>交付清单不存在</div>
+  }
+
   const statusConfig = DELIVERY_STATUS_CONFIG[checklist.status]
-
-  // 交付项表格列配置
-  const itemColumns = [
-    {
-      title: '完成状态',
-      dataIndex: 'is_completed',
-      width: 100,
-      render: (isCompleted: boolean, record: DeliveryItem) => (
-        <Checkbox
-          checked={isCompleted}
-          onChange={() => handleToggleItemStatus(record)}
-          disabled={checklist.status === 'completed'}
-        >
-          {isCompleted ? '已完成' : '未完成'}
-        </Checkbox>
-      )
-    },
-    {
-      title: '交付项名称',
-      dataIndex: 'name',
-      width: 200
-    },
-    {
-      title: '类别',
-      dataIndex: 'category',
-      width: 120
-    },
-    {
-      title: '数量',
-      dataIndex: 'quantity',
-      width: 80
-    },
-    {
-      title: '单位',
-      dataIndex: 'unit',
-      width: 80
-    },
-    {
-      title: '完成时间',
-      dataIndex: 'completed_at',
-      width: 180,
-      render: (time: string) => time ? new Date(time).toLocaleString('zh-CN') : '-'
-    },
-    {
-      title: '备注',
-      dataIndex: 'remarks',
-      width: 200,
-      render: (remarks: string) => remarks || '-'
-    }
-  ]
-
-  // 交付文档表格列配置
-  const documentColumns = [
-    {
-      title: '文档名称',
-      dataIndex: 'name',
-      width: 200
-    },
-    {
-      title: '类别',
-      dataIndex: 'category',
-      width: 120
-    },
-    {
-      title: '文件类型',
-      dataIndex: 'type',
-      width: 100
-    },
-    {
-      title: '文件大小',
-      dataIndex: 'size',
-      width: 100,
-      render: (size: number) => {
-        if (size < 1024) return `${size} B`
-        if (size < 1024 * 1024) return `${(size / 1024).toFixed(2)} KB`
-        return `${(size / (1024 * 1024)).toFixed(2)} MB`
-      }
-    },
-    {
-      title: '上传时间',
-      dataIndex: 'uploaded_at',
-      width: 180,
-      render: (time: string) => time ? new Date(time).toLocaleString('zh-CN') : '-'
-    },
-    {
-      title: '备注',
-      dataIndex: 'remarks',
-      width: 200,
-      render: (remarks: string) => remarks || '-'
-    },
-    {
-      title: '操作',
-      dataIndex: 'actions',
-      width: 100,
-      render: (_: any, record: DeliveryDocument) => (
-        <Button
-          type="text"
-          size="small"
-          icon={<IconDownload />}
-          onClick={() => window.open(record.url)}
-        >
-          下载
-        </Button>
-      )
-    }
-  ]
+  const progress = calculateProgress()
 
   return (
     <div style={{ padding: '20px' }}>
@@ -237,14 +142,25 @@ const DeliveryDetail: React.FC = () => {
         </Space>
         <Space>
           {checklist.status !== 'completed' && (
-            <PermissionGuard permission="preparation.delivery.upload">
-              <Button
-                icon={<IconUpload />}
-                onClick={() => setUploadVisible(true)}
-              >
-                上传文档
-              </Button>
-            </PermissionGuard>
+            <>
+              <PermissionGuard permission="preparation.delivery.upload">
+                <Button
+                  icon={<IconUpload />}
+                  onClick={() => setUploadVisible(true)}
+                >
+                  上传文档
+                </Button>
+              </PermissionGuard>
+              <PermissionGuard permission="preparation.delivery.edit">
+                <Button
+                  type="primary"
+                  icon={<IconEdit />}
+                  onClick={() => navigate(`/store-preparation/delivery/${checklist.id}/edit`)}
+                >
+                  编辑清单
+                </Button>
+              </PermissionGuard>
+            </>
           )}
         </Space>
       </div>
@@ -271,6 +187,15 @@ const DeliveryDetail: React.FC = () => {
               value: checklist.construction_order?.order_no || '-'
             },
             {
+              label: '交付进度',
+              value: (
+                <Space>
+                  <Progress percent={progress} size="small" style={{ width: 100 }} />
+                  <span>{progress}%</span>
+                </Space>
+              )
+            },
+            {
               label: '交付日期',
               value: checklist.delivery_date || '-'
             },
@@ -290,33 +215,104 @@ const DeliveryDetail: React.FC = () => {
       <Card>
         <Tabs defaultActiveTab="items">
           <TabPane key="items" title="交付项清单">
-            <div style={{ marginBottom: '16px' }}>
-              {checklist.status !== 'completed' && (
-                <Button
-                  type="primary"
-                  size="small"
-                  icon={<IconPlus />}
-                  onClick={() => setAddItemVisible(true)}
+            <List
+              dataSource={checklist.delivery_items || []}
+              render={(item: DeliveryItem, index: number) => (
+                <List.Item
+                  key={index}
+                  style={{
+                    padding: '16px',
+                    border: '1px solid #e5e6eb',
+                    borderRadius: '6px',
+                    marginBottom: '12px'
+                  }}
                 >
-                  添加交付项
-                </Button>
+                  <div style={{ width: '100%' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <Checkbox
+                          checked={item.is_completed}
+                          onChange={(checked) => handleUpdateDeliveryItem(index, checked)}
+                          disabled={checklist.status === 'completed'}
+                        >
+                          <span style={{ 
+                            fontWeight: 500, 
+                            textDecoration: item.is_completed ? 'line-through' : 'none',
+                            color: item.is_completed ? '#86909c' : '#1d2129'
+                          }}>
+                            {item.name}
+                          </span>
+                        </Checkbox>
+                      </div>
+                      <Tag color={item.is_completed ? 'green' : 'gray'}>
+                        {item.is_completed ? '已完成' : '待完成'}
+                      </Tag>
+                    </div>
+                    
+                    {item.description && (
+                      <div style={{ fontSize: '14px', color: '#86909c', marginBottom: '8px', marginLeft: '24px' }}>
+                        {item.description}
+                      </div>
+                    )}
+                    
+                    <div style={{ fontSize: '12px', color: '#86909c', marginLeft: '24px' }}>
+                      <Space split="|">
+                        <span>类型：{item.type || '其他'}</span>
+                        {item.is_required && <span style={{ color: '#f53f3f' }}>必需项</span>}
+                        {item.completed_at && (
+                          <span>完成时间：{new Date(item.completed_at).toLocaleString('zh-CN')}</span>
+                        )}
+                      </Space>
+                    </div>
+                  </div>
+                </List.Item>
               )}
-            </div>
-            <Table
-              columns={itemColumns}
-              data={checklist.delivery_items || []}
-              pagination={false}
-              rowKey={(record: DeliveryItem) => record.id?.toString() || Math.random().toString()}
             />
+            
+            {(!checklist.delivery_items || checklist.delivery_items.length === 0) && (
+              <div style={{ textAlign: 'center', padding: '40px', color: '#86909c' }}>
+                暂无交付项
+              </div>
+            )}
           </TabPane>
 
           <TabPane key="documents" title="交付文档">
-            <Table
-              columns={documentColumns}
-              data={checklist.documents || []}
-              pagination={false}
-              rowKey={(record: DeliveryDocument) => record.id?.toString() || Math.random().toString()}
-            />
+            <div>
+              {checklist.documents && checklist.documents.length > 0 ? (
+                <List
+                  dataSource={checklist.documents}
+                  render={(doc: any, index: number) => (
+                    <List.Item
+                      key={index}
+                      actions={[
+                        <Button
+                          type="text"
+                          icon={<IconDownload />}
+                          onClick={() => window.open(doc.url)}
+                        >
+                          下载
+                        </Button>
+                      ]}
+                    >
+                      <List.Item.Meta
+                        title={doc.name}
+                        description={
+                          <Space>
+                            <span>类型：{doc.type || '其他'}</span>
+                            <span>大小：{doc.size ? `${Math.round(doc.size / 1024)}KB` : '-'}</span>
+                            <span>上传时间：{doc.uploaded_at ? new Date(doc.uploaded_at).toLocaleString('zh-CN') : '-'}</span>
+                          </Space>
+                        }
+                      />
+                    </List.Item>
+                  )}
+                />
+              ) : (
+                <div style={{ textAlign: 'center', padding: '40px', color: '#86909c' }}>
+                  暂无交付文档
+                </div>
+              )}
+            </div>
           </TabPane>
         </Tabs>
       </Card>
@@ -326,52 +322,27 @@ const DeliveryDetail: React.FC = () => {
         title="上传交付文档"
         visible={uploadVisible}
         onCancel={() => setUploadVisible(false)}
-        footer={null}
+        onOk={() => {
+          const uploadComponent = document.querySelector('.arco-upload') as any
+          if (uploadComponent) {
+            uploadComponent.click()
+          }
+        }}
       >
         <Upload
           multiple
+          accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
           onChange={(fileList) => {
             if (fileList.length > 0) {
-              handleUploadDocuments(fileList)
+              handleUploadDocument(fileList)
             }
           }}
         >
           <Button icon={<IconUpload />}>选择文件</Button>
         </Upload>
         <div style={{ marginTop: '10px', fontSize: '12px', color: '#86909c' }}>
-          支持上传各类文档文件
+          支持上传 PDF、Word、Excel、图片格式文件
         </div>
-      </Modal>
-
-      {/* 添加交付项弹窗 */}
-      <Modal
-        title="添加交付项"
-        visible={addItemVisible}
-        onCancel={() => setAddItemVisible(false)}
-        onOk={handleAddItem}
-      >
-        <Space direction="vertical" style={{ width: '100%' }}>
-          <Input
-            placeholder="交付项名称"
-            value={newItemName}
-            onChange={setNewItemName}
-          />
-          <Input
-            placeholder="类别"
-            value={newItemCategory}
-            onChange={setNewItemCategory}
-          />
-          <Input
-            placeholder="数量"
-            value={newItemQuantity.toString()}
-            onChange={(value) => setNewItemQuantity(Number(value) || 1)}
-          />
-          <Input
-            placeholder="单位"
-            value={newItemUnit}
-            onChange={setNewItemUnit}
-          />
-        </Space>
       </Modal>
     </div>
   )

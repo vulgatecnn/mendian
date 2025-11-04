@@ -16,12 +16,22 @@ import {
   Grid
 } from '@arco-design/web-react'
 import { useNavigate, useParams } from 'react-router-dom'
-import type { StoreProfileFormData } from '../../types'
+import type { 
+  StoreProfileFormData, 
+  BusinessRegion, 
+  User, 
+  FollowUpRecord, 
+  ConstructionOrder 
+} from '../../types'
 import {
   getStoreProfile,
   createStoreProfile,
   updateStoreProfile
 } from '../../api/archiveService'
+import baseDataService from '../../api/baseDataService'
+import { UserService } from '../../api/userService'
+import { ExpansionService } from '../../api/expansionService'
+import { PreparationService } from '../../api/preparationService'
 
 const FormItem = Form.Item
 const Option = Select.Option
@@ -49,6 +59,18 @@ const StoreForm: React.FC = () => {
 
   const [loading, setLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  
+  // 下拉列表数据
+  const [businessRegions, setBusinessRegions] = useState<BusinessRegion[]>([])
+  const [users, setUsers] = useState<User[]>([])
+  const [followUpRecords, setFollowUpRecords] = useState<FollowUpRecord[]>([])
+  const [constructionOrders, setConstructionOrders] = useState<ConstructionOrder[]>([])
+  
+  // 下拉列表加载状态
+  const [regionsLoading, setRegionsLoading] = useState(false)
+  const [usersLoading, setUsersLoading] = useState(false)
+  const [followUpsLoading, setFollowUpsLoading] = useState(false)
+  const [constructionsLoading, setConstructionsLoading] = useState(false)
 
   const isEdit = !!id
 
@@ -58,6 +80,14 @@ const StoreForm: React.FC = () => {
       loadStoreData()
     }
   }, [id])
+
+  // 加载下拉列表数据
+  useEffect(() => {
+    loadBusinessRegions()
+    loadUsers()
+    loadFollowUpRecords()
+    loadConstructionOrders()
+  }, [])
 
   const loadStoreData = async () => {
     if (!id) return
@@ -87,6 +117,70 @@ const StoreForm: React.FC = () => {
       Message.error(error.message || '加载数据失败')
     } finally {
       setLoading(false)
+    }
+  }
+
+  // 加载业务大区列表
+  const loadBusinessRegions = async () => {
+    setRegionsLoading(true)
+    try {
+      const response = await baseDataService.getBusinessRegions({ 
+        is_active: true,
+        page_size: 1000 
+      })
+      setBusinessRegions(response.results)
+    } catch (error: any) {
+      console.error('加载业务大区失败:', error)
+    } finally {
+      setRegionsLoading(false)
+    }
+  }
+
+  // 加载用户列表
+  const loadUsers = async () => {
+    setUsersLoading(true)
+    try {
+      const response = await UserService.getUsers({ 
+        is_active: true,
+        page_size: 1000 
+      })
+      setUsers(response.results)
+    } catch (error: any) {
+      console.error('加载用户列表失败:', error)
+    } finally {
+      setUsersLoading(false)
+    }
+  }
+
+  // 加载跟进单列表（已签约状态）
+  const loadFollowUpRecords = async () => {
+    setFollowUpsLoading(true)
+    try {
+      const response = await ExpansionService.getFollowUps({ 
+        status: 'signed',
+        page_size: 1000 
+      })
+      setFollowUpRecords(response.results)
+    } catch (error: any) {
+      console.error('加载跟进单列表失败:', error)
+    } finally {
+      setFollowUpsLoading(false)
+    }
+  }
+
+  // 加载工程单列表（已完成状态）
+  const loadConstructionOrders = async () => {
+    setConstructionsLoading(true)
+    try {
+      const response = await PreparationService.getConstructionOrders({ 
+        status: 'completed',
+        page_size: 1000 
+      })
+      setConstructionOrders(response.results)
+    } catch (error: any) {
+      console.error('加载工程单列表失败:', error)
+    } finally {
+      setConstructionsLoading(false)
     }
   }
 
@@ -266,8 +360,19 @@ const StoreForm: React.FC = () => {
                 field="business_region_id"
                 rules={[{ required: true, message: '请选择业务大区' }]}
               >
-                <Select placeholder="请选择业务大区">
-                  {/* TODO: 从后端加载业务大区列表 */}
+                <Select 
+                  placeholder="请选择业务大区"
+                  loading={regionsLoading}
+                  showSearch
+                  filterOption={(inputValue, option) =>
+                    option?.props?.children?.toString().toLowerCase().includes(inputValue.toLowerCase())
+                  }
+                >
+                  {businessRegions.map(region => (
+                    <Option key={region.id} value={region.id}>
+                      {region.name}
+                    </Option>
+                  ))}
                 </Select>
               </FormItem>
             </Col>
@@ -288,8 +393,16 @@ const StoreForm: React.FC = () => {
                   placeholder="请选择店长"
                   allowClear
                   showSearch
+                  loading={usersLoading}
+                  filterOption={(inputValue, option) =>
+                    option?.props?.children?.toString().toLowerCase().includes(inputValue.toLowerCase())
+                  }
                 >
-                  {/* TODO: 从后端加载用户列表 */}
+                  {users.map(user => (
+                    <Option key={user.id} value={user.id}>
+                      {user.full_name} ({user.username})
+                    </Option>
+                  ))}
                 </Select>
               </FormItem>
             </Col>
@@ -303,8 +416,16 @@ const StoreForm: React.FC = () => {
                   placeholder="请选择商务负责人"
                   allowClear
                   showSearch
+                  loading={usersLoading}
+                  filterOption={(inputValue, option) =>
+                    option?.props?.children?.toString().toLowerCase().includes(inputValue.toLowerCase())
+                  }
                 >
-                  {/* TODO: 从后端加载用户列表 */}
+                  {users.map(user => (
+                    <Option key={user.id} value={user.id}>
+                      {user.full_name} ({user.username})
+                    </Option>
+                  ))}
                 </Select>
               </FormItem>
             </Col>
@@ -325,8 +446,16 @@ const StoreForm: React.FC = () => {
                   placeholder="请选择关联跟进单"
                   allowClear
                   showSearch
+                  loading={followUpsLoading}
+                  filterOption={(inputValue, option) =>
+                    option?.props?.children?.toString().toLowerCase().includes(inputValue.toLowerCase())
+                  }
                 >
-                  {/* TODO: 从后端加载跟进单列表 */}
+                  {followUpRecords.map(record => (
+                    <Option key={record.id} value={record.id}>
+                      {record.record_no} - {record.location?.name}
+                    </Option>
+                  ))}
                 </Select>
               </FormItem>
             </Col>
@@ -340,8 +469,16 @@ const StoreForm: React.FC = () => {
                   placeholder="请选择关联工程单"
                   allowClear
                   showSearch
+                  loading={constructionsLoading}
+                  filterOption={(inputValue, option) =>
+                    option?.props?.children?.toString().toLowerCase().includes(inputValue.toLowerCase())
+                  }
                 >
-                  {/* TODO: 从后端加载工程单列表 */}
+                  {constructionOrders.map(order => (
+                    <Option key={order.id} value={order.id}>
+                      {order.order_no} - {order.store_name}
+                    </Option>
+                  ))}
                 </Select>
               </FormItem>
             </Col>

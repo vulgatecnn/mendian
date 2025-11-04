@@ -27,7 +27,7 @@ const FormItem = Form.Item
 const RangePicker = DatePicker.RangePicker
 
 interface ApprovalListProps {
-  type: 'pending' | 'processed' | 'cc' | 'followed' | 'all'
+  type: 'pending' | 'processed' | 'cc' | 'followed' | 'all' | 'initiated'
   title: string
 }
 
@@ -70,6 +70,9 @@ const ApprovalList: React.FC<ApprovalListProps> = ({ type, title }) => {
           break
         case 'followed':
           response = await ApprovalService.getFollowedInstances(queryParams)
+          break
+        case 'initiated':
+          response = await ApprovalService.getInitiatedInstances(queryParams)
           break
         case 'all':
           response = await ApprovalService.getAllInstances(queryParams)
