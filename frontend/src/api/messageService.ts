@@ -48,49 +48,49 @@ class MessageService {
     count: number
     results: Message[]
   }> {
-    return request.get('/messages/', { params })
+    return request.get('/v1/messages/', { params })
   }
 
   /**
    * 获取未读消息数量
    */
   async getUnreadCount(): Promise<UnreadCount> {
-    return request.get('/messages/unread-count/')
+    return request.get('/v1/messages/unread-count/')
   }
 
   /**
    * 标记消息为已读
    */
   async markAsRead(id: number): Promise<Message> {
-    return request.post(`/messages/${id}/mark-read/`)
+    return request.post(`/v1/messages/${id}/mark-read/`)
   }
 
   /**
    * 批量标记消息为已读
    */
   async markMultipleAsRead(ids: number[]): Promise<{ success: boolean; count: number }> {
-    return request.post('/messages/mark-read-batch/', { ids })
+    return request.post('/v1/messages/mark-read-batch/', { ids })
   }
 
   /**
    * 标记全部消息为已读
    */
   async markAllAsRead(): Promise<{ success: boolean; count: number }> {
-    return request.post('/messages/mark-all-read/')
+    return request.post('/v1/messages/mark-all-read/')
   }
 
   /**
    * 删除消息
    */
   async deleteMessage(id: number): Promise<void> {
-    return request.delete(`/messages/${id}/`)
+    return request.delete(`/v1/messages/${id}/`)
   }
 
   /**
    * 批量删除消息
    */
   async deleteMultipleMessages(ids: number[]): Promise<{ success: boolean; count: number }> {
-    return request.post('/messages/delete-batch/', { ids })
+    return request.post('/v1/messages/delete-batch/', { ids })
   }
 }
 

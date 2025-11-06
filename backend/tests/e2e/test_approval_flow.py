@@ -335,12 +335,16 @@ class TestApprovalFlow:
             content_type='application/json'
         )
         
+        if response.status_code != 200:
+            print(f"转交失败，响应内容：{response.json()}")
+        
         assert response.status_code == 200
         
         # 验证审批人已更新
         approval = ApprovalInstance.objects.get(id=approval_id)
         current_node = approval.current_node
-        assert transfer_user in current_node.approvers.all()
+        approver_users = [approver.user for approver in current_node.approvers.all()]
+        assert transfer_user in approver_users
     
     def test_approval_follow_and_comment(self, authenticated_client):
         """测试关注审批和添加评论"""

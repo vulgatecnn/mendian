@@ -62,27 +62,17 @@ export const AppRoutes: React.FC = () => {
 
   return (
     <Routes>
-      {/* 根路径智能重定向 */}
-      <Route path="/" element={<SmartRouteRedirect />} />
+      {/* 根路径重定向到 PC 端 */}
+      <Route path="/" element={<Navigate to="/pc" replace />} />
       
-      {/* 移动端路由 - 优先匹配 */}
+      {/* PC端路由 */}
+      <Route path="/pc/*" element={<PCRoutes />} />
+      
+      {/* 移动端路由 */}
       <Route path="/mobile/*" element={<MobileRoutes />} />
       
-      {/* PC端路由 - 仅在非移动端环境下生效 */}
-      {!isMobile && (
-        <Route path="/*" element={<PCRoutes />} />
-      )}
-      
-      {/* 移动端环境下的PC端路由重定向 */}
-      {isMobile && (
-        <Route path="/*" element={<Navigate to="/mobile/home" replace />} />
-      )}
-      
-      {/* 平台自动检测路由 */}
-      <Route 
-        path="/auto-redirect" 
-        element={<SmartRouteRedirect />} 
-      />
+      {/* 404 - 重定向到 PC 端 */}
+      <Route path="*" element={<Navigate to="/pc" replace />} />
     </Routes>
   );
 };

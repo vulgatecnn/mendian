@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>前后端API调用演示</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #1890ff;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .status {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+        }
+        .service-status {
+            padding: 15px 25px;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .running {
+            background-color: #f6ffed;
+            color: #52c41a;
+            border: 1px solid #b7eb8f;
+        }
+        .stopped {
+            background-color: #fff2f0;
+            color: #ff4d4f;
+            border: 1px solid #ffccc7;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+        }
+        .test-section h3 {
+            color: #262626;
+            margin-top: 0;
+        }
+        button {
+            background-color: #1890ff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background-color: #40a9ff;
+        }
+        button:disabled {
+            background-color: #d9d9d9;
+            cursor: not-allowed;
+        }
+        .result {
+            background-color: #fafafa;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 10px;
+            font-family: 'Consolas', monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success {
+            border-color: #52c41a;
+            background-color: #f6ffed;
+        }
+        .error {
+            border-color: #ff4d4f;
+            background-color: #fff2f0;
+        }
+        .loading {
+            color: #1890ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 门店生命周期管理系统 - API调用演示</h1>
+        
+        <div class="status">
+            <div class="service-status running">
+                ✅ 后端服务: http://localhost:5100
+            </div>
+            <div class="service-status running">
+                ✅ 前端服务: http://localhost:5000
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔐 认证服务测试</h3>
+            <button onclick="testLogin()">测试登录</button>
+            <button onclick="testLogout()">测试登出</button>
+            <div id="auth-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>👥 用户管理测试</h3>
+            <button onclick="testGetUsers()">获取用户列表</button>
+            <button onclick="testGetDepartments()">获取部门列表</button>
+            <div id="user-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🏪 业务数据测试</h3>
+            <button onclick="testGetRegions()">获取经营区域</button>
+            <button onclick="testGetPlans()">获取开店计划</button>
+            <button onclick="testGetLocations()">获取候选点位</button>
+            <div id="business-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 系统状态</h3>
+            <button onclick="testSystemHealth()">系统健康检查</button>
+            <div id="system-result" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        let authToken = null;
+
+        // 通用API调用函数
+        async function apiCall(url, options = {}) {
+            const defaultOptions = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(authToken && { 'Authorization': `Bearer ${authToken}` })
+                }
+            };
+            
+            const response = await fetch(`http://localhost:5100${url}`, {
+                ...defaultOptions,
+                ...options,
+                headers: { ...defaultOptions.headers, ...options.headers }
+            });
+            
+            return response.json();
+        }
+
+        // 显示结果
+        function showResult(elementId, data, isError = false) {
+            const element = document.getElementById(elementId);
+            element.textContent = JSON.stringify(data, null, 2);
+            element.className = `result ${isError ? 'error' : 'success'}`;
+        }
+
+        // 显示加载状态
+        function showLoading(elementId, message = '加载中...') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = 'result loading';
+        }
+
+        // 测试登录
+        async function testLogin() {
+            showLoading('auth-result', '正在测试登录...');
+            try {
+                const result = await apiCall('/api/auth/login/', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        login_type: 'username_password',
+                        username: 'admin',
+                        password: 'admin123'
+                    })
+                });
+                
+                if (result.code === 0) {
+                    authToken = result.data.access_token;
+                    showResult('auth-result', {
+                        status: '登录成功！',
+                        user: result.data.user.username,
+                        token: authToken ? '已获取' : '未获取'
+                    });
+                } else {
+                    showResult('auth-result', result, true);
+                }
+            } catch (error) {
+                showResult('auth-result', { error: error.message }, true);
+            }
+        }
+
+        // 测试登出
+        async function testLogout() {
+            showLoading('auth-result', '正在测试登出...');
+            try {
+                const result = await apiCall('/api/auth/logout/', {
+                    method: 'POST'
+                });
+                authToken = null;
+                showResult('auth-result', { status: '登出成功！', result });
+            } catch (error) {
+                showResult('auth-result', { error: error.message }, true);
+            }
+        }
+
+        // 测试获取用户列表
+        async function testGetUsers() {
+            showLoading('user-result', '正在获取用户列表...');
+            try {
+                const result = await apiCall('/api/users/');
+                showResult('user-result', {
+                    status: '获取成功！',
+                    count: result.count || result.length,
+                    sample: result.results ? result.results.slice(0, 3) : result.slice(0, 3)
+                });
+            } catch (error) {
+                showResult('user-result', { error: error.message }, true);
+            }
+        }
+
+        // 测试获取部门列表
+        async function testGetDepartments() {
+            showLoading('user-result', '正在获取部门列表...');
+            try {
+                const result = await apiCall('/api/departments/');
+                showResult('user-result', {
+                    status: '获取成功！',
+                    count: result.length || result.count,
+                    departments: Array.isArray(result) ? result.slice(0, 5) : result.results?.slice(0, 5)
+                });
+            } catch (error) {
+                showResult('user-result', { error: error.message }, true);
+            }
+        }
+
+        // 测试获取经营区域
+        async function testGetRegions() {
+            showLoading('business-result', '正在获取经营区域...');
+            try {
+                const result = await apiCall('/api/base-data/regions/');
+                showResult('business-result', {
+                    status: '获取成功！',
+                    count: result.count || result.length,
+                    regions: result.results || result
+                });
+            } catch (error) {
+                showResult('business-result', { error: error.message }, true);
+            }
+        }
+
+        // 测试获取开店计划
+        async function testGetPlans() {
+            showLoading('business-result', '正在获取开店计划...');
+            try {
+                const result = await apiCall('/api/store-planning/plans/');
+                showResult('business-result', {
+                    status: '获取成功！',
+                    count: result.count || 0,
+                    plans: result.results || []
+                });
+            } catch (error) {
+                showResult('business-result', { error: error.message }, true);
+            }
+        }
+
+        // 测试获取候选点位
+        async function testGetLocations() {
+            showLoading('business-result', '正在获取候选点位...');
+            try {
+                const result = await apiCall('/api/expansion/locations/');
+                showResult('business-result', {
+                    status: '获取成功！',
+                    count: result.count || 0,
+                    locations: result.results || []
+                });
+            } catch (error) {
+                showResult('business-result', { error: error.message }, true);
+            }
+        }
+
+        // 系统健康检查
+        async function testSystemHealth() {
+            showLoading('system-result', '正在检查系统状态...');
+            try {
+                const tests = [
+                    { name: '后端连接', test: () => apiCall('/api/users/') },
+                    { name: '认证服务', test: () => apiCall('/api/auth/login/', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            login_type: 'username_password',
+                            username: 'admin',
+                            password: 'admin123'
+                        })
+                    })},
+                    { name: '基础数据', test: () => apiCall('/api/base-data/regions/') }
+                ];
+
+                const results = [];
+                for (const { name, test } of tests) {
+                    try {
+                        await test();
+                        results.push({ service: name, status: '✅ 正常' });
+                    } catch (error) {
+                        results.push({ service: name, status: '❌ 异常', error: error.message });
+                    }
+                }
+
+                showResult('system-result', {
+                    timestamp: new Date().toLocaleString(),
+                    results
+                });
+            } catch (error) {
+                showResult('system-result', { error: error.message }, true);
+            }
+        }
+
+        // 页面加载时自动测试连接
+        window.onload = function() {
+            setTimeout(() => {
+                testSystemHealth();
+            }, 1000);
+        };
+    </script>
+</body>
+</html>

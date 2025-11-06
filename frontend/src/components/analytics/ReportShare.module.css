@@ -1,0 +1,392 @@
+/* 报表分享组件样式 */
+
+.reportShare {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.errorAlert {
+  margin-bottom: 16px;
+}
+
+/* 报表信息卡片 */
+.reportInfoCard {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.reportInfoHeader {
+  margin-bottom: 16px;
+}
+
+.reportInfoHeader :global(.arco-typography-h5) {
+  margin: 0;
+  color: var(--color-text-1);
+}
+
+.reportInfoContent {
+  background-color: var(--color-fill-1);
+  padding: 16px;
+  border-radius: 6px;
+}
+
+.reportInfoItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+}
+
+.reportInfoItem :global(.arco-typography) {
+  margin: 0;
+}
+
+/* 分享配置 */
+.shareConfig {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.shareConfig :global(.arco-typography-h5) {
+  margin: 0 0 16px 0;
+  color: var(--color-text-1);
+}
+
+.shareTypeSelect {
+  width: 100%;
+}
+
+.shareTypeSelect :global(.arco-select-option) {
+  padding: 8px 12px;
+}
+
+.permissionItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.permissionItem :global(.arco-typography) {
+  margin: 0;
+}
+
+.passwordInput {
+  margin-top: 8px;
+}
+
+/* 分享结果卡片 */
+.shareResultCard {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--color-success-3);
+  background-color: var(--color-success-light-1);
+}
+
+.shareResultHeader {
+  margin-bottom: 16px;
+}
+
+.shareResultHeader :global(.arco-typography-h5) {
+  margin: 0;
+  color: var(--color-success-6);
+}
+
+.shareResultContent {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.shareUrl {
+  position: relative;
+}
+
+.shareUrl :global(.arco-input-wrapper) {
+  border-radius: 6px;
+}
+
+.shareUrl :global(.arco-input-group-addon-after) {
+  padding: 0;
+  border-radius: 0 6px 6px 0;
+}
+
+.copySuccess {
+  color: var(--color-success-6) !important;
+}
+
+.shareInfo {
+  background-color: var(--color-bg-1);
+  padding: 16px;
+  border-radius: 6px;
+  border: 1px solid var(--color-border-2);
+}
+
+.infoItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.infoItem svg {
+  margin-top: 2px;
+  color: var(--color-text-3);
+}
+
+.infoItem > div {
+  flex: 1;
+}
+
+.infoItem :global(.arco-typography) {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.infoItem > div > div {
+  font-weight: 500;
+  color: var(--color-text-1);
+  margin-top: 2px;
+}
+
+/* 操作按钮 */
+.shareActions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border-2);
+}
+
+.shareActions :global(.arco-btn) {
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.shareActions :global(.arco-btn-primary) {
+  background: linear-gradient(135deg, var(--color-primary-6) 0%, var(--color-primary-5) 100%);
+  border: none;
+  box-shadow: 0 2px 4px rgba(24, 144, 255, 0.2);
+}
+
+.shareActions :global(.arco-btn-primary):hover {
+  background: linear-gradient(135deg, var(--color-primary-5) 0%, var(--color-primary-4) 100%);
+  box-shadow: 0 4px 8px rgba(24, 144, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+/* 分享说明 */
+.shareNoticeAlert {
+  margin-top: 16px;
+  border-radius: 8px;
+}
+
+.shareNotice {
+  margin: 0;
+  padding-left: 16px;
+}
+
+.shareNotice li {
+  margin: 4px 0;
+  color: var(--color-text-2);
+  line-height: 1.5;
+}
+
+/* 表单样式优化 */
+.shareConfig :global(.arco-form-item-label) {
+  font-weight: 500;
+  color: var(--color-text-1);
+}
+
+.shareConfig :global(.arco-select-view),
+.shareConfig :global(.arco-picker),
+.shareConfig :global(.arco-input-wrapper) {
+  border-radius: 6px;
+}
+
+.shareConfig :global(.arco-switch) {
+  margin-right: 8px;
+}
+
+/* 标签样式 */
+.reportInfoItem :global(.arco-tag) {
+  font-size: 12px;
+  height: 20px;
+  line-height: 18px;
+  padding: 0 6px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .reportShare {
+    max-width: 100%;
+    padding: 0 8px;
+  }
+  
+  .shareActions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .shareActions :global(.arco-btn) {
+    width: 100%;
+  }
+  
+  .shareInfo {
+    padding: 12px;
+  }
+  
+  .infoItem {
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .reportInfoContent {
+    padding: 12px;
+  }
+  
+  .reportInfoItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}
+
+@media (max-width: 576px) {
+  .shareUrl :global(.arco-input-group-addon-after) {
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    border-radius: 0 6px 6px 0;
+  }
+  
+  .shareUrl :global(.arco-input) {
+    padding-right: 60px;
+  }
+}
+
+/* 暗色主题适配 */
+[data-theme='dark'] .reportInfoCard,
+[data-theme='dark'] .shareResultCard {
+  background-color: var(--color-bg-2);
+  border-color: var(--color-border-2);
+}
+
+[data-theme='dark'] .shareResultCard {
+  background-color: var(--color-success-dark-1);
+  border-color: var(--color-success-4);
+}
+
+[data-theme='dark'] .reportInfoContent {
+  background-color: var(--color-fill-2);
+}
+
+[data-theme='dark'] .shareInfo {
+  background-color: var(--color-bg-3);
+  border-color: var(--color-border-3);
+}
+
+[data-theme='dark'] .shareActions {
+  border-top-color: var(--color-border-3);
+}
+
+/* 加载状态 */
+.shareConfig :global(.arco-form-item-disabled) {
+  opacity: 0.6;
+}
+
+.shareActions :global(.arco-btn-loading) {
+  pointer-events: none;
+}
+
+/* 动画效果 */
+.reportInfoCard,
+.shareResultCard {
+  transition: all 0.3s ease;
+}
+
+.shareResultCard {
+  animation: slideInDown 0.3s ease;
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.shareActions :global(.arco-btn) {
+  transition: all 0.2s ease;
+}
+
+.copySuccess {
+  animation: pulse 0.5s ease;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* 图标样式 */
+.permissionItem svg,
+.shareResultHeader svg {
+  width: 16px;
+  height: 16px;
+}
+
+.infoItem svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* 输入框样式优化 */
+.shareConfig :global(.arco-select-view-multiple) {
+  min-height: 32px;
+}
+
+.shareConfig :global(.arco-select-view-tag) {
+  background-color: var(--color-primary-1);
+  border-color: var(--color-primary-3);
+  color: var(--color-primary-6);
+  font-size: 12px;
+}
+
+/* 分割线样式 */
+.reportShare :global(.arco-divider) {
+  margin: 16px 0;
+  border-color: var(--color-border-2);
+}
+
+/* 警告框样式 */
+.shareNoticeAlert :global(.arco-alert-content) {
+  padding-top: 8px;
+}
+
+.shareNoticeAlert :global(.arco-alert-icon) {
+  margin-top: 2px;
+}
+
+/* 开关样式 */
+.permissionItem :global(.arco-switch-checked) {
+  background-color: var(--color-primary-6);
+}
+
+.permissionItem :global(.arco-switch-checked):hover {
+  background-color: var(--color-primary-5);
+}

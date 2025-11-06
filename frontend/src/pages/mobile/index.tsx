@@ -23,3 +23,6 @@ export { default as MobileConstructionAcceptance } from './preparation/MobileCon
 // 审批中心
 export { default as MobileApprovalList } from './approval/MobileApprovalList'
 export { default as MobileApprovalDetail } from './approval/MobileApprovalDetail'
+
+// 数据分析
+export { default as MobileAnalytics } from './MobileAnalytics'

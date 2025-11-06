@@ -143,14 +143,14 @@ class TestStoreExpansionFlow:
         # 步骤4：执行盈利测算
         calculation_data = {
             'business_terms': {
-                'rent_cost': 10000,
-                'decoration_cost': 50000,
-                'equipment_cost': 30000,
-                'other_cost': 5000
+                'rent_cost': '10000',
+                'decoration_cost': '50000',
+                'equipment_cost': '30000',
+                'other_cost': '5000'
             },
             'sales_forecast': {
-                'daily_sales': 5000,
-                'monthly_sales': 150000
+                'daily_sales': '5000',
+                'monthly_sales': '150000'
             }
         }
         
@@ -159,6 +159,9 @@ class TestStoreExpansionFlow:
             data=json.dumps(calculation_data),
             content_type='application/json'
         )
+        
+        if response.status_code != 200:
+            print(f"盈利测算失败，响应内容：{response.json()}")
         
         assert response.status_code == 200
         
@@ -283,7 +286,7 @@ class TestStoreExpansionFlow:
         
         # 放弃跟进
         abandon_data = {
-            'reason': '租金过高，不符合预算'
+            'abandon_reason': '租金过高，不符合预算'
         }
         
         response = authenticated_client.post(

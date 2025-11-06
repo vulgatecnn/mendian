@@ -4,23 +4,13 @@
 
 /**
  * 检测是否为移动端环境
+ * 简化逻辑：仅根据 URL 路径判断，不做自动检测
  */
 export const isMobileEnvironment = (): boolean => {
-  // 检测屏幕宽度
-  const isMobileScreen = window.innerWidth <= 768;
-  
-  // 检测User-Agent
-  const userAgent = navigator.userAgent.toLowerCase();
-  const isMobileUA = /mobile|android|iphone|ipad|phone|blackberry|opera mini|iemobile|wpdesktop/.test(userAgent);
-  
-  // 检测企业微信环境
-  const isWeChatWork = /wxwork/.test(userAgent);
-  
-  // 检测URL路径
-  const isMobilePath = window.location.pathname.startsWith('/mobile');
-  
-  // 优先级：URL路径 > 企业微信环境 > 移动设备检测
-  return isMobilePath || isWeChatWork || (isMobileScreen && isMobileUA);
+  // 只根据 URL 路径判断
+  // /mobile 开头的路径 = 移动端
+  // /pc 开头的路径 = PC端
+  return window.location.pathname.startsWith('/mobile');
 };
 
 /**

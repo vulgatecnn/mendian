@@ -32,6 +32,8 @@ const Login: React.FC = () => {
 
   // 账号密码登录
   const handlePasswordLogin = async (values: any) => {
+    console.log('handlePasswordLogin called', values)
+    
     if (isLocked) {
       Message.error('账号已被锁定，请30分钟后再试')
       return
@@ -39,16 +41,19 @@ const Login: React.FC = () => {
 
     setLoading(true)
     try {
+      console.log('Calling AuthService.loginByPassword...')
       const response = await AuthService.loginByPassword({
         username: values.username,
         password: values.password,
         remember: values.remember
       })
       
+      console.log('Login response:', response)
       login(response)
       Message.success('登录成功')
       navigate('/')
     } catch (error: any) {
+      console.error('Login error:', error)
       const newAttempts = loginAttempts + 1
       setLoginAttempts(newAttempts)
       
@@ -192,7 +197,6 @@ const Login: React.FC = () => {
             <Form
               form={form}
               layout="vertical"
-              onSubmit={handlePasswordLogin}
               autoComplete="off"
             >
               <FormItem
@@ -243,11 +247,19 @@ const Login: React.FC = () => {
               <FormItem>
                 <Button
                   type="primary"
-                  htmlType="submit"
                   size="large"
                   long
                   loading={loading}
                   disabled={isLocked}
+                  onClick={async () => {
+                    try {
+                      await form.validate()
+                      const values = form.getFieldsValue()
+                      handlePasswordLogin(values)
+                    } catch (error) {
+                      console.log('Form validation failed:', error)
+                    }
+                  }}
                 >
                   登录
                 </Button>
@@ -406,6 +418,9 @@ const Login: React.FC = () => {
 
         <div className="login-footer">
           <p>© 2024 门店生命周期管理系统. All rights reserved.</p>
+          <p style={{ marginTop: 8, fontSize: 12 }}>
+            <a href="/mobile" style={{ color: '#165DFF' }}>切换到移动端</a>
+          </p>
         </div>
       </div>
     </div>

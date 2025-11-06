@@ -94,6 +94,12 @@ class ProfitCalculationEngine:
         )
         
         # 创建盈利测算对象
+        # 将params中的Decimal转换为float，以便JSON序列化
+        json_safe_params = {
+            key: float(value) if isinstance(value, Decimal) else value
+            for key, value in self.params.items()
+        }
+        
         calculation = ProfitCalculation(
             rent_cost=rent_cost,
             decoration_cost=decoration_cost,
@@ -106,7 +112,7 @@ class ProfitCalculationEngine:
             payback_period=payback_period,
             contribution_rate=contribution_rate,
             formula_version=self.formula_version,
-            calculation_params=self.params
+            calculation_params=json_safe_params
         )
         
         return calculation

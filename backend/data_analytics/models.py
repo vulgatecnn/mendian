@@ -103,6 +103,13 @@ class ReportTask(models.Model):
 class ExternalSalesData(models.Model):
     """外部销售数据"""
     
+    SYNC_STATUS_CHOICES = [
+        ('success', '同步成功'),
+        ('failed', '同步失败'),
+        ('pending', '等待同步'),
+        ('partial', '部分成功'),
+    ]
+    
     store = models.ForeignKey(
         'store_archive.StoreProfile', 
         on_delete=models.CASCADE, 
@@ -115,10 +122,19 @@ class ExternalSalesData(models.Model):
     monthly_revenue = models.DecimalField('月营业额', max_digits=12, decimal_places=2, default=0)
     monthly_orders = models.IntegerField('月订单数', default=0)
     
+    # 扩展销售数据字段
+    daily_customers = models.IntegerField('日客流量', default=0)
+    average_order_value = models.DecimalField('客单价', max_digits=10, decimal_places=2, default=0)
+    
     # 数据来源和同步信息
     data_source = models.CharField('数据来源', max_length=100, default='external_api')
-    sync_status = models.CharField('同步状态', max_length=20, default='success')
+    sync_status = models.CharField('同步状态', max_length=20, choices=SYNC_STATUS_CHOICES, default='success')
     sync_message = models.TextField('同步信息', blank=True)
+    sync_batch_id = models.CharField('同步批次ID', max_length=100, blank=True)
+    
+    # 数据验证信息
+    is_validated = models.BooleanField('是否已验证', default=False)
+    validation_errors = models.JSONField('验证错误信息', default=dict, blank=True)
     
     created_at = models.DateTimeField('创建时间', auto_now_add=True)
     updated_at = models.DateTimeField('更新时间', auto_now=True)
@@ -132,10 +148,89 @@ class ExternalSalesData(models.Model):
             models.Index(fields=['store', 'data_date']),
             models.Index(fields=['data_date']),
             models.Index(fields=['sync_status']),
+            models.Index(fields=['sync_batch_id']),
+            models.Index(fields=['is_validated']),
         ]
     
     def __str__(self):
-        return f"{self.store.name} - {self.data_date}"
+        return f"{self.store.store_name} - {self.data_date}"
+    
+    def calculate_average_order_value(self):
+        """计算客单价"""
+        if self.daily_orders > 0:
+            self.average_order_value = self.daily_revenue / self.daily_orders
+        else:
+            self.average_order_value = 0
+        return self.average_order_value
+    
+    def validate_data(self):
+        """验证数据的合理性"""
+        errors = {}
+        
+        # 检查营业额是否为负数
+        if self.daily_revenue < 0:
+            errors['daily_revenue'] = '日营业额不能为负数'
+        
+        # 检查订单数是否为负数
+        if self.daily_orders < 0:
+            errors['daily_orders'] = '日订单数不能为负数'
+        
+        # 检查客单价是否合理（如果有订单但营业额为0）
+        if self.daily_orders > 0 and self.daily_revenue == 0:
+            errors['revenue_orders_mismatch'] = '有订单但营业额为0，数据可能异常'
+        
+        # 检查客单价是否过高（超过1000元可能异常）
+        if self.daily_orders > 0:
+            avg_value = self.daily_revenue / self.daily_orders
+            if avg_value > 1000:
+                errors['high_average_order'] = f'客单价过高: {avg_value}元，请确认数据准确性'
+        
+        self.validation_errors = errors
+        self.is_validated = len(errors) == 0
+        
+        return self.is_validated
+
+
+class ScheduledReport(models.Model):
+    """定时报表配置"""
+    
+    REPORT_TYPE_CHOICES = [
+        ('plan', '开店计划报表'),
+        ('follow_up', '拓店跟进进度报表'),
+        ('preparation', '筹备进度报表'),
+        ('assets', '门店资产报表'),
+    ]
+    
+    FREQUENCY_CHOICES = [
+        ('daily', '每日'),
+        ('weekly', '每周'),
+        ('monthly', '每月'),
+    ]
+    
+    name = models.CharField('报表名称', max_length=200)
+    report_type = models.CharField('报表类型', max_length=50, choices=REPORT_TYPE_CHOICES)
+    frequency = models.CharField('生成频率', max_length=20, choices=FREQUENCY_CHOICES)
+    filters = models.JSONField('筛选条件', default=dict)
+    format = models.CharField('导出格式', max_length=10, choices=ReportTask.FORMAT_CHOICES, default='excel')
+    recipients = models.JSONField('收件人邮箱列表', default=list)
+    is_active = models.BooleanField('是否启用', default=True)
+    
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='创建人')
+    created_at = models.DateTimeField('创建时间', auto_now_add=True)
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+    last_generated = models.DateTimeField('最后生成时间', null=True, blank=True)
+    
+    class Meta:
+        db_table = 'scheduled_reports'
+        verbose_name = '定时报表'
+        verbose_name_plural = '定时报表'
+        indexes = [
+            models.Index(fields=['is_active', 'frequency']),
+            models.Index(fields=['created_by']),
+        ]
+    
+    def __str__(self):
+        return f"{self.name} - {self.get_frequency_display()}"
 
 
 class DataSyncLog(models.Model):
@@ -145,6 +240,7 @@ class DataSyncLog(models.Model):
         ('sales_data', '销售数据同步'),
         ('cache_refresh', '缓存刷新'),
         ('report_generation', '报表生成'),
+        ('scheduled_report', '定时报表生成'),
     ]
     
     STATUS_CHOICES = [

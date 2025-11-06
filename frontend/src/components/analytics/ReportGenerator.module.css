@@ -1,0 +1,275 @@
+/* 报表生成器组件样式 */
+
+.reportGenerator {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.errorAlert {
+  margin-bottom: 16px;
+}
+
+.configCard {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.actionButtons {
+  display: flex;
+  justify-content: flex-start;
+  padding-top: 16px;
+}
+
+.taskListCard {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.taskList {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.taskItem {
+  padding: 16px;
+  border-bottom: 1px solid var(--color-border-2);
+  transition: background-color 0.2s ease;
+}
+
+.taskItem:hover {
+  background-color: var(--color-fill-1);
+}
+
+.taskItem:last-child {
+  border-bottom: none;
+}
+
+.taskMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.taskProgress {
+  margin-top: 8px;
+  max-width: 200px;
+}
+
+/* 表单样式优化 */
+.configCard :global(.arco-form-item-label) {
+  font-weight: 500;
+  color: var(--color-text-1);
+}
+
+.configCard :global(.arco-select-view) {
+  border-radius: 6px;
+}
+
+.configCard :global(.arco-radio-group) {
+  display: flex;
+  gap: 16px;
+}
+
+.configCard :global(.arco-checkbox-group) {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 任务列表样式 */
+.taskList :global(.arco-list-item-meta-avatar) {
+  margin-right: 12px;
+}
+
+.taskList :global(.arco-list-item-meta-title) {
+  margin-bottom: 4px;
+}
+
+.taskList :global(.arco-list-item-action) {
+  margin-left: 8px;
+}
+
+.taskList :global(.arco-list-item-action .arco-btn) {
+  padding: 4px 8px;
+  height: 28px;
+}
+
+/* 进度条样式 */
+.taskProgress :global(.arco-progress-line-text) {
+  font-size: 12px;
+}
+
+.taskProgress :global(.arco-progress-line-outer) {
+  background-color: var(--color-fill-2);
+}
+
+/* 标签样式 */
+.taskList :global(.arco-tag) {
+  font-size: 12px;
+  height: 20px;
+  line-height: 18px;
+  padding: 0 6px;
+}
+
+/* 按钮样式 */
+.actionButtons :global(.arco-btn) {
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.actionButtons :global(.arco-btn-primary) {
+  background: linear-gradient(135deg, var(--color-primary-6) 0%, var(--color-primary-5) 100%);
+  border: none;
+  box-shadow: 0 2px 4px rgba(24, 144, 255, 0.2);
+}
+
+.actionButtons :global(.arco-btn-primary):hover {
+  background: linear-gradient(135deg, var(--color-primary-5) 0%, var(--color-primary-4) 100%);
+  box-shadow: 0 4px 8px rgba(24, 144, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+/* 选择器选项样式 */
+.configCard :global(.arco-select-option-content) {
+  padding: 8px 0;
+}
+
+.configCard :global(.arco-select-option-content > div:first-child) {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .reportGenerator {
+    gap: 12px;
+  }
+  
+  .actionButtons {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .actionButtons :global(.arco-btn) {
+    width: 100%;
+  }
+  
+  .taskItem {
+    padding: 12px;
+  }
+  
+  .taskList :global(.arco-list-item-action) {
+    flex-direction: column;
+    gap: 4px;
+    margin-left: 0;
+    margin-top: 8px;
+  }
+  
+  .taskMeta {
+    font-size: 12px;
+  }
+}
+
+/* 暗色主题适配 */
+[data-theme='dark'] .configCard,
+[data-theme='dark'] .taskListCard {
+  background-color: var(--color-bg-2);
+  border-color: var(--color-border-2);
+}
+
+[data-theme='dark'] .taskItem:hover {
+  background-color: var(--color-fill-2);
+}
+
+[data-theme='dark'] .taskItem {
+  border-bottom-color: var(--color-border-3);
+}
+
+/* 加载状态 */
+.configCard :global(.arco-form-item-disabled) {
+  opacity: 0.6;
+}
+
+.taskList :global(.arco-spin-loading) {
+  min-height: 200px;
+}
+
+/* 空状态样式 */
+.taskListCard :global(.arco-empty) {
+  padding: 40px 20px;
+}
+
+.taskListCard :global(.arco-empty-description) {
+  color: var(--color-text-3);
+}
+
+/* 动画效果 */
+.taskItem {
+  animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.actionButtons :global(.arco-btn) {
+  transition: all 0.2s ease;
+}
+
+.taskList :global(.arco-list-item-action .arco-btn) {
+  transition: all 0.2s ease;
+}
+
+.taskList :global(.arco-list-item-action .arco-btn):hover {
+  transform: translateY(-1px);
+}
+
+/* 图标样式 */
+.taskList :global(.arco-list-item-meta-avatar svg) {
+  width: 16px;
+  height: 16px;
+}
+
+.actionButtons :global(.arco-btn svg) {
+  margin-right: 4px;
+}
+
+/* 文本样式 */
+.taskMeta :global(.arco-typography) {
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* 分割线样式 */
+.configCard :global(.arco-divider) {
+  margin: 16px 0;
+  border-color: var(--color-border-2);
+}
+
+/* 滚动条样式 */
+.taskList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.taskList::-webkit-scrollbar-track {
+  background: var(--color-fill-2);
+  border-radius: 3px;
+}
+
+.taskList::-webkit-scrollbar-thumb {
+  background: var(--color-fill-4);
+  border-radius: 3px;
+}
+
+.taskList::-webkit-scrollbar-thumb:hover {
+  background: var(--color-fill-3);
+}

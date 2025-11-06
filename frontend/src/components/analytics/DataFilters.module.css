@@ -1,0 +1,223 @@
+/* 数据筛选组件样式 */
+
+.filtersCard {
+  margin-bottom: 16px;
+}
+
+.collapse {
+  border: none;
+  background: transparent;
+}
+
+.collapse :global(.arco-collapse-item) {
+  border: none;
+  background: transparent;
+}
+
+.collapse :global(.arco-collapse-item-header) {
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+.collapse :global(.arco-collapse-item-content) {
+  padding: 16px 0 0 0;
+  border: none;
+  background: transparent;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.arrow {
+  transition: transform 0.2s ease;
+  color: var(--color-text-3);
+}
+
+.arrow.collapsed {
+  transform: rotate(-90deg);
+}
+
+.form {
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border-2);
+}
+
+.presets {
+  margin-top: 8px;
+  padding: 12px;
+  background: var(--color-bg-2);
+  border-radius: 4px;
+  border: 1px solid var(--color-border-3);
+}
+
+.presetsLabel {
+  font-size: 12px;
+  color: var(--color-text-3);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.presetButton {
+  font-size: 12px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 4px;
+  border: 1px solid var(--color-border-2);
+  background: var(--color-bg-1);
+  color: var(--color-text-2);
+  transition: all 0.2s ease;
+}
+
+.presetButton:hover {
+  border-color: var(--color-primary-6);
+  color: var(--color-primary-6);
+  background: var(--color-primary-1);
+}
+
+.actions {
+  display: flex;
+  align-items: flex-end;
+  height: 100%;
+  padding-top: 24px;
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+  .form :global(.arco-row) {
+    flex-direction: column;
+  }
+  
+  .form :global(.arco-col) {
+    width: 100% !important;
+    max-width: none !important;
+  }
+  
+  .actions {
+    padding-top: 16px;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .presets {
+    padding: 8px;
+  }
+  
+  .presetButton {
+    font-size: 11px;
+    height: 22px;
+    padding: 0 6px;
+  }
+  
+  .actions {
+    padding-top: 12px;
+  }
+  
+  .actions :global(.arco-space) {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* 表单项样式 */
+.form :global(.arco-form-item-label) {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-1);
+}
+
+.form :global(.arco-select-view-multiple) {
+  min-height: 32px;
+}
+
+.form :global(.arco-picker) {
+  width: 100%;
+}
+
+/* 多选标签样式 */
+.form :global(.arco-select-view-tag) {
+  font-size: 12px;
+  max-width: 120px;
+}
+
+.form :global(.arco-select-view-tag .arco-tag) {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 按钮样式 */
+.actions :global(.arco-btn) {
+  height: 32px;
+  font-size: 13px;
+}
+
+.actions :global(.arco-btn-primary) {
+  background: var(--color-primary-6);
+  border-color: var(--color-primary-6);
+}
+
+.actions :global(.arco-btn-primary:hover) {
+  background: var(--color-primary-5);
+  border-color: var(--color-primary-5);
+}
+
+/* 加载状态 */
+.form :global(.arco-select-loading) {
+  color: var(--color-text-3);
+}
+
+/* 清除按钮 */
+.form :global(.arco-select-clear-icon),
+.form :global(.arco-picker-clear-icon) {
+  color: var(--color-text-3);
+}
+
+.form :global(.arco-select-clear-icon:hover),
+.form :global(.arco-picker-clear-icon:hover) {
+  color: var(--color-text-2);
+}
+
+/* 下拉箭头 */
+.form :global(.arco-select-arrow-icon),
+.form :global(.arco-picker-suffix) {
+  color: var(--color-text-3);
+}
+
+/* 占位符样式 */
+.form :global(.arco-select-view-placeholder),
+.form :global(.arco-picker-placeholder) {
+  color: var(--color-text-4);
+  font-size: 13px;
+}
+
+/* 折叠动画 */
+.collapse :global(.arco-collapse-item-content-box) {
+  transition: all 0.3s ease;
+}
+
+/* 头部图标 */
+.header :global(.arco-icon) {
+  font-size: 14px;
+}
+
+.header :global(.arco-icon:first-child) {
+  color: var(--color-primary-6);
+}
+
+/* 预设按钮组 */
+.presets :global(.arco-space) {
+  width: 100%;
+}
+
+.presets :global(.arco-space-item) {
+  margin-bottom: 4px;
+}

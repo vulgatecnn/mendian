@@ -1,0 +1,210 @@
+/* 开店地图可视化组件样式 */
+
+.mapCard {
+  height: 600px;
+  overflow: hidden;
+}
+
+.mapContainer {
+  display: flex;
+  height: 100%;
+  gap: 16px;
+}
+
+.mapWrapper {
+  flex: 1;
+  height: 100%;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--color-border-2);
+}
+
+.sidebar {
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.legend {
+  background: var(--color-bg-2);
+  border-radius: 6px;
+  padding: 16px;
+  border: 1px solid var(--color-border-2);
+}
+
+.legendTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-1);
+  margin-bottom: 12px;
+}
+
+.legendItems {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.legendIcon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 10px;
+  border: 1px solid var(--color-border-2);
+}
+
+.legendLabel {
+  flex: 1;
+  font-size: 13px;
+  color: var(--color-text-2);
+}
+
+.legendCount {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-1);
+}
+
+.legendTotal {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border-2);
+  text-align: center;
+}
+
+.filters {
+  margin-bottom: 16px;
+}
+
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  color: var(--color-text-3);
+}
+
+.emptyContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  color: var(--color-text-3);
+}
+
+.updateTime {
+  padding: 12px;
+  background: var(--color-bg-2);
+  border-radius: 6px;
+  text-align: center;
+  border: 1px solid var(--color-border-2);
+}
+
+/* 弹窗样式 */
+.popup {
+  min-width: 200px;
+}
+
+.popupTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-1);
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-border-2);
+}
+
+.popupContent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.popupItem {
+  font-size: 12px;
+  color: var(--color-text-2);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+  .mapContainer {
+    flex-direction: column;
+  }
+  
+  .sidebar {
+    width: 100%;
+    flex-direction: row;
+    overflow-x: auto;
+  }
+  
+  .legend {
+    min-width: 280px;
+  }
+}
+
+@media (max-width: 768px) {
+  .mapCard {
+    height: 500px;
+  }
+  
+  .sidebar {
+    flex-direction: column;
+  }
+  
+  .legend {
+    min-width: auto;
+  }
+  
+  .legendItems {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+}
+
+/* 自定义标记样式 */
+:global(.custom-marker) {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Leaflet 样式覆盖 */
+:global(.leaflet-popup-content-wrapper) {
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+:global(.leaflet-popup-tip) {
+  background: white;
+}
+
+:global(.leaflet-control-zoom) {
+  border: 1px solid var(--color-border-2) !important;
+  border-radius: 6px !important;
+}
+
+:global(.leaflet-control-zoom a) {
+  background-color: var(--color-bg-1) !important;
+  color: var(--color-text-1) !important;
+  border: none !important;
+}
+
+:global(.leaflet-control-zoom a:hover) {
+  background-color: var(--color-bg-2) !important;
+}

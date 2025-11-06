@@ -1,0 +1,355 @@
+/* 报表预览组件样式 */
+
+.reportPreview {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 600px;
+}
+
+.previewHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--color-border-2);
+  margin-bottom: 16px;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+}
+
+.previewContent {
+  flex: 1;
+  overflow: hidden;
+}
+
+.previewTabs {
+  height: 100%;
+}
+
+.previewTabs :global(.arco-tabs-content) {
+  height: calc(100% - 44px);
+  overflow-y: auto;
+}
+
+.previewTabs :global(.arco-tabs-pane) {
+  height: 100%;
+  padding: 16px 0;
+}
+
+/* 汇总信息样式 */
+.summarySection {
+  padding: 0 16px;
+}
+
+.summaryStats {
+  margin-bottom: 24px;
+}
+
+.statCard {
+  text-align: center;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.statCard :global(.arco-statistic-title) {
+  color: var(--color-text-2);
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.statCard :global(.arco-statistic-value) {
+  color: var(--color-text-1);
+  font-weight: 600;
+}
+
+.reportInfo {
+  background-color: var(--color-fill-1);
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.reportInfo :global(.arco-typography) {
+  margin: 4px 0;
+  line-height: 1.6;
+}
+
+/* 图表样式 */
+.chartsSection {
+  padding: 0 16px;
+}
+
+.chartCard {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  margin-bottom: 16px;
+}
+
+.chartContainer {
+  padding: 16px;
+}
+
+/* 表格样式 */
+.tablesSection {
+  padding: 0 16px;
+}
+
+.tableCard {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  margin-bottom: 16px;
+}
+
+.tableCard :global(.arco-table) {
+  border-radius: 0 0 8px 8px;
+}
+
+.tableCard :global(.arco-table-thead th) {
+  background-color: var(--color-fill-1);
+  font-weight: 500;
+  color: var(--color-text-1);
+}
+
+.tableCard :global(.arco-table-tbody td) {
+  border-bottom: 1px solid var(--color-border-3);
+}
+
+.tableCard :global(.arco-table-tbody tr:hover td) {
+  background-color: var(--color-fill-1);
+}
+
+/* 按钮样式 */
+.headerRight :global(.arco-btn) {
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.headerRight :global(.arco-btn-primary) {
+  background: linear-gradient(135deg, var(--color-primary-6) 0%, var(--color-primary-5) 100%);
+  border: none;
+  box-shadow: 0 2px 4px rgba(24, 144, 255, 0.2);
+}
+
+.headerRight :global(.arco-btn-primary):hover {
+  background: linear-gradient(135deg, var(--color-primary-5) 0%, var(--color-primary-4) 100%);
+  box-shadow: 0 4px 8px rgba(24, 144, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+/* 标签页样式 */
+.previewTabs :global(.arco-tabs-header) {
+  border-bottom: 1px solid var(--color-border-2);
+  margin-bottom: 0;
+}
+
+.previewTabs :global(.arco-tabs-tab) {
+  padding: 12px 16px;
+  font-weight: 500;
+}
+
+.previewTabs :global(.arco-tabs-tab-active) {
+  color: var(--color-primary-6);
+}
+
+.previewTabs :global(.arco-tabs-ink-bar) {
+  background-color: var(--color-primary-6);
+}
+
+/* 空状态样式 */
+.chartsSection :global(.arco-empty),
+.tablesSection :global(.arco-empty) {
+  padding: 60px 20px;
+}
+
+.chartsSection :global(.arco-empty-description),
+.tablesSection :global(.arco-empty-description) {
+  color: var(--color-text-3);
+  margin-top: 16px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .previewHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .headerRight {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  
+  .headerRight :global(.arco-btn) {
+    flex: 1;
+    max-width: 120px;
+  }
+  
+  .summaryStats {
+    flex-direction: column;
+  }
+  
+  .summaryStats :global(.arco-col) {
+    margin-bottom: 12px;
+  }
+  
+  .chartsSection :global(.arco-col) {
+    margin-bottom: 16px;
+  }
+  
+  .chartContainer {
+    height: 250px !important;
+  }
+  
+  .reportInfo {
+    padding: 12px;
+  }
+  
+  .summarySection,
+  .chartsSection,
+  .tablesSection {
+    padding: 0 8px;
+  }
+}
+
+@media (max-width: 576px) {
+  .previewTabs :global(.arco-tabs-tab) {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+  
+  .chartContainer {
+    height: 200px !important;
+  }
+  
+  .tableCard :global(.arco-table) {
+    font-size: 12px;
+  }
+  
+  .statCard :global(.arco-statistic-value) {
+    font-size: 20px;
+  }
+}
+
+/* 暗色主题适配 */
+[data-theme='dark'] .statCard,
+[data-theme='dark'] .chartCard,
+[data-theme='dark'] .tableCard {
+  background-color: var(--color-bg-2);
+  border-color: var(--color-border-2);
+}
+
+[data-theme='dark'] .reportInfo {
+  background-color: var(--color-fill-2);
+}
+
+[data-theme='dark'] .previewHeader {
+  border-bottom-color: var(--color-border-3);
+}
+
+[data-theme='dark'] .previewTabs :global(.arco-tabs-header) {
+  border-bottom-color: var(--color-border-3);
+}
+
+/* 加载状态 */
+.previewContent :global(.arco-spin-loading) {
+  min-height: 400px;
+}
+
+.previewContent :global(.arco-spin-dot) {
+  font-size: 20px;
+}
+
+/* 滚动条样式 */
+.previewTabs :global(.arco-tabs-content)::-webkit-scrollbar {
+  width: 6px;
+}
+
+.previewTabs :global(.arco-tabs-content)::-webkit-scrollbar-track {
+  background: var(--color-fill-2);
+  border-radius: 3px;
+}
+
+.previewTabs :global(.arco-tabs-content)::-webkit-scrollbar-thumb {
+  background: var(--color-fill-4);
+  border-radius: 3px;
+}
+
+.previewTabs :global(.arco-tabs-content)::-webkit-scrollbar-thumb:hover {
+  background: var(--color-fill-3);
+}
+
+/* 动画效果 */
+.statCard,
+.chartCard,
+.tableCard {
+  transition: all 0.3s ease;
+}
+
+.statCard:hover,
+.chartCard:hover,
+.tableCard:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.headerRight :global(.arco-btn) {
+  transition: all 0.2s ease;
+}
+
+/* 图表容器优化 */
+.chartContainer canvas {
+  border-radius: 4px;
+}
+
+/* 分割线样式 */
+.summarySection :global(.arco-divider) {
+  margin: 24px 0;
+  border-color: var(--color-border-2);
+}
+
+/* 统计卡片图标 */
+.statCard :global(.arco-statistic-prefix),
+.statCard :global(.arco-statistic-suffix) {
+  color: var(--color-primary-6);
+}
+
+/* 表格分页样式 */
+.tableCard :global(.arco-pagination) {
+  margin-top: 16px;
+  text-align: center;
+}
+
+.tableCard :global(.arco-pagination-item) {
+  border-radius: 4px;
+}
+
+/* 错误状态样式 */
+.reportPreview :global(.arco-alert) {
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.reportPreview :global(.arco-alert-error) {
+  background-color: var(--color-danger-light-1);
+  border-color: var(--color-danger-light-3);
+}
+
+/* 标题样式 */
+.previewHeader :global(.arco-typography-h4) {
+  color: var(--color-text-1);
+  font-weight: 600;
+}
+
+.reportInfo :global(.arco-typography-h4) {
+  color: var(--color-text-1);
+  margin-bottom: 12px;
+}

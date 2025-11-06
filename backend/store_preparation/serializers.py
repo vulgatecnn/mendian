@@ -16,7 +16,7 @@ class MilestoneSerializer(serializers.ModelSerializer):
             'reminder_sent', 'remark',
             'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'reminder_sent', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'construction_order', 'reminder_sent', 'created_at', 'updated_at']
     
     def validate(self, data):
         """验证数据"""

@@ -1,376 +1,261 @@
 /**
- * 数据报表页面
+ * 数据报表页面 - 增强版
  */
 import React, { useState, useEffect } from 'react'
 import {
   Card,
   Grid,
-  Form,
-  Select,
-  DatePicker,
-  Button,
-  Table,
   Typography,
   Alert,
   Spin,
   Empty,
-  Statistic,
-  Progress,
+  Tabs,
+  Button,
   Space,
-  Divider,
+  Modal
 } from '@arco-design/web-react'
 import {
   IconRefresh,
   IconDownload,
   IconFilter,
-  IconDashboard
+  IconDashboard,
+  IconFile,
+  IconExport,
+  IconMobile
 } from '@arco-design/web-react/icon'
-// import { useQuery } from '../../../hooks/useQuery'
-// import { ReportService } from '../../../api/reportService'
-// import type {
-//   ReportData,
-//   ReportQueryParams,
-//   BusinessRegion,
-//   StoreType,
-//   PlanStatus,
-//   PlanType
-// } from '../../../types'
-
-// 临时类型定义
-interface ReportData {
-  overview: {
-    total_target: number
-    completed_count: number
-    completion_rate: number
-    total_budget: number
-  }
-}
-
-interface ReportQueryParams {
-  date_range?: any
-  region_id?: number
-  store_type_id?: number
-  plan_type?: string
-  status?: string
-}
-
-interface BusinessRegion {
-  id: number
-  name: string
-}
-
-interface StoreType {
-  id: number
-  name: string
-}
-
-// 临时服务
-const ReportService = {
-  async getReportData(params: ReportQueryParams): Promise<ReportData> {
-    return {
-      overview: {
-        total_target: 100,
-        completed_count: 75,
-        completion_rate: 75,
-        total_budget: 1000
-      }
-    }
-  },
-  async exportReport(params: ReportQueryParams): Promise<void> {
-    console.log('导出报表', params)
-  }
-}
+import { 
+  ReportGenerator, 
+  ReportFilters, 
+  MobileReportViewer 
+} from '../../components/analytics'
+import { useReportService } from '../../api/reportService'
+import type { 
+  ReportTask, 
+  ReportFilters as ReportFiltersType,
+  FilterOptions 
+} from '../../api/reportService'
 import styles from './DataReports.module.css'
 
 const { Row, Col } = Grid
-const { RangePicker } = DatePicker
 const { Title, Text } = Typography
+const { TabPane } = Tabs
 
 /**
- * 数据报表组件
+ * 数据报表组件 - 增强版
  */
 const DataReports: React.FC = () => {
-  const [form] = Form.useForm()
-  const [loading, setLoading] = useState(false)
-  const [reportData, setReportData] = useState<ReportData | null>(null)
-  const [error, setError] = useState<Error | null>(null)
+  const [activeTab, setActiveTab] = useState('generator')
+  const [isMobile, setIsMobile] = useState(false)
+  const [mobileViewerVisible, setMobileViewerVisible] = useState(false)
 
-  // 基础数据
-  const [regions, setRegions] = useState<BusinessRegion[]>([])
-  const [storeTypes, setStoreTypes] = useState<StoreType[]>([])
+  // 使用报表服务
+  const {
+    loading,
+    error,
+    tasks,
+    getUserReportTasks
+  } = useReportService()
 
-  // 查询参数
-  const [queryParams, setQueryParams] = useState<ReportQueryParams>({
-    date_range: undefined,
-    region_id: undefined,
-    store_type_id: undefined,
-    plan_type: undefined,
-    status: undefined
-  })
-
-  /**
-   * 获取报表数据
-   */
-  const fetchReportData = async (params: ReportQueryParams) => {
-    try {
-      setLoading(true)
-      setError(null)
-      const data = await ReportService.getReportData(params)
-      setReportData(data)
-    } catch (err) {
-      setError(err as Error)
-    } finally {
-      setLoading(false)
-    }
+  // 模拟筛选选项数据
+  const filterOptions: FilterOptions = {
+    regions: [
+      { id: 1, name: '华北区' },
+      { id: 2, name: '华东区' },
+      { id: 3, name: '华南区' },
+      { id: 4, name: '西南区' }
+    ],
+    storeTypes: [
+      { code: 'direct', name: '直营店' },
+      { code: 'franchise', name: '加盟店' },
+      { code: 'joint', name: '合作店' }
+    ],
+    statuses: [
+      { code: 'draft', name: '草稿' },
+      { code: 'published', name: '已发布' },
+      { code: 'executing', name: '执行中' },
+      { code: 'completed', name: '已完成' },
+      { code: 'cancelled', name: '已取消' }
+    ],
+    contributionTypes: [
+      { code: 'high', name: '高贡献率' },
+      { code: 'medium', name: '中贡献率' },
+      { code: 'low', name: '低贡献率' }
+    ],
+    businessRegions: [
+      { id: 1, name: '华北区' },
+      { id: 2, name: '华东区' },
+      { id: 3, name: '华南区' },
+      { id: 4, name: '西南区' }
+    ]
   }
 
-  /**
-   * 处理搜索
-   */
-  const handleSearch = () => {
-    const values = form.getFieldsValue()
-    const params: ReportQueryParams = {
-      date_range: values.date_range,
-      region_id: values.region_id,
-      store_type_id: values.store_type_id,
-      plan_type: values.plan_type,
-      status: values.status
-    }
-    setQueryParams(params)
-    fetchReportData(params)
-  }
-
-  /**
-   * 重置搜索
-   */
-  const handleReset = () => {
-    form.resetFields()
-    const params: ReportQueryParams = {}
-    setQueryParams(params)
-    fetchReportData(params)
-  }
-
-  /**
-   * 导出数据
-   */
-  const handleExport = async () => {
-    try {
-      await ReportService.exportReport(queryParams)
-    } catch (err) {
-      console.error('导出失败:', err)
-    }
-  }
-
-  /**
-   * 刷新数据
-   */
-  const handleRefresh = () => {
-    fetchReportData(queryParams)
-  }
-
-  // 初始化数据
+  // 检测移动端
   useEffect(() => {
-    fetchReportData({})
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile)
+    }
   }, [])
 
-  /**
-   * 渲染搜索表单
-   */
-  const renderSearchForm = () => (
-    <Card className={styles.searchCard}>
-      <Form
-        form={form}
-        layout="inline"
-        onSubmit={handleSearch}
-      >
-        <Row gutter={16}>
-          <Col span={6}>
-            <Form.Item label="时间范围" field="date_range">
-              <RangePicker style={{ width: '100%' }} />
-            </Form.Item>
-          </Col>
-          <Col span={4}>
-            <Form.Item label="业务区域" field="region_id">
-              <Select placeholder="请选择区域" allowClear>
-                {regions.map(region => (
-                  <Select.Option key={region.id} value={region.id}>
-                    {region.name}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-          </Col>
-          <Col span={4}>
-            <Form.Item label="门店类型" field="store_type_id">
-              <Select placeholder="请选择类型" allowClear>
-                {storeTypes.map(type => (
-                  <Select.Option key={type.id} value={type.id}>
-                    {type.name}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-          </Col>
-          <Col span={4}>
-            <Form.Item label="计划类型" field="plan_type">
-              <Select placeholder="请选择类型" allowClear>
-                <Select.Option value="annual">年度计划</Select.Option>
-                <Select.Option value="quarterly">季度计划</Select.Option>
-                <Select.Option value="monthly">月度计划</Select.Option>
-              </Select>
-            </Form.Item>
-          </Col>
-          <Col span={4}>
-            <Form.Item label="计划状态" field="status">
-              <Select placeholder="请选择状态" allowClear>
-                <Select.Option value="draft">草稿</Select.Option>
-                <Select.Option value="published">已发布</Select.Option>
-                <Select.Option value="executing">执行中</Select.Option>
-                <Select.Option value="completed">已完成</Select.Option>
-                <Select.Option value="cancelled">已取消</Select.Option>
-              </Select>
-            </Form.Item>
-          </Col>
-          <Col span={2}>
-            <Space>
-              <Button type="primary" onClick={handleSearch}>
-                查询
-              </Button>
-              <Button onClick={handleReset}>
-                重置
-              </Button>
-            </Space>
-          </Col>
-        </Row>
-      </Form>
-    </Card>
-  )
+  // 初始化加载任务列表
+  useEffect(() => {
+    getUserReportTasks()
+  }, [getUserReportTasks])
 
   /**
-   * 渲染操作按钮
+   * 处理报表生成完成
    */
-  const renderActions = () => (
-    <div className={styles.actions}>
-      <Space>
-        <Button icon={<IconRefresh />} onClick={handleRefresh}>
-          刷新
-        </Button>
-        <Button icon={<IconDownload />} onClick={handleExport}>
-          导出
-        </Button>
-      </Space>
-    </div>
-  )
-
-  /**
-   * 渲染概览统计
-   */
-  const renderOverview = () => {
-    if (!reportData?.overview) return null
-
-    const { overview } = reportData
-
-    return (
-      <Row gutter={16} className={styles.overview}>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="目标门店数"
-              value={overview.total_target}
-              suffix="家"
-              countUp
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="已完成"
-              value={overview.completed_count}
-              suffix="家"
-              countUp
-            />
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card>
-            <div className={styles.progressCard}>
-              <div className={styles.progressTitle}>
-                <Text>完成率</Text>
-                <Text className={styles.progressValue}>
-                  {overview.completion_rate.toFixed(1)}%
-                </Text>
-              </div>
-              <Progress
-                percent={overview.completion_rate}
-                status={overview.completion_rate >= 80 ? 'success' : 'normal'}
-                showText={false}
-              />
-            </div>
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card>
-            <Statistic
-              title="预算总额"
-              value={overview.total_budget}
-              suffix="万元"
-              countUp
-            />
-          </Card>
-        </Col>
-      </Row>
-    )
+  const handleReportGenerated = (task: ReportTask) => {
+    console.log('报表生成任务创建:', task)
   }
 
   /**
-   * 渲染错误状态
+   * 刷新任务列表
    */
-  const renderError = () => {
-    if (!error) return null
+  const handleRefreshTasks = () => {
+    getUserReportTasks()
+  }
 
-    return (
-      <div className={styles.errorContainer}>
-        <Alert
-          type="error"
-          title="数据加载失败"
-          content={error.message}
-          showIcon
-          action={
-            <Button size="small" onClick={handleSearch}>
-              重试
+  /**
+   * 显示移动端查看器
+   */
+  const showMobileViewer = () => {
+    setMobileViewerVisible(true)
+  }
+
+  /**
+   * 渲染桌面端内容
+   */
+  const renderDesktopContent = () => (
+    <Tabs
+      activeTab={activeTab}
+      onChange={setActiveTab}
+      className={styles.reportTabs}
+      extra={
+        <Space>
+          <Button
+            icon={<IconRefresh />}
+            onClick={handleRefreshTasks}
+            loading={loading}
+          >
+            刷新
+          </Button>
+          {isMobile && (
+            <Button
+              icon={<IconMobile />}
+              onClick={showMobileViewer}
+            >
+              移动端查看
             </Button>
-          }
+          )}
+        </Space>
+      }
+    >
+      <TabPane key="generator" title="报表生成" icon={<IconDashboard />}>
+        <ReportGenerator
+          filterOptions={filterOptions}
+          onReportGenerated={handleReportGenerated}
         />
-      </div>
-    )
-  }
+      </TabPane>
+      
+      <TabPane key="tasks" title="任务管理" icon={<IconFile />}>
+        <Card title="报表任务列表" className={styles.tasksCard}>
+          {tasks.length === 0 ? (
+            <Empty description="暂无报表任务" />
+          ) : (
+            <div className={styles.tasksList}>
+              {tasks.map(task => (
+                <Card key={task.taskId} className={styles.taskCard}>
+                  <div className={styles.taskHeader}>
+                    <Text className={styles.taskTitle}>
+                      {task.fileName || '未知报表'}
+                    </Text>
+                    <Space>
+                      {task.status === 'completed' && (
+                        <Button
+                          type="primary"
+                          size="small"
+                          icon={<IconDownload />}
+                        >
+                          下载
+                        </Button>
+                      )}
+                      {task.status === 'completed' && (
+                        <Button
+                          size="small"
+                          icon={<IconExport />}
+                        >
+                          分享
+                        </Button>
+                      )}
+                    </Space>
+                  </div>
+                  <div className={styles.taskMeta}>
+                    <Text type="secondary">
+                      创建时间: {new Date(task.createdAt).toLocaleString('zh-CN')}
+                    </Text>
+                    <Text type="secondary">
+                      状态: {task.status === 'completed' ? '已完成' : '处理中'}
+                    </Text>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
+        </Card>
+      </TabPane>
+    </Tabs>
+  )
 
   return (
     <div className={styles.reports}>
+      {/* 错误提示 */}
+      {error && (
+        <Alert
+          type="error"
+          message="操作失败"
+          description={error.message}
+          closable
+          className={styles.errorAlert}
+        />
+      )}
+
       <div className={styles.header}>
         <Title heading={3}>数据报表</Title>
         <Text className={styles.subtitle}>
-          门店开业进度和经营数据分析报表
+          门店开业进度和经营数据分析报表 - 支持多维度筛选、预览和分享
         </Text>
       </div>
 
-      {renderSearchForm()}
-      {renderActions()}
+      {/* 桌面端内容 */}
+      {renderDesktopContent()}
 
-      <Spin loading={loading}>
-        {error ? renderError() : (
-          <div className={styles.content}>
-            {renderOverview()}
-            
-            {reportData && (
-              <Card title="详细数据" className={styles.dataCard}>
-                <Empty description="报表数据展示功能开发中..." />
-              </Card>
-            )}
-          </div>
-        )}
-      </Spin>
+      {/* 移动端查看器模态框 */}
+      <Modal
+        title="移动端报表查看"
+        visible={mobileViewerVisible}
+        onCancel={() => setMobileViewerVisible(false)}
+        width="100%"
+        style={{ 
+          maxWidth: '400px',
+          height: '80vh',
+          top: '10vh'
+        }}
+        footer={null}
+        className={styles.mobileModal}
+      >
+        <MobileReportViewer
+          tasks={tasks}
+          filterOptions={filterOptions}
+          onRefresh={handleRefreshTasks}
+        />
+      </Modal>
     </div>
   )
 }

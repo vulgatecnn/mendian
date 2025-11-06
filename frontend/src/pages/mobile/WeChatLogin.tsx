@@ -102,6 +102,9 @@ const WeChatLogin: React.FC = () => {
         <div className="login-footer">
           <p>使用企业微信账号登录</p>
           <p className="login-tip">安全 · 便捷 · 高效</p>
+          <p style={{ marginTop: 16 }}>
+            <a href="/pc" style={{ color: '#165DFF', fontSize: 12 }}>切换到PC端</a>
+          </p>
         </div>
       </div>
     </div>

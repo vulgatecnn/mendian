@@ -29,10 +29,28 @@ urlpatterns = [
     path('reports/status/<uuid:task_id>/', views.ReportStatusView.as_view(), name='report-status'),
     path('reports/download/<uuid:task_id>/', views.DownloadReportView.as_view(), name='download-report'),
     
+    # 定时报表管理接口
+    path('reports/scheduled/', views.ScheduledReportView.as_view(), name='scheduled-reports'),
+    path('reports/scheduled/<int:report_id>/', views.ScheduledReportDetailView.as_view(), name='scheduled-report-detail'),
+    
     # 外部数据集成接口
     path('external/sales-data/', views.ExternalSalesDataView.as_view(), name='external-sales-data'),
     path('external/sync-status/', views.DataSyncStatusView.as_view(), name='data-sync-status'),
     
+    # ROI计算接口
+    path('roi/calculate/', views.ROICalculationView.as_view(), name='roi-calculate'),
+    path('roi/comparison/', views.ROIComparisonView.as_view(), name='roi-comparison'),
+    path('roi/trend/', views.ROITrendView.as_view(), name='roi-trend'),
+    
     # 缓存管理接口
     path('cache/refresh/', views.RefreshCacheView.as_view(), name='refresh-cache'),
+    
+    # 数据更新状态接口
+    path('update-status/', views.DataUpdateStatusView.as_view(), name='data-update-status'),
+    
+    # 系统监控接口
+    path('monitoring/health/', views.SystemHealthView.as_view(), name='system-health'),
+    path('monitoring/metrics/', views.SystemMetricsView.as_view(), name='system-metrics'),
+    path('monitoring/alerts/', views.SystemAlertsView.as_view(), name='system-alerts'),
+    path('monitoring/optimize/', views.PerformanceOptimizationView.as_view(), name='performance-optimization'),
 ]

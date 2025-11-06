@@ -1,0 +1,109 @@
+/**
+ * 移动端计划进度样式
+ */
+
+.mobile-plan-progress {
+  padding: 16px;
+}
+
+.overall-stats-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.overall-stats-card .arco-typography {
+  color: #fff !important;
+}
+
+.overall-stats-card .arco-typography-title {
+  color: #fff !important;
+}
+
+.overall-stats-card .arco-progress-line-text {
+  color: #fff !important;
+}
+
+.mobile-plan-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.plan-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.plan-card:active {
+  transform: scale(0.98);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+.plan-card .arco-card-body {
+  padding: 16px;
+}
+
+/* 进度条样式 */
+.plan-card .arco-progress {
+  margin-top: 4px;
+}
+
+/* 标签样式 */
+.plan-card .arco-tag {
+  font-size: 11px;
+  padding: 2px 8px;
+}
+
+/* 响应式优化 */
+@media (max-width: 375px) {
+  .mobile-plan-progress {
+    padding: 12px;
+  }
+  
+  .overall-stats-card {
+    padding: 16px;
+  }
+  
+  .plan-card .arco-card-body {
+    padding: 12px;
+  }
+}
+
+/* 触摸反馈 */
+.plan-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+/* 动画效果 */
+.plan-card {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 抽屉样式优化 */
+.mobile-plan-progress .arco-drawer-body {
+  padding: 20px;
+}
+
+.mobile-plan-progress .arco-list-item {
+  padding: 12px;
+  background: #f7f8fa;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}

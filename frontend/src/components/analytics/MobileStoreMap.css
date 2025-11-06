@@ -1,0 +1,58 @@
+/* 移动端门店地图样式 */
+
+.mobile-store-map {
+  padding-bottom: 16px;
+}
+
+.status-stats-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.status-stats-card .arco-card-body {
+  padding: 12px;
+}
+
+.mobile-store-list {
+  margin-top: 12px;
+}
+
+.store-group-card {
+  margin-bottom: 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.store-group-card .arco-card-header {
+  padding: 12px 16px;
+  background: #f7f8fa;
+}
+
+.store-group-card .arco-card-body {
+  padding: 0;
+}
+
+.store-list-item {
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border-bottom: 1px solid #f2f3f5;
+}
+
+.store-list-item:last-child {
+  border-bottom: none;
+}
+
+.store-list-item:active {
+  background-color: #f7f8fa;
+}
+
+/* 触摸反馈 */
+.store-list-item:hover {
+  background-color: #f7f8fa;
+}
+
+/* 抽屉样式优化 */
+.mobile-store-map .arco-drawer-body {
+  padding: 20px;
+}

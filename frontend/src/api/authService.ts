@@ -75,7 +75,7 @@ export class AuthService {
    */
   static async loginByPassword(params: LoginByPasswordParams): Promise<LoginResponse> {
     return request.post('/auth/login/', {
-      login_type: 'password',
+      login_type: 'username_password',
       ...params
     })
   }

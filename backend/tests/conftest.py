@@ -91,8 +91,8 @@ def admin_user(db, test_department):
 @pytest.fixture
 def api_client():
     """创建API测试客户端"""
-    from django.test import Client
-    return Client()
+    from rest_framework.test import APIClient
+    return APIClient()
 
 
 @pytest.fixture

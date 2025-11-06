@@ -188,21 +188,34 @@ class FollowUpRecordViewSet(DataPermissionMixin, RegionPermissionMixin, viewsets
                 # 保存计算结果
                 calculation.save()
                 
+                # 将 business_terms 中的 Decimal 转换为字符串，以便 JSON 序列化
+                from decimal import Decimal
+                business_terms_json_safe = {
+                    key: str(value) if isinstance(value, Decimal) else value
+                    for key, value in serializer.validated_data['business_terms'].items()
+                }
+                
                 # 更新跟进单
-                follow_up.business_terms = serializer.validated_data['business_terms']
+                follow_up.business_terms = business_terms_json_safe
                 follow_up.profit_calculation = calculation
                 follow_up.save()
+                
+                # 使用序列化器返回数据
+                follow_up_serializer = FollowUpRecordSerializer(follow_up, context={'request': request})
+                calculation_serializer = ProfitCalculationSerializer(calculation, context={'request': request})
                 
                 return Response({
                     'code': 0,
                     'message': '盈利测算完成',
                     'data': {
-                        'follow_up': FollowUpRecordSerializer(follow_up).data,
-                        'calculation': ProfitCalculationSerializer(calculation).data
+                        'follow_up': follow_up_serializer.data,
+                        'calculation': calculation_serializer.data
                     }
                 })
         
         except Exception as e:
+            import traceback
+            traceback.print_exc()  # 打印完整的错误堆栈
             return Response(
                 {
                     'code': 1000,

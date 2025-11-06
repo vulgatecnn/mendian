@@ -1,0 +1,134 @@
+/* 移动端经营大屏样式 */
+
+.mobile-dashboard {
+  min-height: 100vh;
+  background: #f7f8fa;
+  padding-bottom: 60px;
+}
+
+.mobile-dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #fff;
+  border-bottom: 1px solid #e5e6eb;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.mobile-dashboard-loading,
+.mobile-dashboard-empty {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  padding: 20px;
+}
+
+.mobile-dashboard-metrics {
+  padding: 12px;
+}
+
+.metric-card {
+  text-align: center;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.metric-card .arco-statistic-title {
+  font-size: 12px;
+  color: #86909c;
+  margin-bottom: 4px;
+}
+
+.highlight-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.highlight-card .arco-typography {
+  color: #fff;
+}
+
+.mobile-dashboard-overview {
+  padding-bottom: 16px;
+}
+
+.mobile-dashboard-map {
+  padding: 12px;
+  min-height: 60vh;
+}
+
+/* 标签页样式优化 */
+.mobile-dashboard .arco-tabs {
+  background: #fff;
+}
+
+.mobile-dashboard .arco-tabs-nav {
+  padding: 0 16px;
+}
+
+.mobile-dashboard .arco-tabs-content {
+  padding: 0;
+}
+
+/* 卡片样式 */
+.mobile-dashboard .arco-card {
+  margin-bottom: 12px;
+  border-radius: 8px;
+}
+
+.mobile-dashboard .arco-card-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e5e6eb;
+}
+
+.mobile-dashboard .arco-card-body {
+  padding: 16px;
+}
+
+/* 响应式优化 */
+@media (max-width: 375px) {
+  .mobile-dashboard-header {
+    padding: 8px 12px;
+  }
+  
+  .metric-card .arco-statistic-value {
+    font-size: 20px !important;
+  }
+  
+  .mobile-dashboard-metrics {
+    padding: 8px;
+  }
+}
+
+/* 全屏模式 */
+.mobile-dashboard:fullscreen {
+  background: #fff;
+}
+
+.mobile-dashboard:fullscreen .mobile-dashboard-header {
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
+}
+
+/* 离线模式提示 */
+.mobile-dashboard .arco-badge-status-error {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}

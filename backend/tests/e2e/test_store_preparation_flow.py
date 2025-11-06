@@ -137,7 +137,10 @@ class TestStorePreparationFlow:
             content_type='application/json'
         )
         
-        assert response.status_code == 200
+        if response.status_code not in [200, 201]:
+            print(f"里程碑创建失败，响应内容：{response.json()}")
+        
+        assert response.status_code in [200, 201]
         
         # 验证里程碑已创建
         milestones = Milestone.objects.filter(construction_order=construction).order_by('planned_date')

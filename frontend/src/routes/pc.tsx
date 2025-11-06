@@ -634,15 +634,23 @@ export const PCRoutes: React.FC = () => {
     <Routes>
       {/* PC端登录页面 */}
       <Route 
-        path="/login" 
+        path="login" 
         element={
-          isAuthenticated ? <Navigate to="/" replace /> : <Login />
+          isAuthenticated ? <Navigate to="/pc" replace /> : <Login />
+        } 
+      />
+      
+      {/* 根路径重定向到登录页 */}
+      <Route 
+        index
+        element={
+          isAuthenticated ? <Home /> : <Navigate to="/pc/login" replace />
         } 
       />
       
       {/* PC端个人中心 */}
       <Route 
-        path="/profile" 
+        path="profile" 
         element={
           <ProtectedRoute>
             <Profile />
@@ -652,7 +660,7 @@ export const PCRoutes: React.FC = () => {
       
       {/* PC端消息中心 */}
       <Route 
-        path="/messages" 
+        path="messages" 
         element={
           <ProtectedRoute>
             <MessageCenter />
@@ -662,7 +670,7 @@ export const PCRoutes: React.FC = () => {
       
       {/* PC端首页 */}
       <Route 
-        path="/" 
+        path="home" 
         element={
           <ProtectedRoute>
             <Home />
@@ -671,31 +679,31 @@ export const PCRoutes: React.FC = () => {
       />
       
       {/* 系统管理模块路由 */}
-      <Route path="/system/*" element={<SystemRoutes />} />
+      <Route path="system/*" element={<SystemRoutes />} />
       
       {/* 拓店管理模块路由 */}
-      <Route path="/store-expansion/*" element={<StoreExpansionRoutes />} />
+      <Route path="store-expansion/*" element={<StoreExpansionRoutes />} />
       
       {/* 开店计划管理模块路由 */}
-      <Route path="/store-planning/*" element={<StorePlanningRoutes />} />
+      <Route path="store-planning/*" element={<StorePlanningRoutes />} />
       
       {/* 开店筹备模块路由 */}
-      <Route path="/store-preparation/*" element={<StorePreparationRoutes />} />
+      <Route path="store-preparation/*" element={<StorePreparationRoutes />} />
       
       {/* 门店档案模块路由 */}
-      <Route path="/store-archive/*" element={<StoreArchiveRoutes />} />
+      <Route path="store-archive/*" element={<StoreArchiveRoutes />} />
       
       {/* 审批中心模块路由 */}
-      <Route path="/approval/*" element={<ApprovalRoutes />} />
+      <Route path="approval/*" element={<ApprovalRoutes />} />
       
       {/* 基础数据管理模块路由 */}
-      <Route path="/base-data/*" element={<BaseDataRoutes />} />
+      <Route path="base-data/*" element={<BaseDataRoutes />} />
       
       {/* 经营大屏模块路由 */}
-      <Route path="/business-dashboard/*" element={<BusinessDashboardRoutes />} />
+      <Route path="business-dashboard/*" element={<BusinessDashboardRoutes />} />
       
       {/* 门店运营管理模块路由 */}
-      <Route path="/store-operation/*" element={<StoreOperationRoutes />} />
+      <Route path="store-operation/*" element={<StoreOperationRoutes />} />
       
       {/* PC端404页面 */}
       <Route 
@@ -705,7 +713,7 @@ export const PCRoutes: React.FC = () => {
             <h2>页面未找到</h2>
             <p>请检查URL是否正确</p>
             <button 
-              onClick={() => window.location.href = '/'}
+              onClick={() => window.location.href = '/pc'}
               style={{
                 marginTop: '16px',
                 padding: '8px 16px',

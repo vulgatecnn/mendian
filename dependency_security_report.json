@@ -1,0 +1,187 @@
+{
+  "timestamp": "2025-11-04T20:46:40.358259",
+  "backend": {
+    "status": "completed",
+    "total_vulnerabilities": 0,
+    "message": "未发现安全漏洞",
+    "outdated_packages": 29,
+    "outdated_details": [
+      {
+        "name": "astroid",
+        "version": "3.0.3",
+        "latest_version": "4.0.1",
+        "latest_filetype": "wheel"
+      },
+      {
+        "name": "bandit",
+        "version": "1.7.6",
+        "latest_version": "1.8.6",
+        "latest_filetype": "wheel"
+      },
+      {
+        "name": "celery",
+        "version": "5.3.4",
+        "latest_version": "5.5.3",
+        "latest_filetype": "wheel"
+      },
+      {
+        "name": "cryptography",
+        "version": "41.0.7",
+        "latest_version": "46.0.3",
+        "latest_filetype": "wheel"
+      },
+      {
+        "name": "cyclonedx-python-lib",
+        "version": "7.6.2",
+        "latest_version": "11.5.0",
+        "latest_filetype": "wheel"
+      },
+      {
+        "name": "Django",
+        "version": "4.2.7",
+        "latest_version": "5.2.7",
+        "latest_filetype": "wheel"
+      },
+      {
+        "name": "django-cors-headers",
+        "version": "4.3.0",
+        "latest_version": "4.9.0",
+        "latest_filetype": "wheel"
+      },
+      {
+        "name": "django-filter",
+        "version": "24.3",
+        "latest_version": "25.2",
+        "latest_filetype": "wheel"
+      },
+      {
+        "name": "djangorestframework",
+        "version": "3.14.0",
+        "latest_version": "3.16.1",
+        "latest_filetype": "wheel"
+      },
+      {
+        "name": "drf-spectacular",
+        "version": "0.26.5",
+        "latest_version": "0.29.0",
+        "latest_filetype": "wheel"
+      }
+    ]
+  },
+  "frontend": {
+    "status": "completed",
+    "total_vulnerabilities": 2,
+    "critical": 0,
+    "high": 0,
+    "moderate": 2,
+    "low": 0,
+    "info": 0,
+    "vulnerable_packages": 2,
+    "details": [
+      {
+        "package": "esbuild",
+        "severity": "moderate",
+        "via": [
+          {
+            "source": 1102341,
+            "name": "esbuild",
+            "dependency": "esbuild",
+            "title": "esbuild enables any website to send any requests to the development server and read the response",
+            "url": "https://github.com/advisories/GHSA-67mh-4wv8-2f99",
+            "severity": "moderate",
+            "cwe": [
+              "CWE-346"
+            ],
+            "cvss": {
+              "score": 5.3,
+              "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:N/A:N"
+            },
+            "range": "<=0.24.2"
+          }
+        ],
+        "range": "<=0.24.2"
+      },
+      {
+        "package": "vite",
+        "severity": "moderate",
+        "via": [
+          "esbuild"
+        ],
+        "range": "0.11.0 - 6.1.6"
+      }
+    ],
+    "outdated_packages": 11,
+    "outdated_details": {
+      "@types/react": {
+        "current": "18.3.26",
+        "wanted": "18.3.26",
+        "latest": "19.2.2",
+        "dependent": "frontend",
+        "location": "D:\\aaa\\code\\kiro\\mendian\\frontend\\node_modules\\@types\\react"
+      },
+      "@types/react-dom": {
+        "current": "18.3.7",
+        "wanted": "18.3.7",
+        "latest": "19.2.2",
+        "dependent": "frontend",
+        "location": "D:\\aaa\\code\\kiro\\mendian\\frontend\\node_modules\\@types\\react-dom"
+      },
+      "@typescript-eslint/eslint-plugin": {
+        "current": "6.21.0",
+        "wanted": "6.21.0",
+        "latest": "8.46.3",
+        "dependent": "frontend",
+        "location": "D:\\aaa\\code\\kiro\\mendian\\frontend\\node_modules\\@typescript-eslint\\eslint-plugin"
+      },
+      "@typescript-eslint/parser": {
+        "current": "6.21.0",
+        "wanted": "6.21.0",
+        "latest": "8.46.3",
+        "dependent": "frontend",
+        "location": "D:\\aaa\\code\\kiro\\mendian\\frontend\\node_modules\\@typescript-eslint\\parser"
+      },
+      "@vitejs/plugin-react": {
+        "current": "4.7.0",
+        "wanted": "4.7.0",
+        "latest": "5.1.0",
+        "dependent": "frontend",
+        "location": "D:\\aaa\\code\\kiro\\mendian\\frontend\\node_modules\\@vitejs\\plugin-react"
+      },
+      "eslint": {
+        "current": "8.57.1",
+        "wanted": "8.57.1",
+        "latest": "9.39.1",
+        "dependent": "frontend",
+        "location": "D:\\aaa\\code\\kiro\\mendian\\frontend\\node_modules\\eslint"
+      },
+      "eslint-plugin-react-hooks": {
+        "current": "4.6.2",
+        "wanted": "4.6.2",
+        "latest": "7.0.1",
+        "dependent": "frontend",
+        "location": "D:\\aaa\\code\\kiro\\mendian\\frontend\\node_modules\\eslint-plugin-react-hooks"
+      },
+      "react": {
+        "current": "18.3.1",
+        "wanted": "18.3.1",
+        "latest": "19.2.0",
+        "dependent": "frontend",
+        "location": "D:\\aaa\\code\\kiro\\mendian\\frontend\\node_modules\\react"
+      },
+      "react-dom": {
+        "current": "18.3.1",
+        "wanted": "18.3.1",
+        "latest": "19.2.0",
+        "dependent": "frontend",
+        "location": "D:\\aaa\\code\\kiro\\mendian\\frontend\\node_modules\\react-dom"
+      },
+      "react-router-dom": {
+        "current": "6.30.1",
+        "wanted": "6.30.1",
+        "latest": "7.9.5",
+        "dependent": "frontend",
+        "location": "D:\\aaa\\code\\kiro\\mendian\\frontend\\node_modules\\react-router-dom"
+      }
+    }
+  }
+}

@@ -18,6 +18,7 @@ import {
   MobileConstructionAcceptance,
   MobileApprovalList,
   MobileApprovalDetail,
+  MobileAnalytics,
   WeChatLogin
 } from '../pages/mobile';
 
@@ -195,6 +196,16 @@ export const MobileRoutes: React.FC = () => {
         
         {/* 移动端审批中心模块 */}
         <Route path="approvals/*" element={<MobileApprovalRoutes />} />
+        
+        {/* 移动端数据分析模块 */}
+        <Route 
+          path="analytics" 
+          element={
+            <ProtectedRoute permission="analytics.view">
+              <MobileAnalytics />
+            </ProtectedRoute>
+          } 
+        />
         
         {/* 移动端消息中心 */}
         <Route 

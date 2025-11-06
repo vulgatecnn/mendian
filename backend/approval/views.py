@@ -339,11 +339,11 @@ class ApprovalInstanceViewSet(viewsets.ModelViewSet):
                 'data': None
             }, status=status.HTTP_403_FORBIDDEN)
         
-        # 只有待审批状态可以撤销
-        if instance.status != 'pending':
+        # 只有待审批或审批中状态可以撤销
+        if instance.status not in ['pending', 'in_progress']:
             return Response({
                 'success': False,
-                'message': '只有待审批状态的申请可以撤销',
+                'message': '只有待审批或审批中的申请可以撤销',
                 'data': None
             }, status=status.HTTP_400_BAD_REQUEST)
         

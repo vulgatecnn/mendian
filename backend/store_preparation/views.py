@@ -72,18 +72,48 @@ class ConstructionOrderViewSet(DataPermissionMixin, viewsets.ModelViewSet):
     @action(detail=True, methods=['post'], url_path='milestones')
     def add_milestone(self, request, pk=None):
         """
-        添加里程碑
+        添加里程碑（支持单个或批量）
         
         POST /api/preparation/construction/{id}/milestones/
+        
+        请求体可以是：
+        1. 单个里程碑对象：{"name": "...", "planned_date": "..."}
+        2. 批量里程碑：{"milestones": [{...}, {...}]}
         """
         construction_order = self.get_object()
         
-        serializer = MilestoneSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(construction_order=construction_order)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # 检查是否是批量创建
+        if 'milestones' in request.data:
+            # 批量创建
+            milestones_data = request.data['milestones']
+            serializer = MilestoneSerializer(data=milestones_data, many=True)
+            if serializer.is_valid():
+                serializer.save(construction_order=construction_order)
+                return Response({
+                    'success': True,
+                    'message': f'成功创建 {len(serializer.data)} 个里程碑',
+                    'data': serializer.data
+                }, status=status.HTTP_201_CREATED)
+            return Response({
+                'success': False,
+                'message': '参数错误',
+                'data': serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            # 单个创建
+            serializer = MilestoneSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save(construction_order=construction_order)
+                return Response({
+                    'success': True,
+                    'message': '里程碑创建成功',
+                    'data': serializer.data
+                }, status=status.HTTP_201_CREATED)
+            return Response({
+                'success': False,
+                'message': '参数错误',
+                'data': serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
     
     @action(detail=True, methods=['put'], url_path='milestones/(?P<milestone_id>[^/.]+)')
     def update_milestone(self, request, pk=None, milestone_id=None):

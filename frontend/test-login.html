@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>登录测试</title>
+</head>
+<body>
+  <h1>直接API测试</h1>
+  <form id="testForm">
+    <input type="text" id="username" value="admin" placeholder="用户名" />
+    <input type="password" id="password" value="admin123" placeholder="密码" />
+    <button type="submit">登录</button>
+  </form>
+  
+  <div id="result"></div>
+  
+  <script>
+    document.getElementById('testForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      
+      try {
+        const response = await fetch('/api/auth/login/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            login_type: 'username_password',
+            username,
+            password
+          })
+        });
+        
+        const data = await response.json();
+        document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+        
+        if (data.code === 0) {
+          alert('登录成功！');
+          localStorage.setItem('access_token', data.data.access_token);
+          localStorage.setItem('refresh_token', data.data.refresh_token);
+          window.location.href = '/';
+        }
+      } catch (error) {
+        document.getElementById('result').innerHTML = '<pre style="color:red">' + error.message + '</pre>';
+      }
+    });
+  </script>
+</body>
+</html>

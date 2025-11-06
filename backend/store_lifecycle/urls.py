@@ -5,10 +5,14 @@ URL configuration for store_lifecycle project.
 from django.contrib import admin
 from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+from .health import health_check
 
 urlpatterns = [
     # Django 管理后台
     path('admin/', admin.site.urls),
+    
+    # 健康检查
+    path('api/health/', health_check, name='health-check'),
     
     # API 文档
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),

@@ -119,9 +119,14 @@
   color: #52c41a;
 }
 
+/* 地图行 */
+.mapRow {
+  margin-bottom: 24px;
+}
+
 /* 图表行 */
 .chartsRow {
-  margin-bottom: 0;
+  margin-bottom: 24px;
 }
 
 /* 绩效卡片 */

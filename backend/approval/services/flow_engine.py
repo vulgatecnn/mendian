@@ -309,7 +309,8 @@ class ApprovalFlowEngine:
         ApprovalNodeApprover.objects.create(node=node, user=target_user)
         
         # 记录转交操作
-        node.approval_comment = f"转交给 {target_user.real_name or target_user.username}：{comment or '无'}"
+        target_name = target_user.get_full_name() or target_user.username
+        node.approval_comment = f"转交给 {target_name}：{comment or '无'}"
         node.save()
         
         # 通知新的审批人
@@ -340,7 +341,7 @@ class ApprovalFlowEngine:
                 ApprovalNodeApprover.objects.get_or_create(node=node, user=user)
         
         # 记录加签操作
-        user_names = [u.real_name or u.username for u in additional_users]
+        user_names = [u.get_full_name() or u.username for u in additional_users]
         node.approval_comment = f"加签给 {', '.join(user_names)}：{comment or '无'}"
         node.save()
         
@@ -414,10 +415,9 @@ class ApprovalFlowEngine:
             Message.objects.create(
                 recipient=instance.initiator,
                 title=f'审批被拒绝：{instance.title}',
-                content=f'您的审批申请已被 {getattr(approver, "real_name", None) or approver.username} 拒绝。拒绝原因：{reason}',
+                content=f'您的审批申请已被 {approver.get_full_name() or approver.username} 拒绝。拒绝原因：{reason}',
                 message_type='approval_rejected',
-                related_object_type='approval_instance',
-                related_object_id=instance.id
+                link=f'/approval/detail/{instance.id}'
             )
         except Exception as e:
             print(f"创建拒绝通知消息失败：{e}")

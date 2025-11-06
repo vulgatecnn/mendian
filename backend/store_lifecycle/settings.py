@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django_filters',
     
     # 本地应用
+    'common',  # 公共模块
     'system_management',
     'store_planning',
     'base_data',

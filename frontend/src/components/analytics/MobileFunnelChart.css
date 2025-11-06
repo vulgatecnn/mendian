@@ -1,0 +1,95 @@
+/**
+ * 移动端漏斗图样式
+ */
+
+.mobile-funnel-chart {
+  padding: 16px;
+}
+
+.funnel-summary {
+  padding: 12px;
+  background: #f7f8fa;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.mobile-funnel-stages {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.funnel-stage-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.funnel-stage {
+  width: 100%;
+  max-width: 100%;
+  padding: 16px;
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.funnel-stage:active {
+  transform: scale(0.98);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.funnel-conversion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 0;
+  color: #86909c;
+}
+
+.conversion-details {
+  margin-top: 16px;
+}
+
+.conversion-details .arco-list-item {
+  padding: 12px;
+  background: #f7f8fa;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+/* 响应式优化 */
+@media (max-width: 375px) {
+  .mobile-funnel-chart {
+    padding: 12px;
+  }
+  
+  .funnel-stage {
+    padding: 12px;
+  }
+}
+
+/* 触摸反馈 */
+.funnel-stage:hover {
+  opacity: 0.9;
+}
+
+/* 动画效果 */
+.funnel-stage {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
